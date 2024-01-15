@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/app_background"
+    tools:context=".SignUp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical">
+
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:layout_width="160dp"
+            android:layout_height="160dp"
+            android:src="@drawable/tealogo"
+            />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:hint="First Name"
+            android:textColor="@color/white"
+            android:textColorHint="@color/white"
+            android:background="@drawable/rounded_corner"
+            android:textSize="20sp"
+            android:padding="30dp"
+            android:inputType="text"
+            android:id="@+id/first_name"/>
+
+
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:hint="Last Name"
+            android:textColor="@color/white"
+            android:textColorHint="@color/white"
+            android:background="@drawable/rounded_corner"
+            android:textSize="20sp"
+            android:padding="30dp"
+            android:inputType="text"
+            android:id="@+id/last_name"/>
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="Phone Number"
+            android:textColor="@color/white"
+            android:background="@drawable/rounded_corner"
+            android:textColorHint="@color/white"
+            android:textSize="20sp"
+            android:padding="30dp"
+            android:inputType="phone"
+            android:id="@+id/phone_input"/>
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rounded_corner"
+            android:text="Select Your County"
+            android:textColor="@color/black"/>
+        <Spinner
+            android:id="@+id/county_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:background="@drawable/rounded_corner"
+            android:layout_marginTop="16dp"
+            android:hint="Select Your County"
+            android:inputType="text"
+            android:padding="30dp"
+            android:textColor="@color/white"
+            android:textColorHint="@color/white"
+            android:textSize="20sp" />
+
+
+        <!--            android:entries="@array/kenyan_counties"/>-->
+
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="Sub County"
+            android:textColor="@color/white"
+            android:textColorHint="@color/white"
+            android:background="@drawable/rounded_corner"
+            android:textSize="20sp"
+            android:padding="30dp"
+            android:inputType="text"
+            android:id="@+id/subcounty_input"/>
+
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="Village"
+            android:textColor="@color/white"
+            android:textColorHint="@color/white"
+            android:background="@drawable/rounded_corner"
+            android:textSize="20sp"
+            android:padding="30dp"
+            android:inputType="text"
+            android:id="@+id/village_input"/>
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="Land Acrage"
+            android:textColor="@color/white"
+            android:textColorHint="@color/white"
+            android:background="@drawable/rounded_corner"
+            android:textSize="20sp"
+            android:padding="30dp"
+            android:inputType="number"
+            android:id="@+id/acrage_input"/>
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="Number Of Employees"
+            android:textColor="@color/white"
+
+            android:textColorHint="@color/white"
+            android:textSize="20sp"
+            android:padding="30dp"
+            android:background="@drawable/rounded_corner"
+            android:inputType="text"
+            android:id="@+id/employees_input"/>
+
+        <TextView
+
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Enter A Password"
+            android:background="@drawable/rounded_corner"
+            android:textColor="@color/black"/>
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="Password"
+            android:textColor="@color/white"
+            android:textColorHint="@color/white"
+            android:background="@drawable/rounded_corner"
+            android:textSize="20sp"
+            android:padding="30dp"
+            android:inputType="textPassword"
+            android:id="@+id/password_input"/>
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="Confirm Password"
+            android:textColor="@color/white"
+            android:textColorHint="@color/white"
+            android:background="@drawable/rounded_corner"
+            android:textSize="20sp"
+            android:padding="30dp"
+            android:inputType="textPassword"
+            android:id="@+id/confirmpassword_input"/>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Register"
+            android:background="@color/white"
+            android:textColor="@color/black"
+            android:padding="30dp"
+            android:layout_marginTop="32dp"
+            android:layout_marginBottom="32dp"
+            android:textSize="18sp"
+            android:id="@+id/signup_btn"/>
+
+    </LinearLayout>
+
+</ScrollView>
