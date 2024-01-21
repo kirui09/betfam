@@ -17,12 +17,30 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="#185CE3"
-            app:popupTheme="@style/Theme.AppTea.PopupOverlay" />
+            app:popupTheme="@style/Theme.AppTea.PopupOverlay">
+
+            <!-- Your other toolbar components go here -->
+
+            <ImageView
+                android:id="@+id/addemployee_Icon"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:src="@drawable/ic_baseline_add_24"
+                android:visibility="gone"
+                android:layout_gravity="end" />
+
+            <ImageView
+                android:id="@+id/addRecord_Icon"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:src="@drawable/ic_baseline_add_24"
+                android:visibility="gone"
+                android:layout_gravity="end" />
+
+        </androidx.appcompat.widget.Toolbar>
 
     </com.google.android.material.appbar.AppBarLayout>
 
     <include layout="@layout/content_main" />
-
-
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

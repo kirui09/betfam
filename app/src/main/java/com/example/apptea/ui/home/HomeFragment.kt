@@ -18,6 +18,7 @@ import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.utils.ColorTemplate
+import com.example.apptea.DBHelper
 
 
 class HomeFragment : Fragment() {
@@ -48,6 +49,7 @@ class HomeFragment : Fragment() {
         val pieChart: PieChart = binding.pieChart
         initializePieChart(pieChart)
 
+
         return root
     }
 
@@ -65,15 +67,15 @@ class HomeFragment : Fragment() {
         val dataSet = BarDataSet(entries, "Kilos Per Day")
 
 
-        dataSet.setColors(ColorTemplate.COLORFUL_COLORS,255)
-       dataSet.valueTextColor=Color.BLACK
+        dataSet.setColors(ColorTemplate.COLORFUL_COLORS, 255)
+        dataSet.valueTextColor = Color.BLACK
         val data = BarData(dataSet)
         barChart.setFitBars(true)
         barChart.data = data
 
 
         // Customize chart properties as needed
-        barChart.description.text= "Daily Progress"
+        barChart.description.text = "Daily Progress"
         barChart.animateY(2000)
         barChart.setDrawBarShadow(false)
         barChart.setDrawValueAboveBar(true)
@@ -92,6 +94,7 @@ class HomeFragment : Fragment() {
         barChart.invalidate()
 
     }
+
     private fun initializePieChart(pieChart: PieChart) {
         // Sample data for demonstration
         val entries = ArrayList<PieEntry>()
@@ -101,14 +104,13 @@ class HomeFragment : Fragment() {
         entries.add(PieEntry(10f, "SIRET"))
 
 
-
         val dataSet = PieDataSet(entries, "Companies")
 
-        dataSet.setColors(ColorTemplate.MATERIAL_COLORS,255)
+        dataSet.setColors(ColorTemplate.MATERIAL_COLORS, 255)
 
-        dataSet.valueTextSize=15f
+        dataSet.valueTextSize = 15f
 
-        dataSet.valueTextColor=Color.BLACK
+        dataSet.valueTextColor = Color.BLACK
 
         val data = PieData(dataSet)
 
@@ -118,16 +120,19 @@ class HomeFragment : Fragment() {
         pieChart.setUsePercentValues(true)
         pieChart.description.text = "Kampuni"
         pieChart.legend.isEnabled = true
-        pieChart.centerText="Kampuni"
+        pieChart.centerText = "Kampuni"
         pieChart.animateY(2000)
 
         // Refresh the chart
         pieChart.invalidate()
     }
+
+
         override fun onDestroyView() {
             super.onDestroyView()
             _binding = null
         }
 
     }
+
 

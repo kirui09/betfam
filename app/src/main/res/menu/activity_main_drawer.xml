@@ -10,14 +10,14 @@
             android:icon="@drawable/ic_baseline_home_24" />
 
         <item
-            android:id="@+id/nav_message"
-            android:title="Message"
-            android:icon="@drawable/ic_baseline_message_24" />
+            android:id="@+id/nav_records"
+            android:title="Tea Records"
+            android:icon="@drawable/ic_baseline_library_records_24" />
 
         <item
-            android:id="@+id/nav_settings"
-            android:title="Settings"
-            android:icon="@drawable/ic_baseline_settings_24" />
+            android:id="@+id/nav_employees_menu"
+            android:title="Employees"
+            android:icon="@drawable/ic_baseline_employees_24" />
 
         <item android:title="Profile">
 

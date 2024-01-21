@@ -17,8 +17,24 @@
         <de.hdodenhof.circleimageview.CircleImageView
             android:layout_width="160dp"
             android:layout_height="160dp"
-            android:src="@drawable/tealogo"
-            />
+            android:src="@drawable/tealogo" />
+
+
+
+        <Spinner
+            android:id="@+id/spinnerUserType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:background="@color/gyey"
+            android:layout_marginTop="16dp"
+            android:hint="Sign In As.."
+            android:inputType="text"
+            android:padding="30dp"
+            android:textColor="@color/white"
+            android:textColorHint="@color/white"
+            android:textSize="20sp" />
+
 
         <EditText
             android:layout_width="match_parent"
@@ -61,13 +77,7 @@
             android:inputType="phone"
             android:id="@+id/phone_input"/>
 
-        <TextView
-            android:id="@+id/textView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/rounded_corner"
-            android:text="Select Your County"
-            android:textColor="@color/black"/>
+
         <Spinner
             android:id="@+id/county_input"
             android:layout_width="match_parent"
@@ -80,7 +90,8 @@
             android:padding="30dp"
             android:textColor="@color/white"
             android:textColorHint="@color/white"
-            android:textSize="20sp" />
+            android:textSize="20sp"
+            />
 
 
         <!--            android:entries="@array/kenyan_counties"/>-->
@@ -139,19 +150,12 @@
             android:inputType="text"
             android:id="@+id/employees_input"/>
 
-        <TextView
-
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Enter A Password"
-            android:background="@drawable/rounded_corner"
-            android:textColor="@color/black"/>
 
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:hint="Password"
+            android:hint=" Enter a Password"
             android:textColor="@color/white"
             android:textColorHint="@color/white"
             android:background="@drawable/rounded_corner"

@@ -8,7 +8,87 @@
     <string name="action_settings">Settings</string>
     <string name="dashboard_header">My Dashboard</string>
 
+    <string-array name="usertype">
+        <item>Farmer/Owner</item>
+        <item>Farm Manager</item>
+    </string-array>
+
+    <string-array name="kenyan_counties">
+        <item>Nairobi</item>
+        <item>Mombasa</item>
+        <item>Kisumu</item>
+        <item>Nakuru</item>
+        <item>Eldoret</item>
+        <item>Thika</item>
+        <item>Machakos</item>
+        <item>Kisii</item>
+        <item>Kitale</item>
+        <item>Malindi</item>
+        <item>Garissa</item>
+        <item>Kakamega</item>
+        <item>Nyeri</item>
+        <item>Meru</item>
+        <item>Kisii</item>
+        <item>Bungoma</item>
+        <item>Busia</item>
+        <item>Kericho</item>
+        <item>Lamu</item>
+        <item>Embu</item>
+        <item>Migori</item>
+        <item>Vihiga</item>
+        <item>Homa Bay</item>
+        <item>Isiolo</item>
+        <item>Nyamira</item>
+        <item>Laikipia</item>
+        <item>Marsabit</item>
+        <item>Elgeyo-Marakwet</item>
+        <item>Taita-Taveta</item>
+        <item>Wajir</item>
+        <item>Siaya</item>
+        <item>Trans Nzoia</item>
+        <item>West Pokot</item>
+        <item>Uasin Gishu</item>
+        <item>Kajiado</item>
+        <item>Kilifi</item>
+        <item>Isiolo</item>
+        <item>Nandi</item>
+        <item>Kirinyaga</item>
+        <item>Turkana</item>
+        <item>Samburu</item>
+        <item>Tana River</item>
+        <item>Tharaka-Nithi</item>
+        <item>Mandera</item>
+        <item>Bomet</item>
+        <item>Narok</item>
+    </string-array>
+
+    <array name="kenyan_tea_companies">
+        <item>Kericho Tea Holdings</item>
+        <item>James Finlay Kenya</item>
+        <item>Kapchorua Tea Company</item>
+        <item>Williamson Tea Kenya</item>
+        <item>Sotik Tea Companies</item>
+        <item>Eastern Produce Kenya</item>
+        <item>Kambaa Tea Factory</item>
+        <item>Githambo Tea Factory</item>
+        <item>Sasini Tea and Coffee</item>
+        <item>Tanganda Tea Company Kenya</item>
+        <item>George Williamson Tea Kenya</item>
+        <item>Majani Insurance Brokers</item>
+    </array>
+
+    <array name="employee_names">
+        <item>John Doe</item>
+        <item>Jane Smith</item>
+        <item>Michael Johnson</item>
+        <item>Emily Davis</item>
+        <item>Robert Williams</item>
+    </array>
+
+
     <string name="menu_home">Home</string>
-    <string name="menu_gallery">Gallery</string>
-    <string name="menu_slideshow">Slideshow</string>
+    <string name="menu_records">Records</string>
+    <string name="menu_employees">Employees</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

@@ -18,8 +18,10 @@
         <de.hdodenhof.circleimageview.CircleImageView
             android:layout_width="160dp"
             android:layout_height="160dp"
-            android:src="@drawable/tealogo"
-            />
+            android:src="@drawable/tealogo" />
+
+
+
 
         <EditText
             android:layout_width="match_parent"
