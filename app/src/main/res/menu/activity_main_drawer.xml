@@ -19,6 +19,12 @@
             android:title="Employees"
             android:icon="@drawable/ic_baseline_employees_24" />
 
+        <item
+            android:id="@+id/nav_managers"
+            android:title="Managers"
+            android:icon="@drawable/ic_baseline_manage_accounts_24" />
+
+
         <item android:title="Profile">
 
             <menu>

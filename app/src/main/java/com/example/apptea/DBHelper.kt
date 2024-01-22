@@ -181,4 +181,28 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         cursor?.close()
         return user
     }
+
+
+    // Add a method in DBHelper to get a list of employees
+    fun getAllEmployees(): List<Employee> {
+        val employeeList = mutableListOf<Employee>()
+        val db = this.readableDatabase
+        val cursor = db.rawQuery("SELECT * FROM Employees", null)
+
+        while (cursor.moveToNext()) {
+            val name = cursor.getString(cursor.getColumnIndex("name"))
+            val age = cursor.getString(cursor.getColumnIndex("age"))
+            val phone = cursor.getString(cursor.getColumnIndex("phone"))
+            val employeeId = cursor.getString(cursor.getColumnIndex("employee_id"))
+
+            val employee = Employee( name, age, phone, employeeId)
+            employeeList.add(employee)
+        }
+
+        cursor.close()
+        return employeeList
+    }
+
+
+
 }

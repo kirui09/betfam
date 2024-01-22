@@ -8,4 +8,6 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="gyey">#666161</color>
+    <color name="switchThumbColor">#000000</color>
+    <color name="switchTrackColor">#0EDE16</color>
 </resources>

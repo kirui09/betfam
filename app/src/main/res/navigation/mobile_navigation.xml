@@ -22,4 +22,12 @@
         android:name="com.example.apptea.ui.employees.EmployeesFragment"
         android:label="@string/menu_employees"
         tools:layout="@layout/fragment_employees" />
+
+    <fragment
+        android:id="@+id/nav_managers"
+        android:name="com.example.apptea.ui.managers.ManagersFragment"
+        android:label="@string/menu_managers"
+        tools:layout="@layout/fragment_managers" />
+
+
 </navigation>

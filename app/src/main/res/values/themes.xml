@@ -22,4 +22,10 @@
     <style name="Theme.AppTea.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="Theme.AppTea.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+    <style name="SwitchStyle" parent="Widget.AppCompat.CompoundButton.Switch">
+        <item name="android:thumbTint">@color/switchThumbColor</item>
+        <item name="android:trackTint">@color/switchTrackColor</item>
+    </style>
+
 </resources>
