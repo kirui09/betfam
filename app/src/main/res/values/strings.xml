@@ -88,9 +88,9 @@
 
     <string name="menu_home">Home</string>
     <string name="menu_records">Records</string>
-    <string name="menu_employees">Employees</string>
-    <string name="menu_managers">Managers</string>
+    <string name="menu_employees">My Employees</string>
+    <string name="menu_managers"> My Managers</string>
+    <string name="menu_companies">My Companies</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

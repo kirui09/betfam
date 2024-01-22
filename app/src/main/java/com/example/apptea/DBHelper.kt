@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import com.example.apptea.ui.employees.Employee
 
+
 data class Employee(
     val id: Int,
     val name: String,
@@ -119,6 +120,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
     fun insertEmployee(employee: Employee): Boolean {
         val db = this.writableDatabase
         val cv = ContentValues()
+
         cv.put("name", employee.name)
         cv.put("age", employee.age)
         cv.put("phone", employee.phoneNumber)
@@ -203,6 +205,20 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         return employeeList
     }
 
+    fun getAllEmployeeNames(): List<String> {
+        val employeeNames = mutableListOf<String>()
+        val db = this.readableDatabase
+        val cursor = db.rawQuery("SELECT name FROM Employees", null)
 
+        while (cursor.moveToNext()) {
+            val name = cursor.getString(cursor.getColumnIndex("name"))
+            employeeNames.add(name)
+        }
+
+        cursor.close()
+        return employeeNames
+    }
 
 }
+
+

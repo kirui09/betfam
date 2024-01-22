@@ -23,7 +23,7 @@
 
 
             <TextView
-                android:id="@+id/managerTextView"
+                android:id="@+id/managerNameTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Manager Name"
@@ -55,21 +55,7 @@
 
         </RelativeLayout>
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="4dp">
 
-            <TextView
-                android:id="@+id/managerageTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Age"
-                android:padding="5dp"
-                android:textStyle="bold"/>
-
-        </RelativeLayout>
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -87,21 +73,7 @@
 
         </RelativeLayout>
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="4dp">
 
-            <TextView
-                android:id="@+id/managerIdTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Manager ID"
-                android:padding="5dp"
-                android:textStyle="bold"/>
-
-        </RelativeLayout>
 
 
     </LinearLayout>

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.records.AddRecordDialogFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Tea Record"
+            android:textStyle="bold"
+            android:textColor="@color/teal_200"/>
+
+        <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/textInputLayoutDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Date">
+
+            <EditText
+            android:id="@+id/recordEntryTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="none"
+            android:drawableEnd="@drawable/ic_baseline_calendar_month_24"
+        android:focusable="false"
+        android:clickable="true" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+
+
+
+        <AutoCompleteTextView
+            android:id="@+id/autoCompleteEmployeeName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Employee Name"
+            android:layout_marginTop="8dp" />
+
+
+
+        <EditText
+            android:id="@+id/editTextEmployeecompany"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:hint="Company Plucked To"/>
+
+        <!-- ID -->
+        <EditText
+            android:id="@+id/editTextEmployeeKilos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:hint="Kilos"/>
+
+        <!-- Save Button -->
+        <Button
+            android:id="@+id/buttonSaveRecord"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Next Employee"/>
+
+        <Button
+            android:id="@+id/buttonSaveAllRecords"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Save All Record"/>
+
+    </LinearLayout>
+
+
+
+</FrameLayout>

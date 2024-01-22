@@ -1,8 +1,8 @@
-package com.example.apptea.ui.managers
-
-data class Manager(
-    val name: String,
-    val age: Int,
-    val phoneNumber: String,
-    val identificationNumber: String
-)
+//package com.example.apptea.ui.managers
+//
+//data class Manager(
+//    val firstName: String,
+//    val lastName: String,
+//    val phone: String,
+//
+//)

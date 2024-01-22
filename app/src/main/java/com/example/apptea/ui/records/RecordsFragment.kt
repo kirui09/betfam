@@ -11,6 +11,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.example.apptea.R
 import com.example.apptea.databinding.FragmentRecordsBinding
+import com.example.apptea.ui.employees.AddEmployeeDialogFragment
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class RecordsFragment : Fragment() {
 
@@ -33,6 +35,16 @@ class RecordsFragment : Fragment() {
         val root: View = binding.root
 
         // Declare the button and set its click listener
+        // Access the FloatingActionButton
+
+        val fabAddRecord = root.findViewById<FloatingActionButton>(R.id.fabAddRecord)
+
+        fabAddRecord.setOnClickListener {
+            // Show the FormDialogFragment when FAB is clicked
+            val formDialog = AddRecordDialogFragment()
+            formDialog.show(childFragmentManager, AddRecordDialogFragment::class.java.simpleName)
+        }
+
 
 
         return root

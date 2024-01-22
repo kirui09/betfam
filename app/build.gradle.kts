@@ -51,6 +51,9 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation ("de.hdodenhof:circleimageview:3.1.0")
     implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    implementation ("androidx.recyclerview:recyclerview:1.2.0")
+    implementation ("androidx.recyclerview:recyclerview-selection:1.1.0")
+
     implementation("androidx.multidex:multidex:2.0.1")
     implementation ("com.github.AnyChart:AnyChart-Android:1.1.5")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")

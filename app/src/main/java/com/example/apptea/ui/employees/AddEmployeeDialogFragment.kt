@@ -12,7 +12,7 @@ import com.example.apptea.DBHelper
 import com.example.apptea.R
 
 
-class FormDialogFragment : DialogFragment() {
+class AddEmployeeDialogFragment : DialogFragment() {
 
     private lateinit var dbh: DBHelper
 
@@ -21,7 +21,7 @@ class FormDialogFragment : DialogFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_form_dialog, container, false)
+        val view = inflater.inflate(R.layout.fragment_add_employee_form_dialog, container, false)
 
         dbh = DBHelper(requireContext())
 
@@ -39,7 +39,7 @@ class FormDialogFragment : DialogFragment() {
             val id = editTextEmployeeID.text.toString()
 
             // Create an Employee object
-            val employee = Employee(name, age, phoneNumber, id)
+            val employee = Employee( name, age, phoneNumber, id)
 
 
             // Save employee to the database

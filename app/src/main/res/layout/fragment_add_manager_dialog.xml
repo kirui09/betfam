@@ -1,0 +1,64 @@
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    tools:context=".ui.employees.AddEmployeeDialogFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+
+        android:padding="16dp">
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add Farm Manager"
+            android:textStyle="bold"/>
+
+
+
+        <EditText
+            android:id="@+id/editTextManagerName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:hint="Manager Name"/>
+
+        <!-- Age -->
+        <EditText
+            android:id="@+id/editTextManagerAge"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:hint="Age"/>
+
+        <!-- Phone Number -->
+        <EditText
+            android:id="@+id/editTextManagerPhoneNumber"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="phone"
+            android:hint="Phone Number"/>
+
+        <!-- ID -->
+        <EditText
+            android:id="@+id/editTextManagerID"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:hint="Manager National ID"/>
+
+        <!-- Save Button -->
+        <Button
+            android:id="@+id/buttonSaveManager"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add Manager"/>
+
+    </LinearLayout>
+
+</FrameLayout>

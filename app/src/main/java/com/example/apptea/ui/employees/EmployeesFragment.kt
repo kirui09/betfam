@@ -36,7 +36,6 @@ class EmployeesFragment : Fragment() {
         val fabAddEmployee = root.findViewById<FloatingActionButton>(R.id.fabAddEmployee)
 
         // Set up RecyclerView
-        // Set up RecyclerView
         recyclerView = root.findViewById(R.id.recyclerView)
         employeeAdapter = EmployeeAdapter(emptyList()) // Initialize the adapter
         recyclerView.adapter = employeeAdapter
@@ -45,8 +44,8 @@ class EmployeesFragment : Fragment() {
 
         fabAddEmployee.setOnClickListener {
             // Show the FormDialogFragment when FAB is clicked
-            val formDialog = FormDialogFragment()
-            formDialog.show(childFragmentManager, FormDialogFragment::class.java.simpleName)
+            val formDialog = AddEmployeeDialogFragment()
+            formDialog.show(childFragmentManager, AddEmployeeDialogFragment::class.java.simpleName)
         }
         // Observe changes in the employee list and update the adapter
         employeesViewModel.employeeList.observe(viewLifecycleOwner, Observer { employees ->
@@ -64,5 +63,4 @@ class EmployeesFragment : Fragment() {
         _binding = null
     }
 
-    // Function to generate dummy employee data (Replace with your actual data)
 }
