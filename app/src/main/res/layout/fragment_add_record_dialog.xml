@@ -48,11 +48,12 @@
 
 
 
-        <EditText
-            android:id="@+id/editTextEmployeecompany"
+        <AutoCompleteTextView
+            android:id="@+id/autoCompleteCompanyname"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="text"
+            android:layout_marginTop="8dp"
             android:hint="Company Plucked To"/>
 
         <!-- ID -->
@@ -61,6 +62,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="number"
+            android:layout_marginTop="8dp"
             android:hint="Kilos"/>
 
         <!-- Save Button -->
@@ -68,13 +70,15 @@
             android:id="@+id/buttonSaveRecord"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:text="Next Employee"/>
 
         <Button
             android:id="@+id/buttonSaveAllRecords"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Save All Record"/>
+            android:layout_marginTop="8dp"
+            android:text="Save All Records"/>
 
     </LinearLayout>
 

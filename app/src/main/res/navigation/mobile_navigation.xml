@@ -32,7 +32,7 @@
     <fragment
         android:id="@+id/nav_companies"
         android:name="com.example.apptea.ui.companies.CompaniesFragment"
-        android:label="@string/menu_managers"
+        android:label="@string/menu_companies"
         tools:layout="@layout/fragment_companies" />
 
 

@@ -38,7 +38,7 @@ class AddEmployeeDialogFragment : DialogFragment() {
             val phoneNumber = editTextEmployeePhoneNumber.text.toString()
             val id = editTextEmployeeID.text.toString()
 
-            // Create an Employee object
+            // Create an Company object
             val employee = Employee( name, age, phoneNumber, id)
 
 

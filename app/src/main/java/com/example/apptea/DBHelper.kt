@@ -5,7 +5,10 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import com.example.apptea.ui.companies.Company
 import com.example.apptea.ui.employees.Employee
+import com.example.apptea.ui.records.DailyTeaRecord
+import com.example.apptea.ui.records.Record
 
 
 data class Employee(
@@ -15,22 +18,23 @@ data class Employee(
     val phoneNumber: String,
     val employeeId: String = ""
 )
-
-
 class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", null, 1) {
-
 
 
     override fun onCreate(db: SQLiteDatabase) {
         createFarmersTable(db)
         createFarmManagersTable(db)
         createEmployeesTable(db)
+        createCompaniesTable(db)
+        createTeaRecordsTable(db)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         db.execSQL("DROP TABLE IF EXISTS FarmersDatabase")
         db.execSQL("DROP TABLE IF EXISTS FarmManagers")
         db.execSQL("DROP TABLE IF EXISTS Employees")
+        db.execSQL("DROP TABLE IF EXISTS Companies")
+        db.execSQL("DROP TABLE IF EXISTS TeaRecords")
         onCreate(db)
     }
 
@@ -63,6 +67,26 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
                     "age INTEGER, " +
                     "phone TEXT, " +
                     "employee_id TEXT)"
+        )
+    }
+
+    private fun createTeaRecordsTable(db: SQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS TeaRecords ( " +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    "date TEXT, " +
+                    "employee_name TEXT, " +
+                    "company TEXT, " +
+                    "kilos DECIMAL)"
+        )
+    }
+
+    private fun createCompaniesTable(db: SQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS Companies ( " +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    "companyname TEXT, " +
+                    "companylocation TEXT)"
         )
     }
 
@@ -162,11 +186,17 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
     fun getUserInformationByPhoneNumber(phoneNumber: String): FarmerInfo? {
         val db = this.readableDatabase
-        val columns = arrayOf("first_name", "last_name", "phone" ,"special_code"/* Add other columns as needed */)
+        val columns = arrayOf(
+            "first_name",
+            "last_name",
+            "phone",
+            "special_code"/* Add other columns as needed */
+        )
         val selection = "phone = ?"
         val selectionArgs = arrayOf(phoneNumber)
 
-        val cursor: Cursor? = db.query("FarmersDatabase", columns, selection, selectionArgs, null, null, null)
+        val cursor: Cursor? =
+            db.query("FarmersDatabase", columns, selection, selectionArgs, null, null, null)
         cursor?.moveToFirst()
 
         val user: FarmerInfo? = if (cursor != null && cursor.count > 0) {
@@ -197,7 +227,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
             val phone = cursor.getString(cursor.getColumnIndex("phone"))
             val employeeId = cursor.getString(cursor.getColumnIndex("employee_id"))
 
-            val employee = Employee( name, age, phone, employeeId)
+            val employee = Employee(name, age, phone, employeeId)
             employeeList.add(employee)
         }
 
@@ -219,6 +249,98 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         return employeeNames
     }
 
+    fun getAllCompanyNames(): List<String> {
+        val companyNames = mutableListOf<String>()
+        val db = this.readableDatabase
+        val cursor = db.rawQuery("SELECT companyname FROM Companies", null)
+
+        while (cursor.moveToNext()) {
+            val name = cursor.getString(cursor.getColumnIndex("companyname"))
+            companyNames.add(name)
+        }
+
+        cursor.close()
+        return companyNames
+    }
+
+    fun insertCompany(name: String, location: String): Boolean {
+        val db = this.writableDatabase
+        val cv = ContentValues()
+        cv.put("companyname", name)
+        cv.put("companylocation", location)
+        val result = db.insert("Companies", null, cv)
+        return result != -1L
+    }
+
+    //for recycler view
+    fun getAllCompanies(): List<Company> {
+        val companyList = mutableListOf<Company>()
+        val db = this.readableDatabase
+        val cursor = db.rawQuery("SELECT * FROM Companies", null)
+
+        while (cursor.moveToNext()) {
+            val id = cursor.getInt(cursor.getColumnIndex("id"))
+            val name = cursor.getString(cursor.getColumnIndex("companyname"))
+            val location = cursor.getString(cursor.getColumnIndex("companylocation"))
+
+            val company = Company(id, name, location)
+            companyList.add(company)
+        }
+
+        cursor.close()
+        return companyList
+    }
+
+    // Inside DBHelper class
+    fun insertTeaRecords(records: List<Record>): Boolean {
+        val db = this.writableDatabase
+        val successList = mutableListOf<Boolean>()
+
+        for (record in records) {
+            val cv = ContentValues().apply {
+                put("date", record.date)
+                put("employee_name", record.employee)
+                put("company", record.company)
+                put("kilos", record.kilos)
+            }
+
+            val result = db.insert("TeaRecords", null, cv)
+            successList.add(result != -1L)
+        }
+
+        return !successList.contains(false)
+    }
+
+    fun getAllRecords(): List<DailyTeaRecord> {
+        val records = mutableListOf<DailyTeaRecord>()
+
+        val query = "SELECT date, GROUP_CONCAT(employees) AS employees, " +
+                "GROUP_CONCAT(companies) AS companies, SUM(kilos) AS totalKilos " +
+                "FROM Records GROUP BY date ORDER BY date DESC"
+
+        val db = this.readableDatabase
+        val cursor: Cursor = db.rawQuery(query, null)
+
+        if (cursor.moveToFirst()) {
+            do {
+                val date = cursor.getString(cursor.getColumnIndex("date"))
+                val employees = cursor.getString(cursor.getColumnIndex("employees")).split(",")
+                val companies = cursor.getString(cursor.getColumnIndex("companies")).split(",")
+                val totalKilos = cursor.getDouble(cursor.getColumnIndex("totalKilos"))
+
+                val record = DailyTeaRecord(date, employees, companies, totalKilos)
+                records.add(record)
+            } while (cursor.moveToNext())
+        }
+
+        cursor.close()
+        db.close()
+
+        return records
+    }
+
 }
+
+
 
 
