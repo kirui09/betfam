@@ -46,35 +46,35 @@
 
         </RelativeLayout>
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="4dp">
+<!--        <RelativeLayout-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:orientation="vertical"-->
+<!--            android:layout_marginTop="4dp">-->
 
-            <TextView
-                android:id="@+id/companiesPluckedToTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Companies Plucked To"
-                android:padding="5dp"/>
+<!--            <TextView-->
+<!--                android:id="@+id/companiesPluckedToTextView"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text="Companies Plucked To"-->
+<!--                android:padding="5dp"/>-->
 
-        </RelativeLayout>
+<!--        </RelativeLayout>-->
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="4dp">
+<!--        <RelativeLayout-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:orientation="vertical"-->
+<!--            android:layout_marginTop="4dp">-->
 
-            <TextView
-                android:id="@+id/employeesAtWorkTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Employees At Work"
-                android:padding="5dp"/>
+<!--            <TextView-->
+<!--                android:id="@+id/employeesAtWorkTextView"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:text="Employees At Work"-->
+<!--                android:padding="5dp"/>-->
 
-        </RelativeLayout>
+<!--        </RelativeLayout>-->
 
         <RelativeLayout
             android:layout_width="match_parent"

@@ -5,6 +5,7 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import androidx.lifecycle.MutableLiveData
 import com.example.apptea.ui.companies.Company
 import com.example.apptea.ui.employees.Employee
 import com.example.apptea.ui.records.DailyTeaRecord
@@ -165,6 +166,11 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         }
     }
 
+    // Add this method to initialize DBHelper
+    fun initialize(context: Context) {
+        init(context)
+    }
+
     fun checkfarmerpass(phone: String, password: String): Boolean {
         val db = this.writableDatabase
         val query =
@@ -311,33 +317,31 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         return !successList.contains(false)
     }
 
-    fun getAllRecords(): List<DailyTeaRecord> {
-        val records = mutableListOf<DailyTeaRecord>()
+    // Inside DBHelper class
 
-        val query = "SELECT date, GROUP_CONCAT(employees) AS employees, " +
-                "GROUP_CONCAT(companies) AS companies, SUM(kilos) AS totalKilos " +
-                "FROM Records GROUP BY date ORDER BY date DESC"
-
+    fun getAllTeaRecords(): List<DailyTeaRecord> {
+        val teaRecordsList = mutableListOf<DailyTeaRecord>()
+        val teaRecordsLiveData = MutableLiveData<List<DailyTeaRecord>>()
         val db = this.readableDatabase
-        val cursor: Cursor = db.rawQuery(query, null)
+        val query = "SELECT date, SUM(kilos) AS total_kilos FROM TeaRecords GROUP BY date ORDER BY date DESC"
 
-        if (cursor.moveToFirst()) {
-            do {
-                val date = cursor.getString(cursor.getColumnIndex("date"))
-                val employees = cursor.getString(cursor.getColumnIndex("employees")).split(",")
-                val companies = cursor.getString(cursor.getColumnIndex("companies")).split(",")
-                val totalKilos = cursor.getDouble(cursor.getColumnIndex("totalKilos"))
+        val cursor = db.rawQuery(query, null)
 
-                val record = DailyTeaRecord(date, employees, companies, totalKilos)
-                records.add(record)
-            } while (cursor.moveToNext())
+        while (cursor.moveToNext()) {
+            val date = cursor.getString(cursor.getColumnIndex("date"))
+            val totalKilos = cursor.getDouble(cursor.getColumnIndex("total_kilos"))
+
+            val record = DailyTeaRecord( date, totalKilos)
+            teaRecordsList.add(record)
         }
 
         cursor.close()
-        db.close()
-
-        return records
+        teaRecordsLiveData.postValue(teaRecordsList)
+        return teaRecordsList
     }
+
+
+
 
 }
 

@@ -3,37 +3,37 @@ package com.example.apptea.ui.records
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.apptea.R
+import com.example.apptea.databinding.ItemTeaRecordBinding
 
-class TeaRecordAdapter(private var teaRecords: List<DailyTeaRecord>) : RecyclerView.Adapter<TeaRecordAdapter.ViewHolder>() {
+class TeaRecordsAdapter : ListAdapter<DailyTeaRecord, TeaRecordsAdapter.TeaRecordViewHolder>(TeaRecordDiffCallback()) {
 
-    inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val dateTextView: TextView = itemView.findViewById(R.id.dateOfInputTextView)
-        val
-        val kilosTextView: TextView = itemView.findViewById(R.id.totalKilosTextView)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TeaRecordViewHolder {
+        val binding = ItemTeaRecordBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return TeaRecordViewHolder(binding)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_tea_record, parent, false)
-        return ViewHolder(view)
+    override fun onBindViewHolder(holder: TeaRecordViewHolder, position: Int) {
+        val teaRecord = getItem(position)
+        holder.bind(teaRecord)
     }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val teaRecord = teaRecords[position]
-
-        // Bind data to views
-        holder.dateTextView.text = teaRecord.date
-        holder.kilosTextView.text = teaRecord.totalKilos.toString()
+    class TeaRecordViewHolder(private val binding: ItemTeaRecordBinding) : RecyclerView.ViewHolder(binding.root) {
+        fun bind(teaRecord: DailyTeaRecord) {
+            binding.dateOfInputTextView.text = teaRecord.date
+            binding.totalKilosTextView.text = teaRecord.totalKilos.toString()
+        }
     }
 
-    override fun getItemCount(): Int {
-        return teaRecords.size
-    }
+    private class TeaRecordDiffCallback : DiffUtil.ItemCallback<DailyTeaRecord>() {
+        override fun areItemsTheSame(oldItem: DailyTeaRecord, newItem: DailyTeaRecord): Boolean {
+            return oldItem.date == newItem.date
+        }
 
-    fun updateData(newList: List<DailyTeaRecord>) {
-        teaRecords = ArrayList(newList)
-        notifyDataSetChanged()
+        override fun areContentsTheSame(oldItem: DailyTeaRecord, newItem: DailyTeaRecord): Boolean {
+            return oldItem == newItem
+        }
     }
 }
