@@ -68,8 +68,9 @@ class RecordsFragment : Fragment(), AddRecordDialogFragment.AddRecordDialogListe
 
         // Observe tea records and update the adapter when the data changes
 
-        recordsViewModel.getAllTeaRecordsLiveData().observe(viewLifecycleOwner, { teaRecords ->
-            teaRecordsAdapter.submitList(teaRecords) })
+        recordsViewModel.getAllTeaRecordsLiveData().observe(viewLifecycleOwner) { teaRecords ->
+            teaRecordsAdapter.submitList(teaRecords)
+        }
     }
 
     override fun onSaveRecordClicked(date: String, employeename: String, company: String, kilos: String) {
