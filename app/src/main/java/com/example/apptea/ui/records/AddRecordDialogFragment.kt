@@ -22,7 +22,6 @@ import java.util.Locale
 
 class AddRecordDialogFragment : DialogFragment() {
 
-
     interface AddRecordDialogListener {
         fun onSaveRecordClicked(date: String, employeename: String, company: String, kilos: String)
         fun onSaveAllRecordsClicked(recordsList: List<Record>)
@@ -74,17 +73,20 @@ class AddRecordDialogFragment : DialogFragment() {
             val date = editTextDate.text.toString()
             val employeename = autoCompleteEmployee.text.toString()
             val company = autoCompleteCompany.text.toString()
-            val kilos = editTextKilos.text.toString().toDoubleOrNull() ?: 0.0
+            val kilos = editTextKilos.text.toString().toDoubleOrNull()
 
+            if (validateInput(date, employeename, company, kilos)) {
+                // Add the record to the list
+                val record = Record(date, employeename, company, kilos!!)
+                recordsList.add(record)
 
-            // Add the record to the list
-            val record = Record(date, employeename, company, kilos)
-            recordsList.add(record)
-
-            // Clear the input fields or perform any other necessary actions
-            autoCompleteEmployee.setText("")
-            autoCompleteCompany.setText("")
-            editTextKilos.setText("")
+                // Clear the input fields or perform any other necessary actions
+                autoCompleteEmployee.setText("")
+                autoCompleteCompany.setText("")
+                editTextKilos.setText("")
+            } else {
+                Toast.makeText(requireContext(), "Please fill in all fields", Toast.LENGTH_SHORT).show()
+            }
         }
 
         buttonSaveAllRecords.setOnClickListener {
@@ -153,5 +155,7 @@ class AddRecordDialogFragment : DialogFragment() {
         datePickerDialog.show()
     }
 
-
+    private fun validateInput(date: String, employeename: String, company: String, kilos: Double?): Boolean {
+        return date.isNotEmpty() && employeename.isNotEmpty() && company.isNotEmpty() && kilos != null
+    }
 }

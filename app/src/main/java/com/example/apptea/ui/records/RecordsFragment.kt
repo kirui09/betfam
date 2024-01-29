@@ -38,6 +38,7 @@ class RecordsFragment : Fragment(), AddRecordDialogFragment.AddRecordDialogListe
         val root: View = binding.root
 
         // RecyclerView setup
+
         val recyclerView: RecyclerView = root.findViewById(R.id.dailyTeaRecordsrecyclerView)
         recyclerView.layoutManager = LinearLayoutManager(context)
 

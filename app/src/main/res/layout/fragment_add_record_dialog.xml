@@ -37,6 +37,13 @@
         </com.google.android.material.textfield.TextInputLayout>
 
 
+        <AutoCompleteTextView
+            android:id="@+id/autoCompleteCompanyname"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:layout_marginTop="8dp"
+            android:hint="Company Plucked To"/>
 
 
         <AutoCompleteTextView
@@ -46,15 +53,6 @@
             android:hint="Employee Name"
             android:layout_marginTop="8dp" />
 
-
-
-        <AutoCompleteTextView
-            android:id="@+id/autoCompleteCompanyname"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="text"
-            android:layout_marginTop="8dp"
-            android:hint="Company Plucked To"/>
 
         <!-- ID -->
         <EditText

@@ -23,6 +23,8 @@ class TeaRecordsAdapter : ListAdapter<DailyTeaRecord, TeaRecordsAdapter.TeaRecor
     class TeaRecordViewHolder(private val binding: ItemTeaRecordBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(teaRecord: DailyTeaRecord) {
             binding.dateOfInputTextView.text = teaRecord.date
+            binding.employeesAtWorkTextView.text=teaRecord.employees.toString()
+            binding.companiesPluckedToTextView.text=teaRecord.companies.toString()
             binding.totalKilosTextView.text = teaRecord.totalKilos.toString()
         }
     }

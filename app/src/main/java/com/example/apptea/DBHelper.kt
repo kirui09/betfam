@@ -8,8 +8,12 @@ import android.database.sqlite.SQLiteOpenHelper
 import androidx.lifecycle.MutableLiveData
 import com.example.apptea.ui.companies.Company
 import com.example.apptea.ui.employees.Employee
+import com.example.apptea.ui.records.DailyRecord
 import com.example.apptea.ui.records.DailyTeaRecord
 import com.example.apptea.ui.records.Record
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 
 data class Employee(
@@ -323,15 +327,17 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         val teaRecordsList = mutableListOf<DailyTeaRecord>()
         val teaRecordsLiveData = MutableLiveData<List<DailyTeaRecord>>()
         val db = this.readableDatabase
-        val query = "SELECT date, SUM(kilos) AS total_kilos FROM TeaRecords GROUP BY date ORDER BY date DESC"
+        val query = "SELECT date,GROUP_CONCAT(employee_name) AS employees,GROUP_CONCAT(company) AS companies, SUM(kilos) AS total_kilos FROM TeaRecords GROUP BY date ORDER BY date DESC"
 
         val cursor = db.rawQuery(query, null)
 
         while (cursor.moveToNext()) {
             val date = cursor.getString(cursor.getColumnIndex("date"))
+            val employees = cursor.getString(cursor.getColumnIndex("employees")).split(",")
+            val companies = cursor.getString(cursor.getColumnIndex("companies")).split(",")
             val totalKilos = cursor.getDouble(cursor.getColumnIndex("total_kilos"))
 
-            val record = DailyTeaRecord( date, totalKilos)
+            val record = DailyTeaRecord( date,employees, companies, totalKilos)
             teaRecordsList.add(record)
         }
 
@@ -339,6 +345,54 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         teaRecordsLiveData.postValue(teaRecordsList)
         return teaRecordsList
     }
+
+        // Method to fetch tea records for the past 1 week
+        fun getTeaRecordsForPastWeek(): List<DailyRecord> {
+            val teaRecordsList = mutableListOf<DailyRecord>()
+            val currentDate = Calendar.getInstance()
+            val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+            val startDate = currentDate.clone() as Calendar
+            startDate.add(Calendar.DAY_OF_MONTH, -6) // Subtracts 6 days to get the past 1 week
+
+            val db = this.readableDatabase
+            val query = "SELECT date, SUM(kilos) AS total_kilos FROM TeaRecords WHERE date BETWEEN ? AND ? GROUP BY date ORDER BY date ASC"
+
+            val cursor = db.rawQuery(query, arrayOf(formatter.format(startDate.time), formatter.format(currentDate.time)))
+
+            while (cursor.moveToNext()) {
+                val dateString = cursor.getString(cursor.getColumnIndex("date"))
+                val date = formatter.parse(dateString) // Convert String to Date
+
+                val totalKilos = cursor.getDouble(cursor.getColumnIndex("total_kilos"))
+
+                val record = DailyRecord(date, totalKilos)
+                teaRecordsList.add(record)
+            }
+
+            cursor.close()
+            return teaRecordsList
+        }
+
+    fun getCompanyKilosData(): Map<String, Float> {
+        val companyKilosMap = mutableMapOf<String, Float>()
+
+        val db = this.readableDatabase
+        val query = "SELECT company, SUM(kilos) AS total_kilos FROM TeaRecords GROUP BY company ORDER BY total_kilos DESC"
+
+        val cursor = db.rawQuery(query, null)
+
+        while (cursor.moveToNext()) {
+            val company = cursor.getString(cursor.getColumnIndex("company"))
+            val totalKilos = cursor.getFloat(cursor.getColumnIndex("total_kilos"))
+
+            companyKilosMap[company] = totalKilos
+        }
+
+        cursor.close()
+        return companyKilosMap
+    }
+
+
 
 
 
