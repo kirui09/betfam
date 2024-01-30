@@ -41,7 +41,6 @@ class SignUp : AppCompatActivity() {
         sbcnt = findViewById(R.id.subcounty_input)
         vlg = findViewById(R.id.village_input)
         lacrage = findViewById(R.id.acrage_input)
-        numEmp = findViewById(R.id.employees_input)
         psw = findViewById(R.id.password_input)
         cpsw = findViewById(R.id.confirmpassword_input)
         signUpBtn = findViewById(R.id.signup_btn)
@@ -50,7 +49,7 @@ class SignUp : AppCompatActivity() {
         // Add the views related to Farm Manager
         farmManagerFields = arrayOf(fname, lname, phone, cntSpinner, sbcnt, vlg, psw, cpsw)
         // Add the views related to Farmer
-        farmerFields = arrayOf(fname, lname, phone, cntSpinner, sbcnt, vlg, lacrage, numEmp, psw, cpsw)
+        farmerFields = arrayOf(fname, lname, phone, cntSpinner, sbcnt, vlg, lacrage, psw, cpsw)
 
         val userTypes = arrayOf("Select User Type", "Farmer", "Farm Manager")
         val userTypeAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, userTypes)
@@ -80,7 +79,6 @@ class SignUp : AppCompatActivity() {
             val subcounty = sbcnt.text.toString()
             val village = vlg.text.toString()
             val landAcreage = lacrage.text.toString()
-            val numEmployees = numEmp.text.toString()
             val password = psw.text.toString()
             val confirmPassword = cpsw.text.toString()
 
@@ -117,7 +115,7 @@ class SignUp : AppCompatActivity() {
                     } else if (selectedUserType == "Farmer") {
                         // Insert Farmer data into the database
                         val savedata = db.insertFarmer(
-                            firstName, lastName, phoneNumber, county, subcounty, village, landAcreage, numEmployees, password, specialCode
+                            firstName, lastName, phoneNumber, county, subcounty, village, landAcreage, password, specialCode
                         )
 
                         if (savedata) {

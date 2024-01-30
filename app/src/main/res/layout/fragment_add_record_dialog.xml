@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout  xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/rounded_corner"
     tools:context=".ui.records.AddRecordDialogFragment">
 
     <LinearLayout
@@ -82,4 +83,4 @@
 
 
 
-</FrameLayout>
+</RelativeLayout>

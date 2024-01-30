@@ -11,10 +11,10 @@ import androidx.fragment.app.DialogFragment
 import com.example.apptea.DBHelper
 import com.example.apptea.R
 
-
 class AddEmployeeDialogFragment : DialogFragment() {
 
     private lateinit var dbh: DBHelper
+    var employeeSavedListener: OnEmployeeSavedListener? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -33,21 +33,28 @@ class AddEmployeeDialogFragment : DialogFragment() {
 
         buttonSaveEmployee.setOnClickListener {
             // Handle the "Save" button click
-            val name = editTextEmployeeName.text.toString()
-            val age = editTextEmployeeAge.text.toString()
-            val phoneNumber = editTextEmployeePhoneNumber.text.toString()
-            val id = editTextEmployeeID.text.toString()
+            val name = editTextEmployeeName.text.toString().trim()
+            val age = editTextEmployeeAge.text.toString().trim()
+            val phoneNumber = editTextEmployeePhoneNumber.text.toString().trim()
+            val id = editTextEmployeeID.text.toString().trim()
 
-            // Create an Company object
-            val employee = Employee( name, age, phoneNumber, id)
+            // Check for empty values
+            if (name.isEmpty()) {
+                showToast("Add Employee Name")
+                return@setOnClickListener
+            }
 
+            // Create an Employee object
+            val employee = Employee(name, age, phoneNumber, id)
 
             // Save employee to the database
             saveEmployeeToDatabase(employee)
 
+            // Notify the listener about the saved employee
+            employeeSavedListener?.onEmployeeSaved()
+
             // Close the dialog
             dismiss()
-
         }
 
         return view
@@ -66,6 +73,10 @@ class AddEmployeeDialogFragment : DialogFragment() {
 
     private fun showToast(message: String) {
         // Display a toast message
-        Toast.makeText(requireContext(), message , Toast.LENGTH_SHORT).show()
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+    }
+
+    interface OnEmployeeSavedListener {
+        fun onEmployeeSaved()
     }
 }

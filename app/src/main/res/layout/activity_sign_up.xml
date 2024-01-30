@@ -90,26 +90,21 @@
             android:padding="30dp"
             android:textColor="@color/white"
             android:textColorHint="@color/white"
-            android:textSize="20sp"
-            />
-
-
-        <!--            android:entries="@array/kenyan_counties"/>-->
+            android:textSize="20sp" />
 
 
         <EditText
+            android:id="@+id/subcounty_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            android:background="@drawable/rounded_corner"
             android:hint="Sub County"
+            android:inputType="text"
+            android:padding="30dp"
             android:textColor="@color/white"
             android:textColorHint="@color/white"
-            android:background="@drawable/rounded_corner"
-            android:textSize="20sp"
-            android:padding="30dp"
-            android:inputType="text"
-            android:id="@+id/subcounty_input"/>
-
+            android:textSize="20sp" />
 
         <EditText
             android:layout_width="match_parent"
@@ -123,6 +118,7 @@
             android:padding="30dp"
             android:inputType="text"
             android:id="@+id/village_input"/>
+
         <EditText
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -135,20 +131,6 @@
             android:padding="30dp"
             android:inputType="number"
             android:id="@+id/acrage_input"/>
-
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:hint="Number Of Employees"
-            android:textColor="@color/white"
-
-            android:textColorHint="@color/white"
-            android:textSize="20sp"
-            android:padding="30dp"
-            android:background="@drawable/rounded_corner"
-            android:inputType="text"
-            android:id="@+id/employees_input"/>
 
 
         <EditText

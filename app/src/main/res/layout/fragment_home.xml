@@ -1,18 +1,18 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<!-- res/layout/activity_main.xml -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.home.HomeFragment"
+    android:orientation="vertical"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="ui.home.HomeFragment"
     android:background="@drawable/app_background">
 
-
-
-    <LinearLayout
+    <FrameLayout
+        android:id="@+id/firstPart"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
         <RelativeLayout
             android:layout_width="172dp"
@@ -25,6 +25,7 @@
                 android:id="@+id/txtdashboard"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:fontFamily="@font/poppins_semibold"
                 android:text="@string/dashboard_header"
                 android:textColor="#FFFFFF"
                 android:textSize="22sp" />
@@ -34,7 +35,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/txtdashboard"
-                android:text="tako taii"
+                android:text="Tako Tai"
+                android:fontFamily="@font/poppins"
                 android:textSize="14sp" />
 
             <ImageView
@@ -49,32 +51,54 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/weather"
+                android:fontFamily="@font/poppins"
                 android:text="Todays Weather"
                 android:textSize="20sp" />
+            
+            <TextView
+                android:layout_below="@id/todays_weather"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+               android:fontFamily="sans-serif-thin"
+                android:text="25"
+                />
+            
         </RelativeLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+
+
+    </FrameLayout>
+
+
+    <FrameLayout
+        android:id="@+id/secondPart"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="8dp">
+
         <com.github.mikephil.charting.charts.BarChart
-            android:id="@+id/bar_chart"
             android:layout_width="match_parent"
-            android:layout_height="252dp">
+            android:layout_height="match_parent"
+            android:id="@+id/bar_chart"/>
+        
+        
 
-        </com.github.mikephil.charting.charts.BarChart>
+    </FrameLayout>
 
-        </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+    <FrameLayout
+        android:id="@+id/thirdPart"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="8dp">
+
         <com.github.mikephil.charting.charts.PieChart
-            android:id="@+id/pie_chart"
             android:layout_width="match_parent"
-            android:layout_height="345dp">
+            android:layout_height="match_parent"
+            android:id="@+id/pie_chart"/>
 
-        </com.github.mikephil.charting.charts.PieChart>
-        </LinearLayout>
+    </FrameLayout>
 
-    </LinearLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>

@@ -13,7 +13,7 @@ import com.example.apptea.R
 import com.example.apptea.databinding.FragmentEmployeesBinding
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
-class EmployeesFragment : Fragment() {
+class EmployeesFragment : Fragment(), AddEmployeeDialogFragment.OnEmployeeSavedListener {
 
     private var _binding: FragmentEmployeesBinding? = null
     private val binding get() = _binding!!
@@ -41,10 +41,10 @@ class EmployeesFragment : Fragment() {
         recyclerView.adapter = employeeAdapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-
         fabAddEmployee.setOnClickListener {
             // Show the FormDialogFragment when FAB is clicked
             val formDialog = AddEmployeeDialogFragment()
+            formDialog.employeeSavedListener = this
             formDialog.show(childFragmentManager, AddEmployeeDialogFragment::class.java.simpleName)
         }
         // Observe changes in the employee list and update the adapter
@@ -63,4 +63,9 @@ class EmployeesFragment : Fragment() {
         _binding = null
     }
 
+    override fun onEmployeeSaved() {
+        // Handle the logic to refresh your fragment
+        // For example, reload the data or re-fetch the records
+        employeesViewModel.fetchEmployees()
+    }
 }

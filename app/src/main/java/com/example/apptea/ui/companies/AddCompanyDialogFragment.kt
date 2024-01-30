@@ -33,8 +33,14 @@ class AddCompanyDialogFragment : DialogFragment() {
         val buttonSaveCompany = view.findViewById<Button>(R.id.buttonAddCompany)
 
         buttonSaveCompany.setOnClickListener {
-            val name = editTextCompanyName.text.toString()
-            val location = editTextCompanyLocation.text.toString()
+            val name = editTextCompanyName.text.toString().trim()
+            val location = editTextCompanyLocation.text.toString().trim()
+
+            // Check for empty values
+            if (name.isEmpty() || location.isEmpty()) {
+                showToast("Please fill in all fields")
+                return@setOnClickListener
+            }
 
             // Insert the company into the database
             saveCompany(name, location)
@@ -52,17 +58,22 @@ class AddCompanyDialogFragment : DialogFragment() {
 
         if (isSuccess) {
             // Show a success message using Toast
-            Toast.makeText(requireContext(), "Company saved successfully", Toast.LENGTH_SHORT).show()
+            showToast("Company saved successfully")
 
             // Notify the listener if needed
             listener?.onSaveCompanyClicked(name, location)
         } else {
             // Show an error message using Toast
-            Toast.makeText(requireContext(), "Failed to save company", Toast.LENGTH_SHORT).show()
+            showToast("Failed to save company")
         }
     }
 
     fun setAddCompanyDialogListener(listener: AddCompanyDialogListener) {
         this.listener = listener
+    }
+
+    private fun showToast(message: String) {
+        // Display a toast message
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 }

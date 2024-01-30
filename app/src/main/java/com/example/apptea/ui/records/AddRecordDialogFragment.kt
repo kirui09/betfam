@@ -28,7 +28,8 @@ class AddRecordDialogFragment : DialogFragment() {
     }
 
     private var listener: AddRecordDialogListener? = null
-    private val recordsList = mutableListOf<Record>() // List to store records
+    private val recordsList = mutableListOf<Record>()
+    // List to store records
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -82,7 +83,6 @@ class AddRecordDialogFragment : DialogFragment() {
 
                 // Clear the input fields or perform any other necessary actions
                 autoCompleteEmployee.setText("")
-                autoCompleteCompany.setText("")
                 editTextKilos.setText("")
             } else {
                 Toast.makeText(requireContext(), "Please fill in all fields", Toast.LENGTH_SHORT).show()

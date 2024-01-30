@@ -91,7 +91,7 @@ class HomeFragment : Fragment() {
         xAxis.granularity = 1f
         xAxis.isGranularityEnabled = true
 
-        barChart.animateY(2000)
+        barChart.animateY(3000)
 
         // Refresh the chart
         barChart.invalidate()
@@ -123,7 +123,7 @@ class HomeFragment : Fragment() {
         pieChart.description.text = "Company Kilos"
         pieChart.legend.isEnabled = true
         pieChart.centerText = "Companies"
-        pieChart.animateY(2000)
+        pieChart.animateY(3000)
 
         // Refresh the chart
         pieChart.invalidate()

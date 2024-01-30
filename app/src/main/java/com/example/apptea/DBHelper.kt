@@ -103,7 +103,6 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         subcounty: String,
         village: String,
         landAcreage: String,
-        numEmployees: String,
         password: String,
         specialCode: String
     ): Boolean {
@@ -116,7 +115,6 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         cv.put("subcounty", subcounty)
         cv.put("village", village)
         cv.put("land_acreage", landAcreage)
-        cv.put("num_employees", numEmployees)
         cv.put("password", password)
         cv.put("special_code", specialCode)
         val result = db.insert("FarmersDatabase", null, cv)

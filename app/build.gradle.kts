@@ -53,7 +53,8 @@ dependencies {
     implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
     implementation ("androidx.recyclerview:recyclerview:1.2.0")
     implementation ("androidx.recyclerview:recyclerview-selection:1.1.0")
-
+    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation("androidx.multidex:multidex:2.0.1")
     implementation ("com.github.AnyChart:AnyChart-Android:1.1.5")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")

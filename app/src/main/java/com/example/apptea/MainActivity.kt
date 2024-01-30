@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.apptea.databinding.ActivityMainBinding
 import SharedPreferencesHelper
 import android.view.View
+import androidx.core.content.res.ResourcesCompat
 import androidx.navigation.NavDestination
 
 
@@ -62,6 +63,8 @@ class MainActivity : AppCompatActivity() {
 
         // Call the function to update navigation header
         updateNavigationHeader()
+
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -75,17 +78,7 @@ class MainActivity : AppCompatActivity() {
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
     // Add this function to update the toolbar dynamically
-    private fun updateToolbar(destination: NavDestination) {
-        when (destination.id) {
-            R.id.nav_employees_menu -> {
-                supportActionBar?.setTitle(R.string.menu_employees)
-                supportActionBar?.setHomeAsUpIndicator(R.drawable.ic_baseline_add_24)
-            }
-            else -> {
-                supportActionBar?.setTitle(R.string.app_name)
-            }
-        }
-    }
+
 
     private fun updateNavigationHeader() {
         // Retrieve the saved phone number from SharedPreferences
@@ -104,9 +97,9 @@ class MainActivity : AppCompatActivity() {
             userIdTextView.text = "Farmer ID: ${userInformation.specialcode}"
             // Update other UI elements with additional user details as needed
         }
+
+
     }
-
-
 
 
 }

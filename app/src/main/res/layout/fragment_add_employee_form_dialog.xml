@@ -1,12 +1,14 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:background="@drawable/rounded_corner"
     tools:context=".ui.employees.AddEmployeeDialogFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/rounded_corner"
         android:orientation="vertical"
         android:gravity="center"
         android:padding="16dp">
@@ -32,7 +34,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="number"
-            android:hint="Age"/>
+            android:hint="Age(Optional)"/>
 
         <!-- Phone Number -->
         <EditText
@@ -40,7 +42,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="phone"
-            android:hint="Phone Number"/>
+            android:hint="Phone Number(Optional)"/>
 
         <!-- ID -->
         <EditText
@@ -48,7 +50,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="number"
-            android:hint="ID"/>
+            android:hint="ID(Optional)"/>
 
         <!-- Save Button -->
         <Button
@@ -59,4 +61,4 @@
 
     </LinearLayout>
 
-</FrameLayout>
+</RelativeLayout>
