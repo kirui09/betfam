@@ -12,7 +12,10 @@ import com.example.apptea.DBHelper
 import com.example.apptea.R
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
-class RecordsFragment : Fragment(), AddRecordDialogFragment.AddRecordDialogFragmentListener {
+class RecordsFragment : Fragment(),
+    AddRecordDialogFragment.AddRecordDialogFragmentListener,
+    TeaRecordsAdapter.OnTeaRecordItemClickListener,
+    EditRecordDialogFragment.OnRecordEditedListener {
 
     private lateinit var recordsAdapter: TeaRecordsAdapter
     private lateinit var dbHelper: DBHelper
@@ -26,7 +29,7 @@ class RecordsFragment : Fragment(), AddRecordDialogFragment.AddRecordDialogFragm
         dbHelper = DBHelper(requireContext())
 
         val recyclerView: RecyclerView = view.findViewById(R.id.dailyTeaRecordsrecyclerView)
-        recordsAdapter = TeaRecordsAdapter()
+        recordsAdapter = TeaRecordsAdapter(this)
         recyclerView.adapter = recordsAdapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
@@ -43,47 +46,49 @@ class RecordsFragment : Fragment(), AddRecordDialogFragment.AddRecordDialogFragm
 
     private fun showAddRecordDialog() {
         val addRecordDialog = AddRecordDialogFragment()
-        addRecordDialog.recordSavedListener = object : AddRecordDialogFragment.AddRecordDialogFragmentListener {
-            override fun onRecordSaved() {
-                // Handle any specific actions after a record is saved, if needed
-                // For now, let's update the RecyclerView with the latest records
-                updateRecordsList()
-            }
+        addRecordDialog.recordSavedListener =
+            object : AddRecordDialogFragment.AddRecordDialogFragmentListener {
+                override fun onRecordSaved() {
+                    updateRecordsList()
+                }
 
-            override fun onAllRecordsSaved() {
-                // Handle any specific actions after all records are saved, if needed
-                // For now, let's display a Toast message
-                Toast.makeText(requireContext(), "All records saved", Toast.LENGTH_SHORT).show()
-
-                // Update the RecyclerView with the latest records from the database
-                updateRecordsList()
+                override fun onAllRecordsSaved() {
+                    Toast.makeText(requireContext(), "All records saved", Toast.LENGTH_SHORT)
+                        .show()
+                    updateRecordsList()
+                }
             }
-        }
         addRecordDialog.show(parentFragmentManager, "AddRecordDialogFragment")
     }
 
     private fun updateRecordsList() {
-        // Update the RecyclerView with the latest records from the database
         val teaRecords = dbHelper.getAllTeaRecords()
-        recordsAdapter.submitList(teaRecords)
-        recordsAdapter.notifyDataSetChanged()
+        recordsAdapter.updateRecords(teaRecords)
     }
 
     override fun onRecordSaved() {
-        // Handle any specific actions after a record is saved, if needed
-        // For now, let's display a Toast message
         Toast.makeText(requireContext(), "Record saved", Toast.LENGTH_SHORT).show()
-
-        // Update the RecyclerView with the latest records from the database
         updateRecordsList()
     }
 
     override fun onAllRecordsSaved() {
-        // Handle any specific actions after all records are saved, if needed
-        // For now, let's display a Toast message
         Toast.makeText(requireContext(), "All records saved", Toast.LENGTH_SHORT).show()
-
-        // Update the RecyclerView with the latest records from the database
         updateRecordsList()
+    }
+
+    override fun onRecordEdited(editedRecord: DailyTeaRecord) {
+        // Handle the edited record, update the data, and refresh the UI
+        // You can call dbHelper.updateTeaRecord(editedRecord) and then updateRecordsList()
+        updateRecordsList()
+    }
+
+    override fun onUpdateButtonClick(teaRecord: DailyTeaRecord) {
+        // Handle the "Update Record" button click
+        openEditScreen(teaRecord)
+    }
+
+    private fun openEditScreen(teaRecord: DailyTeaRecord) {
+        val editDialog = EditRecordDialogFragment.newInstance(teaRecord)
+        editDialog.show(parentFragmentManager, "EditRecordDialogFragment")
     }
 }

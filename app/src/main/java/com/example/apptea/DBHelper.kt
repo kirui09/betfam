@@ -404,6 +404,27 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         return companyKilosMap
     }
 
+    fun getTeaRecordByDate(date: String): DailyTeaRecord? {
+        val db = this.readableDatabase
+        val query =
+            "SELECT date, employee_name ,  companies,kilos   FROM TeaRecords WHERE date = ? "
+
+        val cursor = db.rawQuery(query, arrayOf(date))
+
+        var teaRecord: DailyTeaRecord? = null
+
+        while (cursor.moveToNext()) {
+            val employees = cursor.getString(cursor.getColumnIndex("employees"))?.split(",")
+            val companies = cursor.getString(cursor.getColumnIndex("companies"))?.split(",")
+            val totalKilos = cursor.getDouble(cursor.getColumnIndex("total_kilos"))
+
+            teaRecord = DailyTeaRecord(date, employees.orEmpty(), companies.orEmpty(), totalKilos)
+        }
+
+        cursor.close()
+        return teaRecord
+    }
+
 
 
 

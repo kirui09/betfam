@@ -17,6 +17,12 @@ class TeaRecordsAdapter : ListAdapter<DailyTeaRecord, TeaRecordsAdapter.TeaRecor
     override fun onBindViewHolder(holder: TeaRecordViewHolder, position: Int) {
         val teaRecord = getItem(position)
         holder.bind(teaRecord)
+
+        // Handle "Update Record" button click
+        holder.binding.updateButton.setOnClickListener {
+            itemClickListener.onUpdateButtonClick(teaRecord)
+        }
+
     }
 
     class TeaRecordViewHolder(private val binding: ItemTeaRecordBinding) : RecyclerView.ViewHolder(binding.root) {
@@ -25,6 +31,8 @@ class TeaRecordsAdapter : ListAdapter<DailyTeaRecord, TeaRecordsAdapter.TeaRecor
             binding.employeesAtWorkTextView.text = teaRecord.employees.toString()
             binding.companiesPluckedToTextView.text = teaRecord.companies.toString()
             binding.totalKilosTextView.text = teaRecord.totalKilos.toString()
+
+
         }
     }
 
@@ -42,5 +50,9 @@ class TeaRecordsAdapter : ListAdapter<DailyTeaRecord, TeaRecordsAdapter.TeaRecor
     // Provide a function to update the list in the adapter
     fun updateRecords(recordList: List<DailyTeaRecord>) {
         submitList(recordList)
+    }
+    // Interface for handling item click events
+    interface OnTeaRecordItemClickListener {
+        fun onTeaRecordItemClick(teaRecord: DailyTeaRecord)
     }
 }
