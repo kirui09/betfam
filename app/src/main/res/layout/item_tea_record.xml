@@ -31,14 +31,14 @@
                 android:textStyle="bold" />
 
             <ImageView
-                android:id="@+id/update_button"
+                android:id="@+id/update_record_button"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_alignParentEnd="true"
                 android:layout_marginEnd="30dp"
                 android:src="@drawable/ic_baseline_edit_24" />
             <ImageView
-                android:id="@+id/delete_button"
+                android:id="@+id/delete_record_button"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_alignParentEnd="true"

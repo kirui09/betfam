@@ -1,7 +1,6 @@
 package com.example.apptea.ui.records
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -23,8 +22,8 @@ class TeaRecordsAdapter : ListAdapter<DailyTeaRecord, TeaRecordsAdapter.TeaRecor
     class TeaRecordViewHolder(private val binding: ItemTeaRecordBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(teaRecord: DailyTeaRecord) {
             binding.dateOfInputTextView.text = teaRecord.date
-            binding.employeesAtWorkTextView.text=teaRecord.employees.toString()
-            binding.companiesPluckedToTextView.text=teaRecord.companies.toString()
+            binding.employeesAtWorkTextView.text = teaRecord.employees.toString()
+            binding.companiesPluckedToTextView.text = teaRecord.companies.toString()
             binding.totalKilosTextView.text = teaRecord.totalKilos.toString()
         }
     }
@@ -37,5 +36,11 @@ class TeaRecordsAdapter : ListAdapter<DailyTeaRecord, TeaRecordsAdapter.TeaRecor
         override fun areContentsTheSame(oldItem: DailyTeaRecord, newItem: DailyTeaRecord): Boolean {
             return oldItem == newItem
         }
+    }
+
+    // Provide a function to set the list in the adapter
+    // Provide a function to update the list in the adapter
+    fun updateRecords(recordList: List<DailyTeaRecord>) {
+        submitList(recordList)
     }
 }

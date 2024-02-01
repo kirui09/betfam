@@ -4,84 +4,86 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.apptea.DBHelper
 import com.example.apptea.R
-import com.example.apptea.ui.records.Record
-import com.example.apptea.ui.records.RecordsViewModel
-import com.example.apptea.databinding.FragmentRecordsBinding
-import com.example.apptea.ui.records.AddRecordDialogFragment
-import com.example.apptea.ui.records.DailyTeaRecord
-
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
-class RecordsFragment : Fragment(), AddRecordDialogFragment.AddRecordDialogListener {
+class RecordsFragment : Fragment(), AddRecordDialogFragment.AddRecordDialogFragmentListener {
 
-    private var _binding: FragmentRecordsBinding? = null
-    private lateinit var recordsViewModel: RecordsViewModel
-    private lateinit var teaRecordsAdapter: TeaRecordsAdapter
-
-    // This property is only valid between onCreateView and onDestroyView
-    private val binding get() = _binding!!
+    private lateinit var recordsAdapter: TeaRecordsAdapter
+    private lateinit var dbHelper: DBHelper
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
+        inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View {
-        recordsViewModel = ViewModelProvider(this).get(RecordsViewModel::class.java)
-        recordsViewModel.initialize(requireContext()) // Initialize DBHelper in ViewModel
+    ): View? {
+        val view = inflater.inflate(R.layout.fragment_records, container, false)
 
-        _binding = FragmentRecordsBinding.inflate(inflater, container, false)
-        val root: View = binding.root
+        dbHelper = DBHelper(requireContext())
 
-        // RecyclerView setup
+        val recyclerView: RecyclerView = view.findViewById(R.id.dailyTeaRecordsrecyclerView)
+        recordsAdapter = TeaRecordsAdapter()
+        recyclerView.adapter = recordsAdapter
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        val recyclerView: RecyclerView = root.findViewById(R.id.dailyTeaRecordsrecyclerView)
-        recyclerView.layoutManager = LinearLayoutManager(context)
-
-        // Initialize and set up the adapter
-        teaRecordsAdapter = TeaRecordsAdapter()
-        recyclerView.adapter = teaRecordsAdapter
-
-        // Access the FloatingActionButton
-        val fabAddRecord = root.findViewById<FloatingActionButton>(R.id.fabAddRecord)
-
+        val fabAddRecord: FloatingActionButton = view.findViewById(R.id.fabAddRecord)
         fabAddRecord.setOnClickListener {
-            // Show the AddRecordDialogFragment when FAB is clicked
-            val addRecordDialog = AddRecordDialogFragment()
-            addRecordDialog.setAddRecordDialogListener(this)
-            addRecordDialog.show(childFragmentManager, AddRecordDialogFragment::class.java.simpleName)
+            showAddRecordDialog()
         }
 
-        return root
+        // Load records when the fragment view is created
+        updateRecordsList()
+
+        return view
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
+    private fun showAddRecordDialog() {
+        val addRecordDialog = AddRecordDialogFragment()
+        addRecordDialog.recordSavedListener = object : AddRecordDialogFragment.AddRecordDialogFragmentListener {
+            override fun onRecordSaved() {
+                // Handle any specific actions after a record is saved, if needed
+                // For now, let's update the RecyclerView with the latest records
+                updateRecordsList()
+            }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+            override fun onAllRecordsSaved() {
+                // Handle any specific actions after all records are saved, if needed
+                // For now, let's display a Toast message
+                Toast.makeText(requireContext(), "All records saved", Toast.LENGTH_SHORT).show()
 
-        // Observe tea records and update the adapter when the data changes
-
-        recordsViewModel.getAllTeaRecordsLiveData().observe(viewLifecycleOwner) { teaRecords ->
-            teaRecordsAdapter.submitList(teaRecords)
+                // Update the RecyclerView with the latest records from the database
+                updateRecordsList()
+            }
         }
+        addRecordDialog.show(parentFragmentManager, "AddRecordDialogFragment")
     }
 
-    override fun onSaveRecordClicked(date: String, employeename: String, company: String, kilos: String) {
-        // Handle saving a single record here if needed
-        // For example: recordsViewModel.saveRecord(date, employeename, company, kilos)
+    private fun updateRecordsList() {
+        // Update the RecyclerView with the latest records from the database
+        val teaRecords = dbHelper.getAllTeaRecords()
+        recordsAdapter.submitList(teaRecords)
+        recordsAdapter.notifyDataSetChanged()
     }
 
-    override fun onSaveAllRecordsClicked(recordsList: List<Record>) {
-        // Handle saving all records here
-        // For example: recordsViewModel.saveAllRecords(recordsList)
-        recordsViewModel.getAllTeaRecords()
+    override fun onRecordSaved() {
+        // Handle any specific actions after a record is saved, if needed
+        // For now, let's display a Toast message
+        Toast.makeText(requireContext(), "Record saved", Toast.LENGTH_SHORT).show()
+
+        // Update the RecyclerView with the latest records from the database
+        updateRecordsList()
+    }
+
+    override fun onAllRecordsSaved() {
+        // Handle any specific actions after all records are saved, if needed
+        // For now, let's display a Toast message
+        Toast.makeText(requireContext(), "All records saved", Toast.LENGTH_SHORT).show()
+
+        // Update the RecyclerView with the latest records from the database
+        updateRecordsList()
     }
 }

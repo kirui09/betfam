@@ -3,20 +3,23 @@ package com.example.apptea
 import android.os.Bundle
 import android.view.Menu
 import android.widget.TextView
-import com.google.android.material.navigation.NavigationView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import androidx.drawerlayout.widget.DrawerLayout
-import androidx.appcompat.app.AppCompatActivity
 import com.example.apptea.databinding.ActivityMainBinding
+import com.google.android.material.navigation.NavigationView
+import java.util.*
 import SharedPreferencesHelper
+import android.os.AsyncTask
 import android.view.View
-import androidx.core.content.res.ResourcesCompat
-import androidx.navigation.NavDestination
+import com.example.apptea.ui.home.HomeFragment
 
+import org.json.JSONObject
+import java.net.URL
 
 class MainActivity : AppCompatActivity() {
 
@@ -25,6 +28,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
     private lateinit var dbh: DBHelper
     private lateinit var headerView: View
+
+
+    val CITY: String = "Litein, KE"
+    val API: String = "1a105b90f41489e05ece19d6f6c326b9" // Use API key
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,13 +48,12 @@ class MainActivity : AppCompatActivity() {
         val navView: NavigationView = binding.navView
         val navController = findNavController(R.id.nav_host_fragment_content_main)
 
-
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top-level destinations.
 
         appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.nav_home, R.id.nav_records, R.id.nav_employees_menu,R.id.nav_managers,R.id.nav_companies
+                R.id.nav_home, R.id.nav_records, R.id.nav_employees_menu, R.id.nav_managers, R.id.nav_companies
             ), drawerLayout
         )
 
@@ -64,7 +70,8 @@ class MainActivity : AppCompatActivity() {
         // Call the function to update navigation header
         updateNavigationHeader()
 
-
+        // Fetch weather data
+        fetchWeatherData()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -77,8 +84,6 @@ class MainActivity : AppCompatActivity() {
         val navController = findNavController(R.id.nav_host_fragment_content_main)
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
-    // Add this function to update the toolbar dynamically
-
 
     private fun updateNavigationHeader() {
         // Retrieve the saved phone number from SharedPreferences
@@ -97,9 +102,51 @@ class MainActivity : AppCompatActivity() {
             userIdTextView.text = "Farmer ID: ${userInformation.specialcode}"
             // Update other UI elements with additional user details as needed
         }
-
-
     }
 
+    private fun fetchWeatherData() {
+        // Add the weatherTask call here
+        WeatherTask().execute()
+    }
 
+    inner class WeatherTask : AsyncTask<String, Void, WeatherInfo>() {
+        override fun doInBackground(vararg params: String?): WeatherInfo? {
+            var weatherInfo: WeatherInfo? = null
+            try {
+                val response = URL("https://api.openweathermap.org/data/2.5/weather?q=$CITY&units=metric&appid=$API").readText(
+                    Charsets.UTF_8
+                )
+
+                val jsonObj = JSONObject(response)
+                val main = jsonObj.getJSONObject("main")
+                val weather = jsonObj.getJSONArray("weather").getJSONObject(0)
+
+                val temperature = main.getString("temp") + "°C"
+                val description = weather.getString("description")
+                    .replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ENGLISH) else it.toString() }
+                val city = jsonObj.getString("name") + ", " + jsonObj.getJSONObject("sys").getString("country")
+
+                weatherInfo = WeatherInfo(temperature, description, city)
+            } catch (e: Exception) {
+                // Handle exceptions if necessary
+            }
+            return weatherInfo
+        }
+
+        override fun onPostExecute(result: WeatherInfo?) {
+            super.onPostExecute(result)
+            // Update UI elements in your HomeFragment using the result
+            result?.let {
+                // Access the HomeFragment instance and call its method
+                val homeFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as? HomeFragment
+                homeFragment?.handleWeatherResult(it)
+            }
+        }
+    }
+
+    data class WeatherInfo(
+        val temperature: String,
+        val description: String,
+        val city: String
+    )
 }

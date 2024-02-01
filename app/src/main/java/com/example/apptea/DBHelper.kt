@@ -300,6 +300,20 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
     }
 
     // Inside DBHelper class
+    fun insertTeaRecord(record: Record): Boolean {
+        val db = this.writableDatabase
+
+        val cv = ContentValues().apply {
+            put("date", record.date)
+            put("employee_name", record.employee)
+            put("company", record.company)
+            put("kilos", record.kilos)
+        }
+
+        val result = db.insert("TeaRecords", null, cv)
+        return result != -1L
+    }
+
     fun insertTeaRecords(records: List<Record>): Boolean {
         val db = this.writableDatabase
         val successList = mutableListOf<Boolean>()
@@ -325,7 +339,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         val teaRecordsList = mutableListOf<DailyTeaRecord>()
         val teaRecordsLiveData = MutableLiveData<List<DailyTeaRecord>>()
         val db = this.readableDatabase
-        val query = "SELECT date,GROUP_CONCAT(employee_name) AS employees,GROUP_CONCAT(company) AS companies, SUM(kilos) AS total_kilos FROM TeaRecords GROUP BY date ORDER BY date DESC"
+        val query = "SELECT date,GROUP_CONCAT(employee_name) AS employees,GROUP_CONCAT(DISTINCT company) AS companies, SUM(kilos) AS total_kilos FROM TeaRecords GROUP BY date ORDER BY date DESC"
 
         val cursor = db.rawQuery(query, null)
 

@@ -16,7 +16,6 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="185CE3"
             app:popupTheme="@style/Theme.AppTea.PopupOverlay">
 
             <!-- Your other toolbar components go here -->

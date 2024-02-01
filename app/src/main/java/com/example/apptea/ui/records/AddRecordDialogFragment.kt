@@ -1,13 +1,11 @@
 package com.example.apptea.ui.records
 
 import android.app.DatePickerDialog
-import android.app.Dialog
 import android.os.Bundle
 import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
 import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.DatePicker
@@ -22,42 +20,30 @@ import java.util.Locale
 
 class AddRecordDialogFragment : DialogFragment() {
 
-    interface AddRecordDialogListener {
-        fun onSaveRecordClicked(date: String, employeename: String, company: String, kilos: String)
-        fun onSaveAllRecordsClicked(recordsList: List<Record>)
-    }
-
-    private var listener: AddRecordDialogListener? = null
-    private val recordsList = mutableListOf<Record>()
-    // List to store records
+    private lateinit var dbh: DBHelper
+    private var tempRecords: MutableList<Record> = mutableListOf()
+    var recordSavedListener: AddRecordDialogFragmentListener? = null
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_add_record_dialog, container, false)
 
-        val dbHelper = DBHelper(requireContext())
-        val employeeNames = dbHelper.getAllEmployeeNames()
-        val companyNames = dbHelper.getAllCompanyNames()
+        dbh = DBHelper(requireContext())
 
         val editTextDate = view.findViewById<EditText>(R.id.recordEntryTime)
-        val autoCompleteEmployee = view.findViewById<AutoCompleteTextView>(R.id.autoCompleteEmployeeName)
-        val autoCompleteCompany = view.findViewById<AutoCompleteTextView>(R.id.autoCompleteCompanyname)
+        val autoCompleteEmployee =
+            view.findViewById<AutoCompleteTextView>(R.id.autoCompleteEmployeeName)
+        val autoCompleteCompany =
+            view.findViewById<AutoCompleteTextView>(R.id.autoCompleteCompanyname)
         val editTextKilos = view.findViewById<EditText>(R.id.editTextEmployeeKilos)
         // Set the input type to numberDecimal
-        editTextKilos.inputType = InputType.TYPE_NUMBER_FLAG_DECIMAL or InputType.TYPE_NUMBER_FLAG_SIGNED
+        editTextKilos.inputType =
+            InputType.TYPE_NUMBER_FLAG_DECIMAL or InputType.TYPE_NUMBER_FLAG_SIGNED
         val buttonSaveRecord = view.findViewById<Button>(R.id.buttonSaveRecord)
         val buttonSaveAllRecords = view.findViewById<Button>(R.id.buttonSaveAllRecords)
-
-        // Set up ArrayAdapter with employee names
-        val employeeAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, employeeNames)
-        autoCompleteEmployee.setAdapter(employeeAdapter)
-
-        // Set up ArrayAdapter with company names
-        val companyAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, companyNames)
-        autoCompleteCompany.setAdapter(companyAdapter)
-
 
         // Set the default date to today
         val currentDate = Calendar.getInstance()
@@ -71,68 +57,103 @@ class AddRecordDialogFragment : DialogFragment() {
         }
 
         buttonSaveRecord.setOnClickListener {
-            val date = editTextDate.text.toString()
-            val employeename = autoCompleteEmployee.text.toString()
-            val company = autoCompleteCompany.text.toString()
-            val kilos = editTextKilos.text.toString().toDoubleOrNull()
-
-            if (validateInput(date, employeename, company, kilos)) {
-                // Add the record to the list
-                val record = Record(date, employeename, company, kilos!!)
-                recordsList.add(record)
-
-                // Clear the input fields or perform any other necessary actions
-                autoCompleteEmployee.setText("")
-                editTextKilos.setText("")
-            } else {
-                Toast.makeText(requireContext(), "Please fill in all fields", Toast.LENGTH_SHORT).show()
-            }
+            // Handle the "Save Record" button click
+            saveTempRecord()
         }
 
         buttonSaveAllRecords.setOnClickListener {
-            // Save the last record to the list if there is any
-            val date = editTextDate.text.toString()
-            val employeename = autoCompleteEmployee.text.toString()
-            val company = autoCompleteCompany.text.toString()
-            val kilos = editTextKilos.text.toString()
-
-            if (date.isNotEmpty() && employeename.isNotEmpty() && company.isNotEmpty() && kilos.isNotEmpty()) {
-                val lastRecord = Record(date, employeename, company, kilos.toDouble())
-                recordsList.add(lastRecord)
-            }
-
-
-            // Notify the listener that Save All Records button is clicked
-            listener?.onSaveAllRecordsClicked(recordsList)
-
-            // Save all records to the database using DBHelper
-            val dbHelper = DBHelper(requireContext())
-            val success = dbHelper.insertTeaRecords(recordsList)
-
-            if (success) {
-
-                Toast.makeText(requireContext(), "Records saved successfully", Toast.LENGTH_SHORT).show()
-
-            } else {
-                Toast.makeText(requireContext(), "Records Not Saved", Toast.LENGTH_SHORT).show()
-
-            }
-            recordsList.clear()
-
-            dismiss() // Close the dialog
+            // Handle the "Save All Records" button click
+            saveAllRecords()
         }
 
         return view
     }
 
-    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val dialog = super.onCreateDialog(savedInstanceState)
-        dialog.setTitle("Add Tea Record")
-        return dialog
+    private fun saveTempRecord() {
+        // Handle the "Save Record" button click
+        val date = getEditTextText(R.id.recordEntryTime)
+        val company = getAutoCompleteText(R.id.autoCompleteCompanyname)
+        val employee = getAutoCompleteText(R.id.autoCompleteEmployeeName)
+        val kilosString = getEditTextText(R.id.editTextEmployeeKilos)
+
+        if (validateInput(date, company, employee, kilosString)) {
+            val kilos = kilosString.toDouble()
+
+            // Create a Record object
+            val record = Record(date, company, employee, kilos)
+
+            // Add the record to the temporary list
+            tempRecords.add(record)
+
+            // Notify the listener about the saved record
+            recordSavedListener?.onRecordSaved()
+
+            // Clear the form
+            clearForm()
+
+
+        } else {
+            showToast("Please enter all fields")
+        }
     }
 
-    fun setAddRecordDialogListener(listener: AddRecordDialogListener) {
-        this.listener = listener
+    private fun saveAllRecords() {
+        // Handle the "Save All Records" button click
+        if (tempRecords.isNotEmpty()) {
+            // Include the last record from the form
+            val date = getEditTextText(R.id.recordEntryTime)
+            val employeename = getAutoCompleteText(R.id.autoCompleteEmployeeName)
+            val company = getAutoCompleteText(R.id.autoCompleteCompanyname)
+            val kilosString = getEditTextText(R.id.editTextEmployeeKilos)
+
+            if (validateInput(date, company,employeename, kilosString)) {
+                val kilos = kilosString.toDouble()
+
+                // Create a Record object for the last record from the form
+                val lastRecord = Record(date,  company,employeename, kilos)
+
+                // Add the last record from the form to the temporary list
+                tempRecords.add(lastRecord)
+            }
+
+            // Save all records to the database using DBHelper
+            val success = DBHelper.getInstance().insertTeaRecords(tempRecords)
+
+            if (success) {
+                showToast("All Records saved successfully")
+                // Clear the temporary list
+                tempRecords.clear()
+
+                // Notify the listener about the saved records
+                recordSavedListener?.onAllRecordsSaved()
+            } else {
+                showToast("Failed to save all records")
+            }
+        } else {
+            showToast("No records to save")
+        }
+        // Close the dialog
+        dismiss()
+    }
+
+
+    private fun validateInput(date: String, company: String, employee: String, kilos: String): Boolean {
+        return date.isNotEmpty() && company.isNotEmpty() && employee.isNotEmpty() && kilos.isNotEmpty()
+    }
+
+    private fun getEditTextText(viewId: Int): String {
+        val editText = view?.findViewById<EditText>(viewId)
+        return editText?.text?.toString()?.trim() ?: ""
+    }
+
+    private fun getAutoCompleteText(viewId: Int): String {
+        val autoCompleteTextView = view?.findViewById<AutoCompleteTextView>(viewId)
+        return autoCompleteTextView?.text?.toString()?.trim() ?: ""
+    }
+
+    private fun showToast(message: String) {
+        // Display a toast message
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 
     private fun showDatePickerDialog(calendar: Calendar, editTextDate: EditText) {
@@ -143,7 +164,7 @@ class AddRecordDialogFragment : DialogFragment() {
                 val selectedDate = Calendar.getInstance()
                 selectedDate.set(year, month, dayOfMonth)
                 val formattedDate =
-                    SimpleDateFormat("yyyy-MM-dd", Locale.US).format(selectedDate.time)
+                    SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(selectedDate.time)
                 editTextDate.setText(formattedDate)
             },
             calendar.get(Calendar.YEAR),
@@ -155,7 +176,15 @@ class AddRecordDialogFragment : DialogFragment() {
         datePickerDialog.show()
     }
 
-    private fun validateInput(date: String, employeename: String, company: String, kilos: Double?): Boolean {
-        return date.isNotEmpty() && employeename.isNotEmpty() && company.isNotEmpty() && kilos != null
+    private fun clearForm() {
+        // Clear the form fields
+
+        view?.findViewById<AutoCompleteTextView>(R.id.autoCompleteEmployeeName)?.text?.clear()
+        view?.findViewById<EditText>(R.id.editTextEmployeeKilos)?.text?.clear()
+    }
+
+    interface AddRecordDialogFragmentListener {
+        fun onRecordSaved()
+        fun onAllRecordsSaved()
     }
 }

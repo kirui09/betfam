@@ -5,8 +5,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.example.apptea.DBHelper
+import com.example.apptea.MainActivity
 import com.example.apptea.databinding.FragmentHomeBinding
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.PieChart
@@ -19,17 +21,32 @@ import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.github.mikephil.charting.utils.ColorTemplate
+import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
 class HomeFragment : Fragment() {
 
+
     private var _binding: FragmentHomeBinding? = null
     private lateinit var barChart: BarChart
 
+    // Add TextViews for displaying weather information
+    private lateinit var skyDetailsTextView: TextView
+    private lateinit var myCityTextView: TextView
+    private lateinit var todaysTemperatureTextView: TextView
+
+
     // This property is only valid between onCreateView and onDestroyView.
     private val binding get() = _binding!!
+
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -39,6 +56,11 @@ class HomeFragment : Fragment() {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
+        myCityTextView = binding.myCity
+        skyDetailsTextView = binding.skyDetails
+        todaysTemperatureTextView = binding.todaysTemprature
+
+
         // Initialize PieChart
         val pieChart: PieChart = binding.pieChart
         initializePieChart(pieChart)
@@ -47,8 +69,19 @@ class HomeFragment : Fragment() {
         barChart = binding.barChart
         initializeBarChart()
 
+
         return root
     }
+
+    fun handleWeatherResult(weatherInfo: MainActivity.WeatherInfo) {
+        // Handle the result and update UI elements
+
+        myCityTextView.text = weatherInfo.city
+        skyDetailsTextView.text = weatherInfo.description
+        todaysTemperatureTextView.text = weatherInfo.temperature
+    }
+
+
 
     private fun initializeBarChart() {
         // Fetch data from the database for the past week
@@ -134,6 +167,8 @@ class HomeFragment : Fragment() {
         // This is just a simple example
         return Color.rgb((0..255).random(), (0..255).random(), (0..255).random())
     }
+
+
 
 
     override fun onDestroyView() {
