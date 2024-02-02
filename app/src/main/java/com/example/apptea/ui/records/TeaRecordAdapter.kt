@@ -1,14 +1,17 @@
 package com.example.apptea.ui.records
 
+import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.apptea.databinding.ItemTeaRecordBinding
 
 class TeaRecordsAdapter : ListAdapter<DailyTeaRecord, TeaRecordsAdapter.TeaRecordViewHolder>(TeaRecordDiffCallback()) {
-
 
     // Listener for item click events
     private var itemClickListener: OnTeaRecordItemClickListener? = null
@@ -17,7 +20,6 @@ class TeaRecordsAdapter : ListAdapter<DailyTeaRecord, TeaRecordsAdapter.TeaRecor
     fun setOnTeaRecordItemClickListener(listener: OnTeaRecordItemClickListener) {
         itemClickListener = listener
     }
-
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TeaRecordViewHolder {
         val binding = ItemTeaRecordBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -28,8 +30,10 @@ class TeaRecordsAdapter : ListAdapter<DailyTeaRecord, TeaRecordsAdapter.TeaRecor
         val teaRecord = getItem(position)
         holder.bind(teaRecord)
 
-
-
+        // Set click listener for the "Update" button
+        holder.binding.updateRecordButton.setOnClickListener {
+            itemClickListener?.onUpdateButtonClick()
+        }
     }
 
     class TeaRecordViewHolder(val binding: ItemTeaRecordBinding) : RecyclerView.ViewHolder(binding.root) {
@@ -38,8 +42,6 @@ class TeaRecordsAdapter : ListAdapter<DailyTeaRecord, TeaRecordsAdapter.TeaRecor
             binding.employeesAtWorkTextView.text = teaRecord.employees.toString()
             binding.companiesPluckedToTextView.text = teaRecord.companies.toString()
             binding.totalKilosTextView.text = teaRecord.totalKilos.toString()
-
-
         }
     }
 
@@ -58,8 +60,9 @@ class TeaRecordsAdapter : ListAdapter<DailyTeaRecord, TeaRecordsAdapter.TeaRecor
     fun updateRecords(recordList: List<DailyTeaRecord>) {
         submitList(recordList)
     }
+
     // Interface for handling item click events
     interface OnTeaRecordItemClickListener {
-        fun onUpdateButtonClick(teaRecord: DailyTeaRecord)
+        fun onUpdateButtonClick()
     }
 }

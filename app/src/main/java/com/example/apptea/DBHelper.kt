@@ -407,22 +407,28 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
     // Fetch all records for a given date
     // Inside DBHelper class
-    fun getTeaRecordsByDate(date: String): EditableTeaRecord? {
+    fun getTeaRecordsByDate(date: String): List<EditableTeaRecord> {
+        val recordsList = mutableListOf<EditableTeaRecord>()
+
         val db = this.readableDatabase
         val query = "SELECT * FROM TeaRecords WHERE date = ?"
         val cursor = db.rawQuery(query, arrayOf(date))
 
-        return if (cursor.moveToFirst()) {
-            val date = cursor.getString(cursor.getColumnIndex("date"))
-            val employees = cursor.getString(cursor.getColumnIndex("employee_name"))?.split(",")
+        while (cursor.moveToNext()) {
+            val recordDate = cursor.getString(cursor.getColumnIndex("date"))
             val companies = cursor.getString(cursor.getColumnIndex("companies"))?.split(",")
+            val employees = cursor.getString(cursor.getColumnIndex("employee_name"))?.split(",")
             val kilos = cursor.getDouble(cursor.getColumnIndex("kilos"))
 
-            EditableTeaRecord(date, employees.orEmpty(), companies.orEmpty(), kilos)
-        } else {
-            null
+            val editableTeaRecord = EditableTeaRecord(recordDate, companies.orEmpty(), employees.orEmpty(), kilos)
+            recordsList.add(editableTeaRecord)
         }
+
+        cursor.close()
+        return recordsList
     }
+
+
 
 
     // Update records in the database
@@ -447,6 +453,26 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
         db.close()
     }
+
+
+
+    // Function to update an employee
+    fun updateEmployee(employee: Employee): Boolean {
+        val db = this.writableDatabase
+        val contentValues = ContentValues()
+
+        contentValues.put("name", employee.name)
+        contentValues.put("age", employee.age)
+        contentValues.put("phone", employee.phoneNumber)
+        contentValues.put("employee_id", employee.employeeId)
+
+        val rowsAffected = db.update("Employees", contentValues, "employee_id = ?", arrayOf(employee.employeeId))
+
+        db.close()
+
+        return rowsAffected > 0
+    }
+
 
 
 

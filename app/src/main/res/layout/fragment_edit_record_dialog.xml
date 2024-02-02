@@ -6,79 +6,96 @@
     tools:context=".ui.records.EditRecordDialogFragment">
 
     <LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="16dp">
-
-    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Edit Tea Record"
-        android:textStyle="bold"
+        android:orientation="vertical"
         android:gravity="center"
-        android:textColor="@color/teal_200"/>
+        android:padding="16dp">
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/textInputLayoutDate"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Date">
-
-        <EditText
-            android:id="@+id/editrecordEntryTime"
+        <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="none"
-            android:drawableEnd="@drawable/ic_baseline_calendar_month_24"
-            android:focusable="false"
-            android:clickable="true" />
+            android:text="Edit Tea Record"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:textColor="@color/teal_200" />
 
-    </com.google.android.material.textfield.TextInputLayout>
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textInputLayoutDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Date">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editrecordEntryTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"
+                android:drawableEnd="@drawable/ic_baseline_calendar_month_24"
+                android:focusable="false"
+                android:clickable="true" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textInputLayoutCompanyName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Company Plucked To">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editautoCompleteCompanyname"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textInputLayoutEmployeeName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Employee Name">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editautoCompleteEmployeeName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- ID -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textInputLayoutEmployeeKilos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Kilos">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editfragmentTextEmployeeKilos"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number" />
+
+        </com.google.android.material.textfield.TextInputLayout>
 
 
-    <AutoCompleteTextView
-        android:id="@+id/editautoCompleteCompanyname"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:inputType="text"
-        android:layout_marginTop="8dp"
-        android:hint="Company Plucked To"/>
+        <!-- Save Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/editbuttonSaveRecord"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Next Employee" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/editbuttonSaveAllRecords"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Save All Records" />
 
-    <AutoCompleteTextView
-        android:id="@+id/editautoCompleteEmployeeName"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Employee Name"
-        android:layout_marginTop="8dp" />
-
-
-    <!-- ID -->
-    <EditText
-        android:id="@+id/editfragmentTextEmployeeKilos"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:inputType="number"
-        android:layout_marginTop="8dp"
-        android:hint="Kilos"/>
-
-    <!-- Save Button -->
-    <Button
-        android:id="@+id/editbuttonSaveRecord"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Next Employee"/>
-
-    <Button
-        android:id="@+id/editbuttonSaveAllRecords"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Save All Records"/>
-
-</LinearLayout>
+    </LinearLayout>
 
 </RelativeLayout>

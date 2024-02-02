@@ -1,3 +1,4 @@
+// File: EmployeesFragment.kt
 package com.example.apptea.ui.employees
 
 import android.os.Bundle
@@ -13,7 +14,8 @@ import com.example.apptea.R
 import com.example.apptea.databinding.FragmentEmployeesBinding
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
-class EmployeesFragment : Fragment(), AddEmployeeDialogFragment.OnEmployeeSavedListener {
+class EmployeesFragment : Fragment(), AddEmployeeDialogFragment.OnEmployeeSavedListener,
+    OnEmployeeUpdatedListener {
 
     private var _binding: FragmentEmployeesBinding? = null
     private val binding get() = _binding!!
@@ -41,19 +43,24 @@ class EmployeesFragment : Fragment(), AddEmployeeDialogFragment.OnEmployeeSavedL
         recyclerView.adapter = employeeAdapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        fabAddEmployee.setOnClickListener {
-            // Show the FormDialogFragment when FAB is clicked
-            val formDialog = AddEmployeeDialogFragment()
-            formDialog.employeeSavedListener = this
-            formDialog.show(childFragmentManager, AddEmployeeDialogFragment::class.java.simpleName)
-        }
         // Observe changes in the employee list and update the adapter
         employeesViewModel.employeeList.observe(viewLifecycleOwner, Observer { employees ->
             employeeAdapter.updateData(employees)
+            employeeAdapter.notifyDataSetChanged()
         })
 
         // Fetch employees when the fragment is created
         employeesViewModel.fetchEmployees()
+
+        fabAddEmployee.setOnClickListener {
+            // Show the FormDialogFragment when FAB is clicked
+            val formDialog = AddEmployeeDialogFragment()
+            formDialog.employeeSavedListener = this
+            formDialog.show(
+                childFragmentManager,
+                AddEmployeeDialogFragment::class.java.simpleName
+            )
+        }
 
         return root
     }
@@ -67,5 +74,9 @@ class EmployeesFragment : Fragment(), AddEmployeeDialogFragment.OnEmployeeSavedL
         // Handle the logic to refresh your fragment
         // For example, reload the data or re-fetch the records
         employeesViewModel.fetchEmployees()
+    }
+
+    override fun onEmployeeUpdated() {
+        // Not needed here, as the observer in onCreateView will automatically update the adapter
     }
 }

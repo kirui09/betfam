@@ -12,10 +12,15 @@ import com.example.apptea.DBHelper
 import com.example.apptea.R
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
-class RecordsFragment : Fragment(), AddRecordDialogFragment.AddRecordDialogFragmentListener {
+class RecordsFragment : Fragment(),
+AddRecordDialogFragment.AddRecordDialogFragmentListener,
+TeaRecordsAdapter.OnTeaRecordItemClickListener {
 
     private lateinit var recordsAdapter: TeaRecordsAdapter
     private lateinit var dbHelper: DBHelper
+
+    // Define selectedDate as a class-level variable
+    private var selectedDate: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -27,6 +32,7 @@ class RecordsFragment : Fragment(), AddRecordDialogFragment.AddRecordDialogFragm
 
         val recyclerView: RecyclerView = view.findViewById(R.id.dailyTeaRecordsrecyclerView)
         recordsAdapter = TeaRecordsAdapter()
+        recordsAdapter.setOnTeaRecordItemClickListener(this) // Set the listener
         recyclerView.adapter = recordsAdapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
@@ -43,22 +49,7 @@ class RecordsFragment : Fragment(), AddRecordDialogFragment.AddRecordDialogFragm
 
     private fun showAddRecordDialog() {
         val addRecordDialog = AddRecordDialogFragment()
-        addRecordDialog.recordSavedListener = object : AddRecordDialogFragment.AddRecordDialogFragmentListener {
-            override fun onRecordSaved() {
-                // Handle any specific actions after a record is saved, if needed
-                // For now, let's update the RecyclerView with the latest records
-                updateRecordsList()
-            }
-
-            override fun onAllRecordsSaved() {
-                // Handle any specific actions after all records are saved, if needed
-                // For now, let's display a Toast message
-                Toast.makeText(requireContext(), "All records saved", Toast.LENGTH_SHORT).show()
-
-                // Update the RecyclerView with the latest records from the database
-                updateRecordsList()
-            }
-        }
+        addRecordDialog.recordSavedListener = this
         addRecordDialog.show(parentFragmentManager, "AddRecordDialogFragment")
     }
 
@@ -86,4 +77,21 @@ class RecordsFragment : Fragment(), AddRecordDialogFragment.AddRecordDialogFragm
         // Update the RecyclerView with the latest records from the database
         updateRecordsList()
     }
+
+    // Implementation of the OnTeaRecordItemClickListener interface
+    // Implementation of the OnTeaRecordItemClickListener interface
+    override fun onUpdateButtonClick() {
+        val fragmentManager = requireActivity().supportFragmentManager
+        val editDialogFragment = EditRecordDialogFragment()
+
+        // Pass the selected date to EditRecordDialogFragment
+        val bundle = Bundle()
+        bundle.putString("selectedDate", selectedDate) // Replace with the actual variable containing the selected date
+        editDialogFragment.arguments = bundle
+
+        // Show the dialog fragment
+        editDialogFragment.show(fragmentManager, "EditRecordDialogFragment")
+    }
+
+
 }

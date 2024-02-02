@@ -1,0 +1,64 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/rounded_corner"
+    tools:context=".ui.employees.AddEmployeeDialogFragment">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rounded_corner"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Edit Employee Details"
+            android:textStyle="bold"
+            android:textColor="@color/teal_200"/>
+
+
+        <EditText
+            android:id="@+id/updateEmployeeName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:hint="Employee Name"/>
+
+        <!-- Age -->
+        <EditText
+            android:id="@+id/updateEmployeeAge"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:hint="Age(Optional)"/>
+
+        <!-- Phone Number -->
+        <EditText
+            android:id="@+id/updateEmployeePhoneNumber"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="phone"
+            android:hint="Phone Number(Optional)"/>
+
+        <!-- ID -->
+        <EditText
+            android:id="@+id/updateEmployeeID"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:hint="ID(Optional)"/>
+
+        <!-- Save Button -->
+        <Button
+            android:id="@+id/updatebuttonEmployee"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Update Employee"/>
+
+    </LinearLayout>
+
+</RelativeLayout>
