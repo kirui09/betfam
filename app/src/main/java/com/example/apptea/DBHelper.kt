@@ -10,6 +10,7 @@ import com.example.apptea.ui.companies.Company
 import com.example.apptea.ui.employees.Employee
 import com.example.apptea.ui.records.DailyRecord
 import com.example.apptea.ui.records.DailyTeaRecord
+import com.example.apptea.ui.records.EditableTeaRecord
 import com.example.apptea.ui.records.Record
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -404,26 +405,55 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         return companyKilosMap
     }
 
-    fun getTeaRecordByDate(date: String): DailyTeaRecord? {
+    // Fetch all records for a given date
+    // Inside DBHelper class
+    fun getTeaRecordsByDate(date: String): EditableTeaRecord? {
         val db = this.readableDatabase
-        val query =
-            "SELECT date, employee_name ,  companies,kilos   FROM TeaRecords WHERE date = ? "
-
+        val query = "SELECT * FROM TeaRecords WHERE date = ?"
         val cursor = db.rawQuery(query, arrayOf(date))
 
-        var teaRecord: DailyTeaRecord? = null
-
-        while (cursor.moveToNext()) {
-            val employees = cursor.getString(cursor.getColumnIndex("employees"))?.split(",")
+        return if (cursor.moveToFirst()) {
+            val date = cursor.getString(cursor.getColumnIndex("date"))
+            val employees = cursor.getString(cursor.getColumnIndex("employee_name"))?.split(",")
             val companies = cursor.getString(cursor.getColumnIndex("companies"))?.split(",")
-            val totalKilos = cursor.getDouble(cursor.getColumnIndex("total_kilos"))
+            val kilos = cursor.getDouble(cursor.getColumnIndex("kilos"))
 
-            teaRecord = DailyTeaRecord(date, employees.orEmpty(), companies.orEmpty(), totalKilos)
+            EditableTeaRecord(date, employees.orEmpty(), companies.orEmpty(), kilos)
+        } else {
+            null
+        }
+    }
+
+
+    // Update records in the database
+    // Update records in the database
+    fun updateTeaRecord(records: List<EditableTeaRecord>) {
+        val db = this.writableDatabase
+
+        // Loop through the list of records and update each one
+        for (record in records) {
+            val values = ContentValues()
+            values.put("date", record.date)
+            values.put("companies", record.companies.joinToString(","))
+            values.put("employee_name", record.employees.joinToString(","))
+            values.put("kilos", record.kilos)
+
+            // Assuming your date column is unique or you want to update all records with the same date
+            val whereClause = "date = ?"
+            val whereArgs = arrayOf(record.date)
+
+            db.update("TeaRecords", values, whereClause, whereArgs)
         }
 
-        cursor.close()
-        return teaRecord
+        db.close()
     }
+
+
+
+
+
+
+
 
 
 

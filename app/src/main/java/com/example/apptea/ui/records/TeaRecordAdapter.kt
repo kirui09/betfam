@@ -9,6 +9,16 @@ import com.example.apptea.databinding.ItemTeaRecordBinding
 
 class TeaRecordsAdapter : ListAdapter<DailyTeaRecord, TeaRecordsAdapter.TeaRecordViewHolder>(TeaRecordDiffCallback()) {
 
+
+    // Listener for item click events
+    private var itemClickListener: OnTeaRecordItemClickListener? = null
+
+    // Setter function for the listener
+    fun setOnTeaRecordItemClickListener(listener: OnTeaRecordItemClickListener) {
+        itemClickListener = listener
+    }
+
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TeaRecordViewHolder {
         val binding = ItemTeaRecordBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return TeaRecordViewHolder(binding)
@@ -18,14 +28,11 @@ class TeaRecordsAdapter : ListAdapter<DailyTeaRecord, TeaRecordsAdapter.TeaRecor
         val teaRecord = getItem(position)
         holder.bind(teaRecord)
 
-        // Handle "Update Record" button click
-        holder.binding.updateButton.setOnClickListener {
-            itemClickListener.onUpdateButtonClick(teaRecord)
-        }
+
 
     }
 
-    class TeaRecordViewHolder(private val binding: ItemTeaRecordBinding) : RecyclerView.ViewHolder(binding.root) {
+    class TeaRecordViewHolder(val binding: ItemTeaRecordBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(teaRecord: DailyTeaRecord) {
             binding.dateOfInputTextView.text = teaRecord.date
             binding.employeesAtWorkTextView.text = teaRecord.employees.toString()
@@ -53,6 +60,6 @@ class TeaRecordsAdapter : ListAdapter<DailyTeaRecord, TeaRecordsAdapter.TeaRecor
     }
     // Interface for handling item click events
     interface OnTeaRecordItemClickListener {
-        fun onTeaRecordItemClick(teaRecord: DailyTeaRecord)
+        fun onUpdateButtonClick(teaRecord: DailyTeaRecord)
     }
 }
