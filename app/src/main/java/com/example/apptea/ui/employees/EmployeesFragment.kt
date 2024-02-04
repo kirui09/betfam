@@ -1,21 +1,24 @@
-// File: EmployeesFragment.kt
 package com.example.apptea.ui.employees
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.apptea.DBHelper
 import com.example.apptea.R
 import com.example.apptea.databinding.FragmentEmployeesBinding
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class EmployeesFragment : Fragment(), AddEmployeeDialogFragment.OnEmployeeSavedListener,
-    OnEmployeeUpdatedListener {
+    EmployeeAdapter.OnDeleteClickListener {
 
     private var _binding: FragmentEmployeesBinding? = null
     private val binding get() = _binding!!
@@ -34,23 +37,27 @@ class EmployeesFragment : Fragment(), AddEmployeeDialogFragment.OnEmployeeSavedL
         _binding = FragmentEmployeesBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        // Access the FloatingActionButton
-        val fabAddEmployee = root.findViewById<FloatingActionButton>(R.id.fabAddEmployee)
-
         // Set up RecyclerView
         recyclerView = root.findViewById(R.id.recyclerView)
         employeeAdapter = EmployeeAdapter(emptyList()) // Initialize the adapter
         recyclerView.adapter = employeeAdapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
+        // Set the delete click listener in the adapter
+        employeeAdapter.onDeleteClickListener = this
+
         // Observe changes in the employee list and update the adapter
         employeesViewModel.employeeList.observe(viewLifecycleOwner, Observer { employees ->
+            Log.d("EmployeesFragment", "Observed ${employees.size} employees")
             employeeAdapter.updateData(employees)
             employeeAdapter.notifyDataSetChanged()
         })
 
         // Fetch employees when the fragment is created
         employeesViewModel.fetchEmployees()
+
+        // Access the FloatingActionButton
+        val fabAddEmployee = root.findViewById<FloatingActionButton>(R.id.fabAddEmployee)
 
         fabAddEmployee.setOnClickListener {
             // Show the FormDialogFragment when FAB is clicked
@@ -66,6 +73,8 @@ class EmployeesFragment : Fragment(), AddEmployeeDialogFragment.OnEmployeeSavedL
     }
 
     override fun onDestroyView() {
+        // Ensure data is updated before destroying the view
+        employeesViewModel.fetchEmployees()
         super.onDestroyView()
         _binding = null
     }
@@ -76,7 +85,39 @@ class EmployeesFragment : Fragment(), AddEmployeeDialogFragment.OnEmployeeSavedL
         employeesViewModel.fetchEmployees()
     }
 
-    override fun onEmployeeUpdated() {
-        // Not needed here, as the observer in onCreateView will automatically update the adapter
+    override fun onDeleteClick(employee: Employee) {
+        showDeleteConfirmationDialog(employee)
+    }
+
+    private fun showDeleteConfirmationDialog(employee: Employee) {
+        val dialog = AlertDialog.Builder(requireContext())
+            .setTitle("Delete Employee")
+            .setMessage("Are you sure you want to delete ${employee.name}?")
+            .setPositiveButton("Yes") { _, _ ->
+                deleteEmployee(employee)
+            }
+            .setNegativeButton("No", null)
+            .create()
+
+        dialog.show()
+    }
+
+    private fun deleteEmployee(employee: Employee) {
+        // Implement the delete operation in your DBHelper
+        val dbHelper = DBHelper(requireContext())
+        val success = dbHelper.deleteEmployee(employee)
+
+        if (success) {
+            Toast.makeText(
+                requireContext(),
+                "Employee deleted successfully",
+                Toast.LENGTH_SHORT
+            ).show()
+            employeesViewModel.fetchEmployees() // Refresh the employee list after deletion
+        } else {
+            Toast.makeText(requireContext(), "Error deleting employee", Toast.LENGTH_SHORT).show()
+        }
+
+        dbHelper.close()
     }
 }

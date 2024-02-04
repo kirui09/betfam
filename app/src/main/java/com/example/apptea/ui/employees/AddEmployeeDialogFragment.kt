@@ -16,6 +16,7 @@ class AddEmployeeDialogFragment : DialogFragment() {
     private lateinit var dbh: DBHelper
     var employeeSavedListener: OnEmployeeSavedListener? = null
 
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -45,7 +46,8 @@ class AddEmployeeDialogFragment : DialogFragment() {
             }
 
             // Create an Employee object
-            val employee = Employee(name, age, phoneNumber, id)
+            // Create an Employee object
+            val employee = Employee(id = null, name = name, age = age, phoneNumber = phoneNumber, employeeId = id)
 
             // Save employee to the database
             saveEmployeeToDatabase(employee)

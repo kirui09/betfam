@@ -1,27 +1,18 @@
-// EmployeeAdapter.kt
 package com.example.apptea.ui.employees
 
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.example.apptea.R
 
+
 class EmployeeAdapter(private var employeeList: List<Employee>) :
     RecyclerView.Adapter<EmployeeAdapter.EmployeeViewHolder>() {
 
-    inner class EmployeeViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val nameTextView: TextView = itemView.findViewById(R.id.nameTextView)
-        val ageTextView: TextView = itemView.findViewById(R.id.ageTextView)
-        val phoneNumberTextView: TextView = itemView.findViewById(R.id.phoneNumberTextView)
-        val employeeIdTextView: TextView = itemView.findViewById(R.id.employeeIdTextView)
-        val editButton: ImageView = itemView.findViewById(R.id.update_button)
-
-    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EmployeeViewHolder {
         val itemView =
@@ -39,16 +30,44 @@ class EmployeeAdapter(private var employeeList: List<Employee>) :
 
         // Handle the Edit button click
         holder.editButton.setOnClickListener {
-            val fragmentManager = (holder.itemView.context as FragmentActivity).supportFragmentManager
-            val editEmployeeFragment = EditEmployeeDialogFragment.newInstance(currentEmployee)
+            val fragmentManager =
+                (holder.itemView.context as FragmentActivity).supportFragmentManager
+            val editEmployeeFragment =
+                EditEmployeeDialogFragment.newInstance(currentEmployee)
             editEmployeeFragment.show(fragmentManager, "EditEmployeeDialogFragment")
         }
+
+        // Handle the Delete button click
+        holder.deleteButton.setOnClickListener {
+            // Notify the listener about the delete button click
+            onDeleteClickListener?.onDeleteClick(currentEmployee)
+        }
+
     }
+
+    interface OnDeleteClickListener {
+        fun onDeleteClick(employee: Employee)
+    }
+
+    // Add a property to store the listener
+    var onDeleteClickListener: OnDeleteClickListener? = null
 
     override fun getItemCount() = employeeList.size
 
-    fun updateData(newList: List<Employee>) {
-        employeeList = ArrayList(newList)
+    // Update LiveData in Place
+    fun updateData(newList: List<*>) {
+        employeeList = newList as List<Employee>
         notifyDataSetChanged()
     }
+
+    inner class EmployeeViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val nameTextView: TextView = itemView.findViewById(R.id.nameTextView)
+        val ageTextView: TextView = itemView.findViewById(R.id.ageTextView)
+        val phoneNumberTextView: TextView = itemView.findViewById(R.id.phoneNumberTextView)
+        val employeeIdTextView: TextView = itemView.findViewById(R.id.employeeIdTextView)
+        val editButton: ImageView = itemView.findViewById(R.id.update_button)
+
+        val deleteButton: ImageView = itemView.findViewById(R.id.delete_employee_button)
+    }
+
 }

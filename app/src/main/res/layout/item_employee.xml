@@ -15,51 +15,35 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-<RelativeLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:layout_marginTop="4dp">
-
-
-    <TextView
-        android:id="@+id/nameTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Name"
-        android:textStyle="bold"
-        android:padding="5dp"/>
-
-    <ImageView
-        android:id="@+id/update_button"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="30dp"
-        android:src="@drawable/ic_baseline_edit_24" />
-    <ImageView
-        android:id="@+id/delete_button"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_alignParentEnd="true"
-        android:src="@drawable/ic_baseline_delete_24" />
-
-
-</RelativeLayout>
-
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:layout_marginTop="4dp">
 
-    <TextView
-        android:id="@+id/ageTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Age"
-        android:textStyle="bold"
-        android:padding="5dp"/>
+
+            <TextView
+                android:id="@+id/nameTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Name"
+                android:textStyle="bold"
+                android:padding="5dp"/>
+
+            <ImageView
+                android:id="@+id/update_button"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_alignParentEnd="true"
+                android:layout_marginEnd="30dp"
+                android:src="@drawable/ic_baseline_edit_24" />
+            <ImageView
+                android:id="@+id/delete_employee_button"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_alignParentEnd="true"
+                android:src="@drawable/ic_baseline_delete_24" />
+
 
         </RelativeLayout>
 
@@ -69,13 +53,13 @@
             android:orientation="vertical"
             android:layout_marginTop="4dp">
 
-    <TextView
-        android:id="@+id/phoneNumberTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Phone Number"
-        android:textStyle="bold"
-        android:padding="5dp"/>
+            <TextView
+                android:id="@+id/ageTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Age"
+                android:textStyle="bold"
+                android:padding="5dp"/>
 
         </RelativeLayout>
 
@@ -85,13 +69,29 @@
             android:orientation="vertical"
             android:layout_marginTop="4dp">
 
-    <TextView
-        android:id="@+id/employeeIdTextView"
-        android:layout_width="wrap_content"
-        android:textStyle="bold"
-        android:layout_height="wrap_content"
-        android:text="Employee ID"
-        android:padding="5dp"/>
+            <TextView
+                android:id="@+id/phoneNumberTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Phone Number"
+                android:textStyle="bold"
+                android:padding="5dp"/>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="4dp">
+
+            <TextView
+                android:id="@+id/employeeIdTextView"
+                android:layout_width="wrap_content"
+                android:textStyle="bold"
+                android:layout_height="wrap_content"
+                android:text="Employee ID"
+                android:padding="5dp"/>
 
         </RelativeLayout>
 

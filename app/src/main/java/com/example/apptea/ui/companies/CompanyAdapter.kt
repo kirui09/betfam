@@ -1,3 +1,4 @@
+// CompanyAdapter.kt
 package com.example.apptea.ui.companies
 
 import android.view.LayoutInflater
@@ -6,7 +7,12 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.apptea.R
-class CompanyAdapter(private val companies: List<Company>) :
+
+interface CompanyClickHandler {
+    fun onEditClick(company: Company)
+}
+
+class CompanyAdapter(private val companies: List<Company>, private val clickHandler: CompanyClickHandler) :
     RecyclerView.Adapter<CompanyAdapter.CompanyViewHolder>() {
 
     class CompanyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -24,6 +30,11 @@ class CompanyAdapter(private val companies: List<Company>) :
         val company = companies[position]
         holder.nameTextView.text = company.name
         holder.locationTextView.text = company.location
+
+        // Set click listener for the edit button
+        holder.itemView.findViewById<View>(R.id.update_company_button).setOnClickListener {
+            clickHandler.onEditClick(company)
+        }
     }
 
     override fun getItemCount(): Int {

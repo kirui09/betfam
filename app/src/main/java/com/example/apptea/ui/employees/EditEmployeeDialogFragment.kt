@@ -1,4 +1,3 @@
-// File: EditEmployeeDialogFragment.kt
 package com.example.apptea.ui.employees
 
 import android.os.Bundle
@@ -14,10 +13,8 @@ import com.example.apptea.R
 
 class EditEmployeeDialogFragment : DialogFragment() {
 
-    // Listener for notifying the calling fragment or activity
     private var onEmployeeUpdatedListener: OnEmployeeUpdatedListener? = null
 
-    // Setter for the listener
     fun setOnEmployeeUpdatedListener(listener: OnEmployeeUpdatedListener) {
         this.onEmployeeUpdatedListener = listener
     }
@@ -38,7 +35,6 @@ class EditEmployeeDialogFragment : DialogFragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_edit_employee_dialog, container, false)
 
-        // Inside onCreateView or onViewCreated method
         val updateEmployeeName = view.findViewById<EditText>(R.id.updateEmployeeName)
         val updateEmployeeAge = view.findViewById<EditText>(R.id.updateEmployeeAge)
         val updateEmployeePhoneNumber = view.findViewById<EditText>(R.id.updateEmployeePhoneNumber)
@@ -47,10 +43,13 @@ class EditEmployeeDialogFragment : DialogFragment() {
 
         val employee = arguments?.getParcelable<Employee>("employee")
 
-        updateEmployeeName.setText(employee?.name)
-        updateEmployeeAge.setText(employee?.age)
-        updateEmployeePhoneNumber.setText(employee?.phoneNumber)
-        updateEmployeeID.setText(employee?.employeeId)
+        // Check if employee is null before accessing its properties
+        if (employee != null) {
+            updateEmployeeName.setText(employee.name)
+            updateEmployeeAge.setText(employee.age)
+            updateEmployeePhoneNumber.setText(employee.phoneNumber)
+            updateEmployeeID.setText(employee.employeeId)
+        }
 
         updateButtonEmployee.setOnClickListener {
             val updatedName = updateEmployeeName.text.toString()
@@ -58,11 +57,15 @@ class EditEmployeeDialogFragment : DialogFragment() {
             val updatedPhoneNumber = updateEmployeePhoneNumber.text.toString()
             val updatedID = updateEmployeeID.text.toString()
 
-            if (updatedName.isNotEmpty() && updatedAge.isNotEmpty() && updatedPhoneNumber.isNotEmpty() && updatedID.isNotEmpty()) {
+            if (updatedName.isNotEmpty() ) {
                 // Create an Employee object with the updated information
-                val updatedEmployee =
-                    Employee(updatedName, updatedAge, updatedPhoneNumber, updatedID)
-
+                val updatedEmployee = Employee(
+                    id = employee?.id,  // Pass the existing ID
+                    name = updatedName,
+                    age = updatedAge,
+                    phoneNumber = updatedPhoneNumber,
+                    employeeId = updatedID
+                )
                 // Update record in the database
                 val dbHelper = DBHelper(requireContext())
                 val success = dbHelper.updateEmployee(updatedEmployee)
@@ -85,12 +88,6 @@ class EditEmployeeDialogFragment : DialogFragment() {
                 }
 
                 dbHelper.close()
-            } else {
-                Toast.makeText(
-                    requireContext(),
-                    "Please fill in all fields",
-                    Toast.LENGTH_SHORT
-                ).show()
             }
 
             dismiss()

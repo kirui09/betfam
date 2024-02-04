@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.companies.UpdateCompanyDialogFragment">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+
+        android:padding="16dp">
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Edit My Company"
+            android:textStyle="bold"/>
+
+
+
+        <EditText
+            android:id="@+id/CompanyName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:hint="Company Name"/>
+
+        <EditText
+            android:id="@+id/editTextCompanyLocation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:hint="Company Location"/>
+
+        <!-- Save Button -->
+        <Button
+            android:id="@+id/buttonAddCompany"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Update My Companies"/>
+
+    </LinearLayout>
+
+
+</FrameLayout>

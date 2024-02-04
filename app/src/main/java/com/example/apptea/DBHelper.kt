@@ -5,6 +5,7 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import com.example.apptea.ui.companies.Company
 import com.example.apptea.ui.employees.Employee
@@ -228,21 +229,28 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
     fun getAllEmployees(): List<Employee> {
         val employeeList = mutableListOf<Employee>()
         val db = this.readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM Employees", null)
+
+        // Use the actual column names from the SELECT query
+        val cursor = db.rawQuery("SELECT id, name, age, phone, employee_id FROM Employees", null)
 
         while (cursor.moveToNext()) {
+            // Retrieve values using the correct column names
+            val id = cursor.getLong(cursor.getColumnIndex("id"))  // Make sure to use getLong for id
             val name = cursor.getString(cursor.getColumnIndex("name"))
             val age = cursor.getString(cursor.getColumnIndex("age"))
-            val phone = cursor.getString(cursor.getColumnIndex("phone"))
+            val phoneNumber = cursor.getString(cursor.getColumnIndex("phone"))
             val employeeId = cursor.getString(cursor.getColumnIndex("employee_id"))
 
-            val employee = Employee(name, age, phone, employeeId)
+            // Create Employee object with retrieved values
+            val employee = Employee(id, name, age, phoneNumber, employeeId)
             employeeList.add(employee)
         }
 
         cursor.close()
         return employeeList
     }
+
+
 
     fun getAllEmployeeNames(): List<String> {
         val employeeNames = mutableListOf<String>()
@@ -458,35 +466,84 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
     // Function to update an employee
     fun updateEmployee(employee: Employee): Boolean {
-        val db = this.writableDatabase
-        val contentValues = ContentValues()
+        try {
+            val db = this.writableDatabase
+            val contentValues = ContentValues()
+            contentValues.put("id", employee.id)
+            contentValues.put("name", employee.name)
+            contentValues.put("age", employee.age)
+            contentValues.put("phone", employee.phoneNumber)
+            contentValues.put("employee_id", employee.employeeId)
 
-        contentValues.put("name", employee.name)
-        contentValues.put("age", employee.age)
-        contentValues.put("phone", employee.phoneNumber)
-        contentValues.put("employee_id", employee.employeeId)
+            // Log the update operation details
+            Log.d("DBHelper", "Updating employee record:")
+            Log.d("DBHelper", "Employee ID: ${employee.employeeId}")
+            Log.d("DBHelper", "Name: ${employee.name}")
+            Log.d("DBHelper", "Age: ${employee.age}")
+            Log.d("DBHelper", "Phone: ${employee.phoneNumber}")
 
-        val rowsAffected = db.update("Employees", contentValues, "employee_id = ?", arrayOf(employee.employeeId))
+            // Use an array of IDs for the WHERE clause
+            val rowsAffected = db.update(
+                "Employees",
+                contentValues,
+                "id = ?",
+                arrayOf(employee.id.toString())
+            )
 
-        db.close()
+            // Log the number of rows affected
+            Log.d("DBHelper", "Rows affected: $rowsAffected")
 
-        return rowsAffected > 0
+            db.close()
+
+            return rowsAffected > 0
+        } catch (e: Exception) {
+            // Handle any exceptions here (e.g., log or notify)
+            e.printStackTrace()
+            return false
+        }
     }
 
 
 
+    fun deleteEmployee(employee: Employee): Boolean {
+        try {
+            val db = this.writableDatabase
 
+            val rowsAffected = db.delete(
+                "Employees",
+                "id = ?",
+                arrayOf(employee.id.toString())
+            )
 
+            db.close()
 
-
-
-
-
-
-
+            return rowsAffected > 0
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return false
+        }
+    }
 
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

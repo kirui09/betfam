@@ -1,3 +1,4 @@
+// CompaniesFragment.kt
 package com.example.apptea.ui.companies
 
 import android.os.Bundle
@@ -11,7 +12,7 @@ import com.example.apptea.DBHelper
 import com.example.apptea.R
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
-class CompaniesFragment : Fragment() {
+class CompaniesFragment : Fragment(), CompanyClickHandler {
 
     private lateinit var dbHelper: DBHelper
 
@@ -31,15 +32,12 @@ class CompaniesFragment : Fragment() {
         // Get the list of companies from the database
         val companies = dbHelper.getAllCompanies()
 
-
-        // Create and set the adapter
-        val companyAdapter = CompanyAdapter(companies)
+        // Create and set the adapter with the click handler
+        val companyAdapter = CompanyAdapter(companies, this)
         recyclerViewCompanies.adapter = companyAdapter
 
-        // Find the FAB button
-        val fabAddCompany: FloatingActionButton = view.findViewById(R.id.fabAddCompany)
-
         // Set a click listener for the FAB button
+        val fabAddCompany: FloatingActionButton = view.findViewById(R.id.fabAddCompany)
         fabAddCompany.setOnClickListener {
             // Open the AddCompanyDialogFragment when the FAB is clicked
             openAddCompanyDialog()
@@ -65,5 +63,12 @@ class CompaniesFragment : Fragment() {
         })
 
         addCompanyDialogFragment.show(requireFragmentManager(), "AddCompanyDialogFragment")
+    }
+
+    // Update the company list or perform any other UI updates as needed
+
+    override fun onEditClick(company: Company) {
+        // Handle the edit action here
+        // For example, open the EditCompanyDialogFragment with the selected company data
     }
 }
