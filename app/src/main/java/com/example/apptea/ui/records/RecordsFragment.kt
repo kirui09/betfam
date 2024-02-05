@@ -58,7 +58,7 @@ class RecordsFragment : Fragment(),
 
         selectedDate?.let { date ->
             // Update the RecyclerView with the latest records from the database for the selected date
-            val teaRecords = dbHelper.getEditableTeaRecordsByDate(date)
+            val teaRecords = dbHelper.getAllTeaRecords()
             recordsAdapter.updateRecords(teaRecords)
         }
 

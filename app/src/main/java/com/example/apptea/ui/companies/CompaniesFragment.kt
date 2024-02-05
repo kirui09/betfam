@@ -113,8 +113,10 @@ class CompaniesFragment : Fragment(), CompanyClickHandler {
 
             // Update the adapter with the new list of companies
             companyAdapter.updateData(updatedCompanies)
+            companyAdapter.updateData(updatedCompanies)
 
             // Notify the adapter that the data set has changed
+            companyAdapter.notifyDataSetChanged()
             companyAdapter.notifyDataSetChanged()
 
             Log.d("CompaniesFragment", "Company list updated successfully")

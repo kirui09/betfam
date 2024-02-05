@@ -351,28 +351,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
     // Inside DBHelper class
 
-    fun getAllTeaRecords(): List<DailyTeaRecord> {
-        val teaRecordsList = mutableListOf<DailyTeaRecord>()
-        val teaRecordsLiveData = MutableLiveData<List<DailyTeaRecord>>()
-        val db = this.readableDatabase
-        val query = "SELECT date,GROUP_CONCAT(employee_name) AS employees,GROUP_CONCAT(DISTINCT company) AS companies, SUM(kilos) AS total_kilos FROM TeaRecords GROUP BY date ORDER BY date DESC"
 
-        val cursor = db.rawQuery(query, null)
-
-        while (cursor.moveToNext()) {
-            val date = cursor.getString(cursor.getColumnIndex("date"))
-            val employees = cursor.getString(cursor.getColumnIndex("employees")).split(",")
-            val companies = cursor.getString(cursor.getColumnIndex("companies")).split(",")
-            val totalKilos = cursor.getDouble(cursor.getColumnIndex("total_kilos"))
-
-            val record = DailyTeaRecord( date,employees, companies, totalKilos)
-            teaRecordsList.add(record)
-        }
-
-        cursor.close()
-        teaRecordsLiveData.postValue(teaRecordsList)
-        return teaRecordsList
-    }
 
         // Method to fetch tea records for the past 1 week
         fun getTeaRecordsForPastWeek(): List<DailyRecord> {
@@ -422,48 +401,48 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
     // Fetch all records for a given date
     // Inside DBHelper class
-    fun getTeaRecordsByDate(date: String): List<EditableTeaRecord> {
-        val recordsList = mutableListOf<EditableTeaRecord>()
+//    fun getTeaRecordsByDate(date: String): List<EditableTeaRecord> {
+//        val recordsList = mutableListOf<EditableTeaRecord>()
+//
+//        val db = this.readableDatabase
+//        val query = "SELECT * FROM TeaRecords WHERE date = ?"
+//        val cursor = db.rawQuery(query, arrayOf(date))
+//
+//        while (cursor.moveToNext()) {
+//            val recordid = cursor.getInt(cursor.getColumnIndex("id"))
+//            val recordDate = cursor.getString(cursor.getColumnIndex("date"))
+//            val companies = cursor.getString(cursor.getColumnIndex("companies"))?.split(",")
+//            val employees = cursor.getString(cursor.getColumnIndex("employee_name"))?.split(",")
+//
+//            val editableTeaRecord = EditableTeaRecord(recordid,recordDate, companies.orEmpty(), employees.orEmpty())
+//            recordsList.add(editableTeaRecord)
+//        }
+//
+//        cursor.close()
+//        return recordsList
+//    }
 
-        val db = this.readableDatabase
-        val query = "SELECT * FROM TeaRecords WHERE date = ?"
-        val cursor = db.rawQuery(query, arrayOf(date))
-
-        while (cursor.moveToNext()) {
-            val recordid = cursor.getInt(cursor.getColumnIndex("id"))
-            val recordDate = cursor.getString(cursor.getColumnIndex("date"))
-            val companies = cursor.getString(cursor.getColumnIndex("companies"))?.split(",")
-            val employees = cursor.getString(cursor.getColumnIndex("employee_name"))?.split(",")
-            val kilos = cursor.getDouble(cursor.getColumnIndex("kilos"))
-            val pay = cursor.getDouble(cursor.getColumnIndex("pay"))
-            val editableTeaRecord = EditableTeaRecord(recordid,recordDate, companies.orEmpty(), employees.orEmpty(), kilos,pay)
-            recordsList.add(editableTeaRecord)
-        }
-
-        cursor.close()
-        return recordsList
-    }
-
-    fun updateTeaRecord(records: List<EditableTeaRecord>) {
-        val db = this.writableDatabase
-
-        // Loop through the list of records and update each one
-        for (record in records) {
-            val values = ContentValues()
-            values.put("date", record.date)
-            values.put("companies", record.companies.joinToString(","))
-            values.put("employee_name", record.employees.joinToString(","))
-            values.put("kilos", record.kilos)
-
-            // Assuming your date column is unique or you want to update all records with the same date
-            val whereClause = "date = ?"
-            val whereArgs = arrayOf(record.date)
-
-            db.update("TeaRecords", values, whereClause, whereArgs)
-        }
-
-        db.close()
-    }
+//    fun updateTeaRecord(records: List<EditableTeaRecord>) {
+//        val db = this.writableDatabase
+//
+//        // Loop through the list of records and update each one
+//        for (record in records) {
+//            val values = ContentValues()
+//            values.put("date", record.date)
+//            values.put("companies", record.companies.joinToString(","))
+//            values.put("employee_name", record.employees.joinToString(","))
+//            values.put("kilos", record.kilos)
+//
+//
+//            // Assuming your date column is unique or you want to update all records with the same date
+//            val whereClause = "date = ?"
+//            val whereArgs = arrayOf(record.date)
+//
+//            db.update("TeaRecords", values, whereClause, whereArgs)
+//        }
+//
+//        db.close()
+//    }
 
 
 
@@ -558,36 +537,62 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
     }
 
 
-    fun getEditableTeaRecordsByDate(date: String): MutableList<EditableTeaRecord> {
+    fun getEditableTeaRecordsByDate(): MutableList<EditableTeaRecord> {
         val recordsList = mutableListOf<EditableTeaRecord>()
-
+        val recordsLiveData = MutableLiveData<List<EditableTeaRecord>>()
         val db = this.readableDatabase
         val query = "SELECT * FROM TeaRecords GROUP BY date ORDER BY date DESC "
-        val cursor = db.rawQuery(query, arrayOf(date))
+        val cursor = db.rawQuery(query, null)
 
-        try {
-            while (cursor.moveToNext()) {
-                val recordId = cursor.getInt(cursor.getColumnIndex("id"))
-                val recordDate = cursor.getString(cursor.getColumnIndex("date"))
-                val companies = cursor.getString(cursor.getColumnIndex("company"))?.split(",") ?: emptyList()
-                val employees = cursor.getString(cursor.getColumnIndex("employee_name"))?.split(",") ?: emptyList()
-                val kilos = cursor.getDouble(cursor.getColumnIndex("kilos"))
-                val pay = cursor.getDouble(cursor.getColumnIndex("pay"))
 
-                val editableTeaRecord = EditableTeaRecord(recordId, recordDate, companies, employees, kilos, pay)
-                recordsList.add(editableTeaRecord)
-            }
-        } catch (e: Exception) {
-            Log.e("DatabaseError", "Error fetching data from database: ${e.message}")
-        } finally {
-            cursor.close()
+        while (cursor.moveToNext()) {
+            val recordId = cursor.getInt(cursor.getColumnIndex("id"))
+            val recordDate = cursor.getString(cursor.getColumnIndex("date"))
+            val companies =
+                cursor.getString(cursor.getColumnIndex("company"))?.split(",") ?: emptyList()
+            val employees =
+                cursor.getString(cursor.getColumnIndex("employee_name"))?.split(",") ?: emptyList()
+
+
+            val editableTeaRecord =
+                EditableTeaRecord(recordId, recordDate, companies, employees,)
+            recordsList.add(editableTeaRecord)
         }
-
-        // Log the fetched records
-        Log.d("DatabaseDebug", "Fetched records: $recordsList")
+//
+//
+//
+        cursor.close()
+        recordsLiveData.postValue(recordsList)
 
         return recordsList
     }
+
+        fun getAllTeaRecords(): List<DailyTeaRecord> {
+            val teaRecordsList = mutableListOf<DailyTeaRecord>()
+            val db = this.readableDatabase
+            val query =
+                "SELECT  date, company, employee_name  FROM TeaRecords ORDER BY date DESC"
+
+            val cursor = db.rawQuery(query, null)
+
+            while (cursor.moveToNext()) {
+                val id = cursor.getInt(cursor.getColumnIndex("id"))
+                val date = cursor.getString(cursor.getColumnIndex("date"))
+                val employees = cursor.getString(cursor.getColumnIndex("employee_name"))?.split(",") ?: emptyList()
+                val companies = cursor.getString(cursor.getColumnIndex("company"))?.split(",") ?: emptyList()
+
+
+                val record = DailyTeaRecord(id, date, employees, companies, )
+                teaRecordsList.add(record)
+            }
+
+            cursor.close()
+            db.close() // Close the database connection
+            return teaRecordsList
+        }
+
+
+
 
 
 

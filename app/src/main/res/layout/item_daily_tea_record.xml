@@ -1,39 +1,27 @@
-<androidx.cardview.widget.CardView
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="4dp"
-    app:cardUseCompatPadding="true">
-
-    <!-- Main Header -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:background="#3498db"
+    android:orientation="horizontal"
     android:padding="8dp">
 
+    <!-- Define your TextViews for each attribute in a tea record -->
     <TextView
+        android:id="@+id/dateTextView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="Date"
-        android:id="@+id/dateofinput"
-        android:textColor="#ffffff"
-    android:textStyle="bold"
-    android:gravity="center"/>
+        android:gravity="center"/>
 
     <TextView
-        android:id="@+id/employeeatfarm"
+        android:id="@+id/employeeNameTextView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="Employee Name"
-        android:textColor="#ffffff"
-        android:textStyle="bold"
         android:gravity="center"/>
+
+    <!-- Add more TextViews for other attributes -->
+
 
     <TextView
         android:id="@+id/company_plucked_to"
@@ -65,9 +53,5 @@
         android:textStyle="bold"
         android:gravity="center"/>
 
-    </LinearLayout>
 
-    <!-- RecyclerView -->
-
-
-</androidx.cardview.widget.CardView>
+</LinearLayout>

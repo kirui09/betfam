@@ -36,12 +36,6 @@ class EditRecordDialogFragment : DialogFragment() {
         editbuttonSaveRecord = view.findViewById(R.id.updatebuttonSaveRecord)
         editbuttonSaveAllRecords = view.findViewById(R.id.updatebuttonSaveAllRecords)
 
-        return view
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
         // Get the selected date from arguments
         val selectedDate = arguments?.getString("selectedDate")
 
@@ -49,14 +43,12 @@ class EditRecordDialogFragment : DialogFragment() {
         if (!selectedDate.isNullOrEmpty()) {
             // Fetch records for the selected date
             val dbHelper = DBHelper(requireContext())
-            val editableTeaRecords = dbHelper.getTeaRecordsByDate(selectedDate)
+
 
             // Log the selected date and retrieved data
-            Log.d("EditRecordFragment", "Selected Date: $selectedDate")
-            Log.d("EditRecordFragment", "EditableTeaRecords: $editableTeaRecords")
 
-            // Populate the UI with the retrieved data
-            populateUI(editableTeaRecords)
+
+
 
             // Handle your UI elements or actions here
         }
@@ -74,6 +66,8 @@ class EditRecordDialogFragment : DialogFragment() {
                 updateAllRecords()
             }
         }
+
+        return view
     }
 
     private fun populateUI(editableTeaRecords: List<EditableTeaRecord>) {
@@ -85,7 +79,7 @@ class EditRecordDialogFragment : DialogFragment() {
                 editrecordEntryTime.setText(firstRecord.date)
                 editautoCompleteCompanyname.setText(firstRecord.companies.joinToString(","))
                 editautoCompleteEmployeeName.setText(firstRecord.employees.joinToString(","))
-                editfragmentTextEmployeeKilos.setText(firstRecord.kilos.toString())
+
 
                 Log.d("EditRecordFragment", "UI populated successfully")
             } else {
@@ -95,6 +89,7 @@ class EditRecordDialogFragment : DialogFragment() {
             Log.e("EditRecordFragment", "Error populating UI: $editableTeaRecords")
         }
     }
+
 
     private fun validateFields(): Boolean {
         // Add your validation logic here

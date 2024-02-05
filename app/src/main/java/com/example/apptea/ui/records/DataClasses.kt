@@ -11,16 +11,15 @@ data class EditableTeaRecord(
     val date: String,
     val companies: List<String>,
     val employees: List<String>,
-    val kilos: Double,
-    val pay: Double
+
+
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
-        parcel.readInt() ,
+        parcel.readInt(),
         parcel.readString() ?: "",
         parcel.createStringArrayList() ?: emptyList(),
         parcel.createStringArrayList() ?: emptyList(),
-        parcel.readDouble(),
-        parcel.readDouble()
+
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -28,8 +27,7 @@ data class EditableTeaRecord(
         parcel.writeString(date)
         parcel.writeStringList(companies)
         parcel.writeStringList(employees)
-        parcel.writeDouble(kilos)
-        parcel.writeDouble(pay)
+
     }
 
     override fun describeContents(): Int {
@@ -47,13 +45,12 @@ data class EditableTeaRecord(
     }
 }
 
-
-
 data class DailyTeaRecord(
+    val id: Int,
     val date: String,
     val companies: List<String>,
     val employees: List<String>,
-    val totalKilos: Double
+
 )
 
 
