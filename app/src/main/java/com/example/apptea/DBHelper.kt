@@ -84,9 +84,12 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
                     "date TEXT, " +
                     "employee_name TEXT, " +
                     "company TEXT, " +
-                    "kilos DECIMAL)"
+                    "kilos DECIMAL, " + // Added comma
+                    "pay DECIMAL" +
+                    ")"
         )
     }
+
 
     private fun createCompaniesTable(db: SQLiteDatabase) {
         db.execSQL(
@@ -312,16 +315,20 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
     fun insertTeaRecord(record: Record): Boolean {
         val db = this.writableDatabase
 
+        val pay = record.kilos * 8.0 // Assuming pay is calculated as kilos * 8
+
         val cv = ContentValues().apply {
             put("date", record.date)
             put("employee_name", record.employee)
             put("company", record.company)
             put("kilos", record.kilos)
+            put("pay", pay) // Add pay to ContentValues
         }
 
         val result = db.insert("TeaRecords", null, cv)
         return result != -1L
     }
+
 
     fun insertTeaRecords(records: List<Record>): Boolean {
         val db = this.writableDatabase
@@ -423,12 +430,13 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         val cursor = db.rawQuery(query, arrayOf(date))
 
         while (cursor.moveToNext()) {
+            val recordid = cursor.getInt(cursor.getColumnIndex("id"))
             val recordDate = cursor.getString(cursor.getColumnIndex("date"))
             val companies = cursor.getString(cursor.getColumnIndex("companies"))?.split(",")
             val employees = cursor.getString(cursor.getColumnIndex("employee_name"))?.split(",")
             val kilos = cursor.getDouble(cursor.getColumnIndex("kilos"))
-
-            val editableTeaRecord = EditableTeaRecord(recordDate, companies.orEmpty(), employees.orEmpty(), kilos)
+            val pay = cursor.getDouble(cursor.getColumnIndex("pay"))
+            val editableTeaRecord = EditableTeaRecord(recordid,recordDate, companies.orEmpty(), employees.orEmpty(), kilos,pay)
             recordsList.add(editableTeaRecord)
         }
 
@@ -436,11 +444,6 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         return recordsList
     }
 
-
-
-
-    // Update records in the database
-    // Update records in the database
     fun updateTeaRecord(records: List<EditableTeaRecord>) {
         val db = this.writableDatabase
 
@@ -523,6 +526,70 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
             return false
         }
     }
+
+
+
+    // Function to update a company in the database
+    fun updateCompany(company: Company): Boolean {
+        val db = this.writableDatabase
+        val values = ContentValues()
+
+        values.put("companyname", company.name)
+        values.put("companylocation", company.location)
+
+        val whereClause = "id = ?"
+        val whereArgs = arrayOf(company.id.toString())
+
+        // Perform the update
+        val rowsUpdated = db.update("Companies", values, whereClause, whereArgs)
+
+        db.close()
+
+        return rowsUpdated > 0
+    }
+
+
+    // Delete a company by ID
+    fun deleteCompany(companyId: Int): Boolean {
+        val db = this.writableDatabase
+        val result = db.delete("Companies", "id=?", arrayOf(companyId.toString())) > 0
+        db.close()
+        return result
+    }
+
+
+    fun getEditableTeaRecordsByDate(date: String): MutableList<EditableTeaRecord> {
+        val recordsList = mutableListOf<EditableTeaRecord>()
+
+        val db = this.readableDatabase
+        val query = "SELECT * FROM TeaRecords GROUP BY date ORDER BY date DESC "
+        val cursor = db.rawQuery(query, arrayOf(date))
+
+        try {
+            while (cursor.moveToNext()) {
+                val recordId = cursor.getInt(cursor.getColumnIndex("id"))
+                val recordDate = cursor.getString(cursor.getColumnIndex("date"))
+                val companies = cursor.getString(cursor.getColumnIndex("company"))?.split(",") ?: emptyList()
+                val employees = cursor.getString(cursor.getColumnIndex("employee_name"))?.split(",") ?: emptyList()
+                val kilos = cursor.getDouble(cursor.getColumnIndex("kilos"))
+                val pay = cursor.getDouble(cursor.getColumnIndex("pay"))
+
+                val editableTeaRecord = EditableTeaRecord(recordId, recordDate, companies, employees, kilos, pay)
+                recordsList.add(editableTeaRecord)
+            }
+        } catch (e: Exception) {
+            Log.e("DatabaseError", "Error fetching data from database: ${e.message}")
+        } finally {
+            cursor.close()
+        }
+
+        // Log the fetched records
+        Log.d("DatabaseDebug", "Fetched records: $recordsList")
+
+        return recordsList
+    }
+
+
 
 
 }

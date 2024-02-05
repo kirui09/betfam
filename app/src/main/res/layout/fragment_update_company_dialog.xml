@@ -24,14 +24,14 @@
 
 
         <EditText
-            android:id="@+id/CompanyName"
+            android:id="@+id/updateTextCompanyName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="text"
             android:hint="Company Name"/>
 
         <EditText
-            android:id="@+id/editTextCompanyLocation"
+            android:id="@+id/updateTextCompanyLocation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="text"
@@ -39,7 +39,7 @@
 
         <!-- Save Button -->
         <Button
-            android:id="@+id/buttonAddCompany"
+           android:id="@+id/updateButtonCompany"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Update My Companies"/>

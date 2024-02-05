@@ -19,10 +19,23 @@
         android:layout_gravity="bottom|end"
         app:elevation="10dp" />
 
+
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/dailyTeaRecordsrecyclerView"
+        android:id="@+id/dailytearecordsrecyclerView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:padding="5dp"
+        android:visibility="visible"
+        android:background="#eeeeee"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        tools:listitem="@layout/item_daily_tea_record" />
+
+
+    <!--    <androidx.recyclerview.widget.RecyclerView-->
+<!--        android:id="@+id/dailyTeaRecordsrecyclerView"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent" />-->
 
 
 

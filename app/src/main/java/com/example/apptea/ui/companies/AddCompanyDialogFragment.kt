@@ -45,6 +45,9 @@ class AddCompanyDialogFragment : DialogFragment() {
             // Insert the company into the database
             saveCompany(name, location)
 
+            // Notify the listener if needed
+            listener?.onSaveCompanyClicked(name, location)
+
             // Close the dialog
             dismiss()
         }

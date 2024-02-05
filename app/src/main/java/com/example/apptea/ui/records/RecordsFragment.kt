@@ -13,8 +13,8 @@ import com.example.apptea.R
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class RecordsFragment : Fragment(),
-AddRecordDialogFragment.AddRecordDialogFragmentListener,
-TeaRecordsAdapter.OnTeaRecordItemClickListener {
+    AddRecordDialogFragment.AddRecordDialogFragmentListener,
+    TeaRecordsAdapter.OnTeaRecordItemClickListener {
 
     private lateinit var recordsAdapter: TeaRecordsAdapter
     private lateinit var dbHelper: DBHelper
@@ -30,7 +30,7 @@ TeaRecordsAdapter.OnTeaRecordItemClickListener {
 
         dbHelper = DBHelper(requireContext())
 
-        val recyclerView: RecyclerView = view.findViewById(R.id.dailyTeaRecordsrecyclerView)
+        val recyclerView: RecyclerView = view.findViewById(R.id.dailytearecordsrecyclerView)
         recordsAdapter = TeaRecordsAdapter()
         recordsAdapter.setOnTeaRecordItemClickListener(this) // Set the listener
         recyclerView.adapter = recordsAdapter
@@ -54,10 +54,14 @@ TeaRecordsAdapter.OnTeaRecordItemClickListener {
     }
 
     private fun updateRecordsList() {
-        // Update the RecyclerView with the latest records from the database
-        val teaRecords = dbHelper.getAllTeaRecords()
-        recordsAdapter.submitList(teaRecords)
-        recordsAdapter.notifyDataSetChanged()
+        // Check if selectedDate is not null
+
+        selectedDate?.let { date ->
+            // Update the RecyclerView with the latest records from the database for the selected date
+            val teaRecords = dbHelper.getEditableTeaRecordsByDate(date)
+            recordsAdapter.updateRecords(teaRecords)
+        }
+
     }
 
     override fun onRecordSaved() {
@@ -79,7 +83,6 @@ TeaRecordsAdapter.OnTeaRecordItemClickListener {
     }
 
     // Implementation of the OnTeaRecordItemClickListener interface
-    // Implementation of the OnTeaRecordItemClickListener interface
     override fun onUpdateButtonClick() {
         val fragmentManager = requireActivity().supportFragmentManager
         val editDialogFragment = EditRecordDialogFragment()
@@ -92,6 +95,4 @@ TeaRecordsAdapter.OnTeaRecordItemClickListener {
         // Show the dialog fragment
         editDialogFragment.show(fragmentManager, "EditRecordDialogFragment")
     }
-
-
 }

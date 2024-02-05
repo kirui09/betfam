@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout  xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/rounded_corner"
     tools:context=".ui.records.EditRecordDialogFragment">
 
     <LinearLayout
@@ -15,87 +16,74 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Edit Tea Record"
+            android:text="Update Tea Record"
             android:textStyle="bold"
-            android:gravity="center"
-            android:textColor="@color/teal_200" />
+            android:textColor="@color/teal_200"
+            android:gravity="center"/>
+
+
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/textInputLayoutDate"
+            android:id="@+id/updateTextInputLayoutDate"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Date">
+            android:layout_height="wrap_content">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/editrecordEntryTime"
+                android:id="@+id/updaterecordEntryTime"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="none"
-                android:drawableEnd="@drawable/ic_baseline_calendar_month_24"
+                android:inputType="date"
                 android:focusable="false"
-                android:clickable="true" />
-
+                android:clickable="true"
+                android:hint="Date"/>
         </com.google.android.material.textfield.TextInputLayout>
 
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/textInputLayoutCompanyName"
+
+
+
+        <AutoCompleteTextView
+            android:id="@+id/updateautoCompleteCompanyname"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Company Plucked To">
+            android:inputType="text"
+            android:layout_marginTop="8dp"
+            android:hint="Company Plucked To"/>
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/editautoCompleteCompanyname"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="text" />
 
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/textInputLayoutEmployeeName"
+        <AutoCompleteTextView
+            android:id="@+id/updateautoCompleteEmployeeName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Employee Name">
+            android:hint="Employee Name"
+            android:layout_marginTop="8dp" />
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/editautoCompleteEmployeeName"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="text" />
-
-        </com.google.android.material.textfield.TextInputLayout>
 
         <!-- ID -->
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/textInputLayoutEmployeeKilos"
+        <EditText
+            android:id="@+id/updateTextEmployeeKilos"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Kilos">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/editfragmentTextEmployeeKilos"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="number" />
-
-        </com.google.android.material.textfield.TextInputLayout>
-
+            android:inputType="number"
+            android:layout_marginTop="8dp"
+            android:hint="Kilos"/>
 
         <!-- Save Button -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/editbuttonSaveRecord"
+        <Button
+            android:id="@+id/updatebuttonSaveRecord"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Next Employee" />
+            android:text="Next Employee"/>
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/editbuttonSaveAllRecords"
+        <Button
+            android:id="@+id/updatebuttonSaveAllRecords"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Save All Records" />
+            android:text="Save All Records"/>
 
     </LinearLayout>
+
+
 
 </RelativeLayout>
