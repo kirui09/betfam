@@ -46,12 +46,20 @@ data class EditableTeaRecord(
 }
 
 data class DailyTeaRecord(
-    val id: Int,
-    val date: String,
-    val companies: List<String>,
-    val employees: List<String>,
 
+    val date: String,
+    val companies: String,
+    val employees: String,
+    val kilos: Double
 )
+
+data class TeaRecord(
+    val date: String,
+    val employeeName: List<String>,
+    val company: List<String>,
+    val kilos: List<Double>)
+
+
 
 
 

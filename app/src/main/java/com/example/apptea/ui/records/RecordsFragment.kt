@@ -11,16 +11,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.apptea.DBHelper
 import com.example.apptea.R
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import androidx.recyclerview.widget.DiffUtil
 
-class RecordsFragment : Fragment(),
-    AddRecordDialogFragment.AddRecordDialogFragmentListener,
+class RecordsFragment : Fragment(), AddRecordDialogFragment.AddRecordDialogFragmentListener,
     TeaRecordsAdapter.OnTeaRecordItemClickListener {
 
     private lateinit var recordsAdapter: TeaRecordsAdapter
     private lateinit var dbHelper: DBHelper
-
-    // Define selectedDate as a class-level variable
-    private var selectedDate: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -31,8 +28,8 @@ class RecordsFragment : Fragment(),
         dbHelper = DBHelper(requireContext())
 
         val recyclerView: RecyclerView = view.findViewById(R.id.dailytearecordsrecyclerView)
-        recordsAdapter = TeaRecordsAdapter()
-        recordsAdapter.setOnTeaRecordItemClickListener(this) // Set the listener
+        recordsAdapter = TeaRecordsAdapter(TeaRecordDiffCallback())
+        recordsAdapter.setOnTeaRecordItemClickListener(this)
         recyclerView.adapter = recordsAdapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
 
@@ -54,45 +51,33 @@ class RecordsFragment : Fragment(),
     }
 
     private fun updateRecordsList() {
-        // Check if selectedDate is not null
-
-        selectedDate?.let { date ->
-            // Update the RecyclerView with the latest records from the database for the selected date
-            val teaRecords = dbHelper.getAllTeaRecords()
-            recordsAdapter.updateRecords(teaRecords)
-        }
-
+        // Update the RecyclerView with the latest records from the database
+        val teaRecords = dbHelper.getAllTeaRecords()
+        recordsAdapter.submitList(teaRecords)
     }
 
     override fun onRecordSaved() {
-        // Handle any specific actions after a record is saved, if needed
-        // For now, let's display a Toast message
         Toast.makeText(requireContext(), "Record saved", Toast.LENGTH_SHORT).show()
-
-        // Update the RecyclerView with the latest records from the database
         updateRecordsList()
     }
 
     override fun onAllRecordsSaved() {
-        // Handle any specific actions after all records are saved, if needed
-        // For now, let's display a Toast message
         Toast.makeText(requireContext(), "All records saved", Toast.LENGTH_SHORT).show()
-
-        // Update the RecyclerView with the latest records from the database
         updateRecordsList()
     }
 
-    // Implementation of the OnTeaRecordItemClickListener interface
     override fun onUpdateButtonClick() {
-        val fragmentManager = requireActivity().supportFragmentManager
-        val editDialogFragment = EditRecordDialogFragment()
+        // Handle the "Update" button click if needed
+    }
 
-        // Pass the selected date to EditRecordDialogFragment
-        val bundle = Bundle()
-        bundle.putString("selectedDate", selectedDate) // Replace with the actual variable containing the selected date
-        editDialogFragment.arguments = bundle
+    // Define the DiffUtil.ItemCallback for TeaRecordsAdapter
+    private class TeaRecordDiffCallback : DiffUtil.ItemCallback<DailyTeaRecord>() {
+        override fun areItemsTheSame(oldItem: DailyTeaRecord, newItem: DailyTeaRecord): Boolean {
+            return oldItem.date == newItem.date
+        }
 
-        // Show the dialog fragment
-        editDialogFragment.show(fragmentManager, "EditRecordDialogFragment")
+        override fun areContentsTheSame(oldItem: DailyTeaRecord, newItem: DailyTeaRecord): Boolean {
+            return oldItem == newItem
+        }
     }
 }

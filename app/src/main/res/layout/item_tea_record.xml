@@ -1,103 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    app:cardCornerRadius="8dp"
-    app:cardElevation="4dp"
-    app:cardUseCompatPadding="true">
-
 
     <LinearLayout
+        android:id="@+id/myTableLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:stretchColumns="*"
         android:padding="16dp"
-        android:background="@color/cardview_shadow_end_color">
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools">
 
-        <RelativeLayout
+        <TableRow
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="4dp">
-
+            android:background="#3498db"
+            android:padding="8dp">
 
             <TextView
                 android:id="@+id/dateOfInputTextView"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:padding="5dp"
-                android:text="Date Of Input"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="Date"
+                android:textColor="#ffffff"
                 android:textStyle="bold" />
-
-            <ImageView
-                android:id="@+id/update_record_button"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_alignParentEnd="true"
-                android:layout_marginEnd="30dp"
-                android:src="@drawable/ic_baseline_edit_24" />
-            <ImageView
-                android:id="@+id/delete_record_button"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_alignParentEnd="true"
-                android:src="@drawable/ic_baseline_delete_24" />
-
-
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="4dp">
-
-            <TextView
-                android:id="@+id/companiesPluckedToTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:padding="5dp"
-                android:text="Companies Plucked To"
-                android:textStyle="bold" />
-
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="4dp">
 
             <TextView
                 android:id="@+id/employeesAtWorkTextView"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Employees At Work"
-                android:textStyle="bold"
-                android:padding="5dp"/>
-
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="4dp">
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="Employee Name"
+                android:textColor="#ffffff"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/totalKilosTextView"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="Total Kilos For the Day"
-                android:textStyle="bold"
-                android:padding="5dp"
-                />
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="Kilos"
+                android:textColor="#ffffff"
+                android:textStyle="bold" />
 
-        </RelativeLayout>
+            <TextView
+                android:id="@+id/companiesPluckedToTextView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="Company Plucked To"
+                android:textColor="#ffffff"
+                android:textStyle="bold" />
 
+            <TextView
+                android:id="@+id/payTextView"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="Pay "
+                android:textColor="#ffffff"
+                android:textStyle="bold" />
+
+
+        </TableRow>
+
+        <!-- Add more rows dynamically as needed -->
 
     </LinearLayout>
 
-</androidx.cardview.widget.CardView>
+
+
+

@@ -15,7 +15,7 @@
         android:layout_weight="1">
 
         <RelativeLayout
-            android:layout_width="172dp"
+            android:layout_width="222dp"
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
             android:layout_marginTop="32dp"
@@ -31,11 +31,11 @@
                 android:textSize="22sp" />
 
             <ImageView
+                android:id="@+id/weather"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/txtdashboard"
-                android:src="@drawable/ic_baseline_cloud_24"
-                android:id="@+id/weather"/>
+                android:src="@drawable/ic_baseline_cloud_24" />
 
             <TextView
                 android:id="@+id/todays_weather"
@@ -48,35 +48,34 @@
 
 
             <TextView
+                android:id="@+id/my_city"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/todays_weather"
-                android:id="@+id/sky_details"
-                android:text="Clear Sky"
-                android:textSize="20sp"
-                android:fontFamily="@font/poppins"/>
+                android:fontFamily="@font/poppins"
+                android:text="Litein"
+                android:textSize="20sp" />
+
             <TextView
+                android:id="@+id/sky_details"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/sky_details"
-                android:id="@+id/my_city"
-                android:text="Litein"
-                android:textSize="18sp"
-                android:fontFamily="@font/poppins"/>
-
-            
-            <TextView
                 android:layout_below="@id/my_city"
+                android:fontFamily="@font/poppins"
+                android:text="Clear Sky"
+                android:textSize="18sp" />
+
+
+            <TextView
                 android:id="@+id/todays_temprature"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-               android:fontFamily="sans-serif-thin"
+                android:layout_below="@id/sky_details"
+                android:fontFamily="sans-serif-thin"
                 android:text="25°C"
-                android:textSize="50sp"
-                />
+                android:textSize="50sp" />
 
 
-            
         </RelativeLayout>
 
 

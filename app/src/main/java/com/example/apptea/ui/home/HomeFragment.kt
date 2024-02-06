@@ -9,6 +9,7 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.example.apptea.DBHelper
 import com.example.apptea.MainActivity
+import com.example.apptea.R
 import com.example.apptea.databinding.FragmentHomeBinding
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.PieChart
@@ -36,6 +37,7 @@ class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
     private lateinit var barChart: BarChart
+    private lateinit var txtdashboard: TextView
 
     // Add TextViews for displaying weather information
     private lateinit var skyDetailsTextView: TextView
@@ -55,7 +57,8 @@ class HomeFragment : Fragment() {
     ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
-
+        // Initialize the text view
+        txtdashboard = binding.txtdashboard
         myCityTextView = binding.myCity
         skyDetailsTextView = binding.skyDetails
         todaysTemperatureTextView = binding.todaysTemprature
@@ -166,6 +169,10 @@ class HomeFragment : Fragment() {
         // You can implement a function to generate different colors
         // This is just a simple example
         return Color.rgb((0..255).random(), (0..255).random(), (0..255).random())
+    }
+
+    fun updateDashboardText(firstName: String) {
+        txtdashboard.text = "Welcome, $firstName!"
     }
 
 

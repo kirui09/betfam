@@ -1,7 +1,10 @@
 package com.example.apptea
 
+import SharedPreferencesHelper
+import android.os.AsyncTask
 import android.os.Bundle
 import android.view.Menu
+import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
@@ -11,15 +14,11 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.apptea.databinding.ActivityMainBinding
-import com.google.android.material.navigation.NavigationView
-import java.util.*
-import SharedPreferencesHelper
-import android.os.AsyncTask
-import android.view.View
 import com.example.apptea.ui.home.HomeFragment
-
+import com.google.android.material.navigation.NavigationView
 import org.json.JSONObject
 import java.net.URL
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -28,7 +27,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
     private lateinit var dbh: DBHelper
     private lateinit var headerView: View
-
 
     val CITY: String = "Litein, KE"
     val API: String = "1a105b90f41489e05ece19d6f6c326b9" // Use API key
@@ -47,9 +45,6 @@ class MainActivity : AppCompatActivity() {
         val drawerLayout: DrawerLayout = binding.drawerLayout
         val navView: NavigationView = binding.navView
         val navController = findNavController(R.id.nav_host_fragment_content_main)
-
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top-level destinations.
 
         appBarConfiguration = AppBarConfiguration(
             setOf(
@@ -94,18 +89,16 @@ class MainActivity : AppCompatActivity() {
 
         // Check if userInformation is not null before accessing user details
         if (userInformation != null) {
-            val userIdTextView: TextView = headerView.findViewById(R.id.textViewUUId)
             val fullNameTextView: TextView = headerView.findViewById(R.id.textViewFirstName)
             fullNameTextView.text = "${userInformation.firstName} ${userInformation.lastName}"
 
-            // Update UI elements with user details
-            userIdTextView.text = "Farmer ID: ${userInformation.specialcode}"
-            // Update other UI elements with additional user details as needed
+            // Update dashboard text view in HomeFragment
+            val homeFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main)?.childFragmentManager?.fragments?.find { it is HomeFragment } as? HomeFragment
+            homeFragment?.updateDashboardText(userInformation.firstName)
         }
     }
 
     private fun fetchWeatherData() {
-        // Add the weatherTask call here
         WeatherTask().execute()
     }
 
@@ -137,7 +130,6 @@ class MainActivity : AppCompatActivity() {
             super.onPostExecute(result)
             // Update UI elements in your HomeFragment using the result
             result?.let {
-                // Access the HomeFragment instance and call its method
                 val homeFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_content_main) as? HomeFragment
                 homeFragment?.handleWeatherResult(it)
             }
