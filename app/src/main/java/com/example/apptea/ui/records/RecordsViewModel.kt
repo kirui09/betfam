@@ -6,16 +6,19 @@ import androidx.lifecycle.ViewModel
 import com.example.apptea.DBHelper
 
 class RecordsViewModel : ViewModel() {
-
     private val dbHelper = DBHelper.getInstance()
 
-    // Use MutableLiveData with getter as LiveData
     private val _teaRecords = MutableLiveData<List<DailyTeaRecord>>()
     val teaRecords: LiveData<List<DailyTeaRecord>> get() = _teaRecords
 
-    // Fetch tea records from the database and update the MutableLiveData
+    // Method to fetch tea records from the database
     fun fetchTeaRecords() {
         val records = dbHelper.getAllTeaRecords()
         _teaRecords.value = records
+    }
+
+    // Method to refresh records after adding new data
+    fun refreshRecords() {
+        fetchTeaRecords()
     }
 }

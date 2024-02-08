@@ -45,19 +45,61 @@ data class EditableTeaRecord(
     }
 }
 
-data class DailyTeaRecord(
 
+
+data class DailyTeaRecord(
     val date: String,
     val companies: String,
     val employees: String,
     val kilos: Double
-)
+) : Parcelable {
+    constructor(parcel: Parcel) : this(
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.readDouble()
+    )
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeString(date)
+        parcel.writeString(companies)
+        parcel.writeString(employees)
+        parcel.writeDouble(kilos)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Parcelable.Creator<DailyTeaRecord> {
+        override fun createFromParcel(parcel: Parcel): DailyTeaRecord {
+            return DailyTeaRecord(parcel)
+        }
+
+        override fun newArray(size: Int): Array<DailyTeaRecord?> {
+            return arrayOfNulls(size)
+        }
+    }
+}
+
+
 
 data class TeaRecord(
     val date: String,
-    val employeeName: List<String>,
-    val company: List<String>,
-    val kilos: List<Double>)
+    val employeeName: String,
+    val company: String,
+    val kilos: Double
+)
+
+data class TeaRecordsForDate(
+    val date: String,
+    val teaRecords: List<TeaRecord>,
+    val concatenatedEmployeeNames: String,
+    val concatenatedCompanies: String,
+    val concatenatedKilos: String
+)
+
+
 
 
 

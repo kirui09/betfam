@@ -1,83 +1,108 @@
 package com.example.apptea.ui.records
 
+
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.apptea.DBHelper
 import com.example.apptea.R
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import androidx.recyclerview.widget.DiffUtil
+import com.example.apptea.databinding.FragmentRecordsBinding
+import com.example.apptea.databinding.ItemTeaRecordBinding
+import com.example.apptea.ui.records.DailyTeaRecord
+import com.example.apptea.ui.records.EditButtonClickListener
+import com.example.apptea.ui.records.EditRecordDialogFragment
+import com.example.apptea.ui.records.TeaRecordsAdapter
 
-class RecordsFragment : Fragment(), AddRecordDialogFragment.AddRecordDialogFragmentListener,
-    TeaRecordsAdapter.OnTeaRecordItemClickListener {
+interface AddButtonClickListener {
+    fun onAddButtonClick()
+    fun onAllRecordAdded(record: DailyTeaRecord)
+}
+
+class RecordsFragment : Fragment(), EditButtonClickListener, AddButtonClickListener {
 
     private lateinit var recordsAdapter: TeaRecordsAdapter
     private lateinit var dbHelper: DBHelper
+    private lateinit var binding: FragmentRecordsBinding
+    private lateinit var recordsViewModel: RecordsViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_records, container, false)
-
-        dbHelper = DBHelper(requireContext())
-
-        val recyclerView: RecyclerView = view.findViewById(R.id.dailytearecordsrecyclerView)
-        recordsAdapter = TeaRecordsAdapter(TeaRecordDiffCallback())
-        recordsAdapter.setOnTeaRecordItemClickListener(this)
-        recyclerView.adapter = recordsAdapter
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
-
-        val fabAddRecord: FloatingActionButton = view.findViewById(R.id.fabAddRecord)
-        fabAddRecord.setOnClickListener {
-            showAddRecordDialog()
-        }
-
-        // Load records when the fragment view is created
-        updateRecordsList()
-
-        return view
+        binding = FragmentRecordsBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
-    private fun showAddRecordDialog() {
-        val addRecordDialog = AddRecordDialogFragment()
-        addRecordDialog.recordSavedListener = this
-        addRecordDialog.show(parentFragmentManager, "AddRecordDialogFragment")
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        dbHelper = DBHelper(requireContext())
+        recordsViewModel = ViewModelProvider(this).get(RecordsViewModel::class.java)
+
+        // Find and pass the TableLayout from the item layout to the adapter
+        val itemTeaRecordBinding = ItemTeaRecordBinding.inflate(layoutInflater)
+        val tableLayout = itemTeaRecordBinding.myTableLayout
+
+        recordsAdapter = TeaRecordsAdapter(emptyMap(), tableLayout, this)
+
+        binding.dailytearecordsrecyclerView.apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = recordsAdapter
+        }
+
+        // Set click listener for add button
+        binding.fabAddRecord.setOnClickListener {
+            onAddButtonClick()
+        }
+
+        // Observe teaRecords LiveData and update UI accordingly
+        recordsViewModel.teaRecords.observe(viewLifecycleOwner, Observer {
+            recordsAdapter.updateRecords(it.groupBy { record -> record.date })
+            recordsAdapter.notifyDataSetChanged()
+        })
+
+        // Fetch tea records
+        recordsViewModel.fetchTeaRecords()
+
+        updateRecordsList()
     }
 
     private fun updateRecordsList() {
-        // Update the RecyclerView with the latest records from the database
         val teaRecords = dbHelper.getAllTeaRecords()
-        recordsAdapter.submitList(teaRecords)
+        val recordsByDay = teaRecords.groupBy { it.date }
+        recordsAdapter.updateRecords(recordsByDay)
     }
 
-    override fun onRecordSaved() {
-        Toast.makeText(requireContext(), "Record saved", Toast.LENGTH_SHORT).show()
+    override fun onAddButtonClick() {
+        val fragmentManager: FragmentManager = requireActivity().supportFragmentManager
+        val addDialogFragment = AddRecordDialogFragment()
+        addDialogFragment.show(fragmentManager, "AddRecordDialogFragment")
+    }
+
+    override fun onEditButtonClick(record: DailyTeaRecord) {
+        val fragmentManager: FragmentManager = requireActivity().supportFragmentManager
+        val editDialogFragment = EditRecordDialogFragment.newInstance(record)
+        editDialogFragment.show(fragmentManager, "EditRecordDialogFragment")
+    }
+
+
+    override fun onAllRecordAdded(record: DailyTeaRecord) {
+        // Save the record to the database
+
+        // Refresh records after adding new data
         updateRecordsList()
     }
 
-    override fun onAllRecordsSaved() {
-        Toast.makeText(requireContext(), "All records saved", Toast.LENGTH_SHORT).show()
-        updateRecordsList()
-    }
 
-    override fun onUpdateButtonClick() {
-        // Handle the "Update" button click if needed
-    }
 
-    // Define the DiffUtil.ItemCallback for TeaRecordsAdapter
-    private class TeaRecordDiffCallback : DiffUtil.ItemCallback<DailyTeaRecord>() {
-        override fun areItemsTheSame(oldItem: DailyTeaRecord, newItem: DailyTeaRecord): Boolean {
-            return oldItem.date == newItem.date
-        }
 
-        override fun areContentsTheSame(oldItem: DailyTeaRecord, newItem: DailyTeaRecord): Boolean {
-            return oldItem == newItem
-        }
-    }
+
+
+
 }

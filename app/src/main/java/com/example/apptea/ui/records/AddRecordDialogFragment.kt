@@ -6,17 +6,12 @@ import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AutoCompleteTextView
-import android.widget.Button
-import android.widget.DatePicker
-import android.widget.EditText
-import android.widget.Toast
+import android.widget.*
 import androidx.fragment.app.DialogFragment
 import com.example.apptea.DBHelper
 import com.example.apptea.R
 import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
+import java.util.*
 
 class AddRecordDialogFragment : DialogFragment() {
 
@@ -34,10 +29,8 @@ class AddRecordDialogFragment : DialogFragment() {
         dbh = DBHelper(requireContext())
 
         val editTextDate = view.findViewById<EditText>(R.id.recordEntryTime)
-        val autoCompleteEmployee =
-            view.findViewById<AutoCompleteTextView>(R.id.autoCompleteEmployeeName)
-        val autoCompleteCompany =
-            view.findViewById<AutoCompleteTextView>(R.id.autoCompleteCompanyname)
+        val autoCompleteEmployee = view.findViewById<AutoCompleteTextView>(R.id.autoCompleteEmployeeName)
+        val autoCompleteCompany = view.findViewById<AutoCompleteTextView>(R.id.autoCompleteCompanyname)
         val editTextKilos = view.findViewById<EditText>(R.id.editTextEmployeeKilos)
         // Set the input type to numberDecimal
         editTextKilos.inputType =
@@ -86,7 +79,10 @@ class AddRecordDialogFragment : DialogFragment() {
             tempRecords.add(record)
 
             // Notify the listener about the saved record
-            recordSavedListener?.onRecordSaved()
+            recordSavedListener?.onRecordAdded()
+
+            // Refresh records in RecordsFragment
+
 
             // Clear the form
             clearForm()
@@ -125,7 +121,9 @@ class AddRecordDialogFragment : DialogFragment() {
                 tempRecords.clear()
 
                 // Notify the listener about the saved records
-                recordSavedListener?.onAllRecordsSaved()
+                recordSavedListener?.onAllRecordsAdded()
+
+                // Refresh records in RecordsFragmet
             } else {
                 showToast("Failed to save all records")
             }
@@ -135,6 +133,7 @@ class AddRecordDialogFragment : DialogFragment() {
         // Close the dialog
         dismiss()
     }
+
 
 
     private fun validateInput(date: String, company: String, employee: String, kilos: String): Boolean {
@@ -183,8 +182,10 @@ class AddRecordDialogFragment : DialogFragment() {
         view?.findViewById<EditText>(R.id.editTextEmployeeKilos)?.text?.clear()
     }
 
+
+
     interface AddRecordDialogFragmentListener {
-        fun onRecordSaved()
-        fun onAllRecordsSaved()
+        fun onRecordAdded()
+        fun onAllRecordsAdded()
     }
 }

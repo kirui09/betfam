@@ -1,113 +1,90 @@
 package com.example.apptea.ui.records
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AutoCompleteTextView
-import android.widget.Button
-import android.widget.EditText
+import android.widget.Toast
 import androidx.fragment.app.DialogFragment
-import com.example.apptea.DBHelper
-import com.example.apptea.R
-import com.google.android.material.button.MaterialButton
-import com.google.android.material.textfield.TextInputEditText
+import com.example.apptea.databinding.FragmentEditRecordDialogBinding
+import com.example.apptea.ui.records.DailyTeaRecord
 
 class EditRecordDialogFragment : DialogFragment() {
 
-    private lateinit var editrecordEntryTime: TextInputEditText
-    private lateinit var editautoCompleteCompanyname: AutoCompleteTextView
-    private lateinit var editautoCompleteEmployeeName: AutoCompleteTextView
-    private lateinit var editfragmentTextEmployeeKilos: EditText
-    private lateinit var editbuttonSaveRecord: Button
-    private lateinit var editbuttonSaveAllRecords: Button
+    private lateinit var binding: FragmentEditRecordDialogBinding
+    private var record: DailyTeaRecord? = null
+
+    companion object {
+        fun newInstance(record: DailyTeaRecord): EditRecordDialogFragment {
+            val fragment = EditRecordDialogFragment()
+            val args = Bundle().apply {
+                // Pass the record data as arguments
+                putParcelable("record", record)
+            }
+            fragment.arguments = args
+            return fragment
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_edit_record_dialog, container, false)
+        binding = FragmentEditRecordDialogBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
-        editrecordEntryTime = view.findViewById(R.id.updaterecordEntryTime)
-        editautoCompleteCompanyname = view.findViewById(R.id.updateautoCompleteCompanyname)
-        editautoCompleteEmployeeName = view.findViewById(R.id.updateautoCompleteEmployeeName)
-        editfragmentTextEmployeeKilos = view.findViewById(R.id.updateTextEmployeeKilos)
-        editbuttonSaveRecord = view.findViewById(R.id.updatebuttonSaveRecord)
-        editbuttonSaveAllRecords = view.findViewById(R.id.updatebuttonSaveAllRecords)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        // Get the selected date from arguments
-        val selectedDate = arguments?.getString("selectedDate")
+        // Get the clicked record from arguments
+        record = arguments?.getParcelable("record")
 
-        // Check if selectedDate is not null
-        if (!selectedDate.isNullOrEmpty()) {
-            // Fetch records for the selected date
-            val dbHelper = DBHelper(requireContext())
+        // Populate the UI with the data from the clicked record
+        populateUI()
 
-
-            // Log the selected date and retrieved data
-
-
-
-
-            // Handle your UI elements or actions here
-        }
-
-        editbuttonSaveRecord.setOnClickListener {
+        // Set click listener for the save button
+        binding.updatebuttonSaveAllRecords.setOnClickListener {
+            // Validate fields and update record
             if (validateFields()) {
-                // Save the record for the current employee
                 updateRecord()
-            }
-        }
-
-        editbuttonSaveAllRecords.setOnClickListener {
-            if (validateFields()) {
-                // Save all records for each employee
-                updateAllRecords()
-            }
-        }
-
-        return view
-    }
-
-    private fun populateUI(editableTeaRecords: List<EditableTeaRecord>) {
-        try {
-            // Add logic to display or handle the list of records
-            // For example, you might choose to display the first record:
-            if (editableTeaRecords.isNotEmpty()) {
-                val firstRecord = editableTeaRecords.first()
-                editrecordEntryTime.setText(firstRecord.date)
-                editautoCompleteCompanyname.setText(firstRecord.companies.joinToString(","))
-                editautoCompleteEmployeeName.setText(firstRecord.employees.joinToString(","))
-
-
-                Log.d("EditRecordFragment", "UI populated successfully")
+                dismiss() // Close the dialog after updating the record
             } else {
-                Log.d("EditRecordFragment", "EditableTeaRecords is empty")
+                Toast.makeText(context, "Validation failed!", Toast.LENGTH_SHORT).show()
             }
-        } catch (e: Exception) {
-            Log.e("EditRecordFragment", "Error populating UI: $editableTeaRecords")
         }
     }
 
+    // Function to populate the UI fields with record data
+    private fun populateUI() {
+        record?.let { record ->
+            binding.updaterecordEntryTime.setText(record.date)
+            binding.updateautoCompleteCompanyname.setText(record.companies)
+            binding.updateautoCompleteEmployeeName.setText(record.employees)
+            binding.updateTextEmployeeKilos.setText(record.kilos.toString())
+        }
+    }
 
+    // Function to validate input fields
     private fun validateFields(): Boolean {
         // Add your validation logic here
         // Return true if all fields are valid, otherwise false
-        // You can display error messages or highlight invalid fields as needed
         return true
     }
 
+    // Function to update the record in the database
     private fun updateRecord() {
-        // Implement saving record logic for the current employee
-        // You can access the values using:
-        // val date = editrecordEntryTime.text.toString()
-        // val companies = editautoCompleteCompanyname.text.toString().split(",")
-        // val employees = editautoCompleteEmployeeName.text.toString().split(",")
-        // val kilos = editfragmentTextEmployeeKilos.text.toString().toDouble()
-    }
+        // Implement saving record logic
+        // You can access the values using binding objects
+        // Example:
+        // val date = binding.updaterecordEntryTime.text.toString()
+        // val companies = binding.updateautoCompleteCompanyname.text.toString()
+        // val employees = binding.updateautoCompleteEmployeeName.text.toString()
+        // val kilos = binding.updateTextEmployeeKilos.text.toString().toDouble()
 
-    private fun updateAllRecords() {
-        // Implement saving all records logic
+        // Update the record in the database or perform other actions as needed
+        // Example:
+        // val updatedRecord = DailyTeaRecord(date, companies, employees, kilos)
+        // dbHelper.updateRecord(updatedRecord)
     }
 }

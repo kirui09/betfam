@@ -1,78 +1,104 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-    <LinearLayout
-        android:id="@+id/myTableLayout"
+
+
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="4dp"
+    app:cardUseCompatPadding="true">
+
+    <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:stretchColumns="*"
-        android:padding="16dp"
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools">
+        android:orientation="vertical"
+        app:cardCornerRadius="8dp"
+        android:padding="8dp">
 
-        <TableRow
-            android:layout_width="match_parent"
+<TableLayout
+    android:id="@+id/myTableLayout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="8dp"
+    android:stretchColumns="1,2,2,2,2"
+    android:padding="16dp"
+    android:background="#3498db">
+
+    <TableRow
+        android:id="@+id/table_row"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#3498db"
+        android:padding="8dp">
+
+        <TextView
+            android:id="@+id/dateOfInputTextView"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:background="#3498db"
-            android:padding="8dp">
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Date"
+            android:textColor="#ffffff"
+            android:textStyle="bold"
+            android:fontFamily="@font/poppins"/>
 
-            <TextView
-                android:id="@+id/dateOfInputTextView"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="Date"
-                android:textColor="#ffffff"
-                android:textStyle="bold" />
+        <TextView
+            android:id="@+id/companiesPluckedToTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Company Plucked To"
+            android:textColor="#ffffff"
+            android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/employeesAtWorkTextView"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="Employee Name"
-                android:textColor="#ffffff"
-                android:textStyle="bold" />
+        <TextView
+            android:id="@+id/employeesAtWorkTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Employee Name"
+            android:textColor="#ffffff"
+            android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/totalKilosTextView"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="Kilos"
-                android:textColor="#ffffff"
-                android:textStyle="bold" />
+        <TextView
+            android:id="@+id/totalKilosTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Kilos"
+            android:textColor="#ffffff"
+            android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/companiesPluckedToTextView"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="Company Plucked To"
-                android:textColor="#ffffff"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/payTextView"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="Pay "
-                android:textColor="#ffffff"
-                android:textStyle="bold" />
+        <TextView
+            android:id="@+id/payTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="Pay "
+            android:textColor="#ffffff"
+            android:textStyle="bold" />
 
 
-        </TableRow>
 
-        <!-- Add more rows dynamically as needed -->
+    </TableRow>
 
-    </LinearLayout>
 
+
+
+
+</TableLayout>
+
+
+    </HorizontalScrollView>
+
+</androidx.cardview.widget.CardView>
 
 
 

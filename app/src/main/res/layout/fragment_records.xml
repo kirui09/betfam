@@ -5,7 +5,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.records.RecordsFragment">
+    tools:context=".ui.records.RecordsFragment"
+    android:id="@+id/fragment_container">
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAddRecord"
@@ -25,11 +26,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:padding="5dp"
-        android:visibility="visible"
-        android:background="#eeeeee"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        tools:listitem="@layout/item_daily_tea_record" />
+
+        tools:listitem="@layout/item_tea_record" />
 
 
     <!--    <androidx.recyclerview.widget.RecyclerView-->

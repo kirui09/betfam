@@ -93,4 +93,7 @@
     <string name="menu_companies">My Companies</string>
 
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <item name="editButtonId" type="id"/>
+
 </resources>

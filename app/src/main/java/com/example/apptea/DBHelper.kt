@@ -540,29 +540,39 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
     }
 
 
+
     fun getAllTeaRecords(): List<DailyTeaRecord> {
         val teaRecordsList = mutableListOf<DailyTeaRecord>()
         val teaRecordsLiveData = MutableLiveData<List<DailyTeaRecord>>()
         val db = this.readableDatabase
 
-        // Use DISTINCT to ensure unique companies on the same day
-        val query =
-            "SELECT date, employee_name,company,kilos  FROM TeaRecords GROUP BY date ORDER BY date DESC"
+        try {
+            val query =
+                "SELECT date, employee_name, company, kilos FROM TeaRecords  ORDER BY date, company DESC"
 
-        val cursor = db.rawQuery(query, null)
+            val cursor = db.rawQuery(query, null)
 
-        while (cursor.moveToNext()) {
-            val date = cursor.getString(cursor.getColumnIndex("date"))
-            val employees = cursor.getString(cursor.getColumnIndex("employee_name"))
-            val companies = cursor.getString(cursor.getColumnIndex("company"))
-            val kilos = cursor.getDouble(cursor.getColumnIndex("kilos"))
+            while (cursor.moveToNext()) {
+                val date = cursor.getString(cursor.getColumnIndex("date"))
+                val employees = cursor.getString(cursor.getColumnIndex("employee_name"))
+                val companies = cursor.getString(cursor.getColumnIndex("company"))
+                val kilos = cursor.getDouble(cursor.getColumnIndex("kilos"))
 
-            val record = DailyTeaRecord(date, employees, companies, kilos)
-            teaRecordsList.add(record)
+                // Log the selected data
+                Log.d("DB_SELECTION", "Date: $date, Employee: $employees, Company: $companies, Kilos: $kilos")
+
+                val record = DailyTeaRecord(date, employees, companies, kilos)
+                teaRecordsList.add(record)
+            }
+
+            cursor.close()
+            teaRecordsLiveData.postValue(teaRecordsList)
+        } catch (e: Exception) {
+            Log.e("DB_ERROR", "Error while retrieving tea records: ${e.message}")
+        } finally {
+            db.close()
         }
 
-        cursor.close()
-        teaRecordsLiveData.postValue(teaRecordsList)
         return teaRecordsList
     }
 

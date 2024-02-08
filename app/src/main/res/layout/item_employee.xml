@@ -37,6 +37,7 @@
                 android:layout_alignParentEnd="true"
                 android:layout_marginEnd="30dp"
                 android:src="@drawable/ic_baseline_edit_24" />
+
             <ImageView
                 android:id="@+id/delete_employee_button"
                 android:layout_width="24dp"

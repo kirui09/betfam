@@ -68,12 +68,6 @@
             android:hint="Kilos"/>
 
         <!-- Save Button -->
-        <Button
-            android:id="@+id/updatebuttonSaveRecord"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Next Employee"/>
 
         <Button
             android:id="@+id/updatebuttonSaveAllRecords"
