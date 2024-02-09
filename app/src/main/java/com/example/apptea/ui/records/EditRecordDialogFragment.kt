@@ -74,17 +74,6 @@ class EditRecordDialogFragment : DialogFragment() {
 
     // Function to update the record in the database
     private fun updateRecord() {
-        // Implement saving record logic
-        // You can access the values using binding objects
-        // Example:
-        // val date = binding.updaterecordEntryTime.text.toString()
-        // val companies = binding.updateautoCompleteCompanyname.text.toString()
-        // val employees = binding.updateautoCompleteEmployeeName.text.toString()
-        // val kilos = binding.updateTextEmployeeKilos.text.toString().toDouble()
 
-        // Update the record in the database or perform other actions as needed
-        // Example:
-        // val updatedRecord = DailyTeaRecord(date, companies, employees, kilos)
-        // dbHelper.updateRecord(updatedRecord)
     }
 }

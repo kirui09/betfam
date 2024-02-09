@@ -425,27 +425,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 //        return recordsList
 //    }
 
-    fun updateTeaRecord(records: List<EditableTeaRecord>) {
-        val db = this.writableDatabase
 
-        // Loop through the list of records and update each one
-        for (record in records) {
-            val values = ContentValues()
-            values.put("date", record.date)
-            values.put("companies", record.companies.joinToString(","))
-            values.put("employee_name", record.employees.joinToString(","))
-
-
-
-            // Assuming your date column is unique or you want to update all records with the same date
-            val whereClause = "date = ?"
-            val whereArgs = arrayOf(record.date)
-
-            db.update("TeaRecords", values, whereClause, whereArgs)
-        }
-
-        db.close()
-    }
 
 
 
@@ -574,6 +554,28 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         }
 
         return teaRecordsList
+    }
+
+    fun updateTeaRecord(records: List<DailyTeaRecord>) {
+        val db = this.writableDatabase
+
+        // Loop through the list of records and update each one
+        for (record in records) {
+            val values = ContentValues()
+            values.put("date", record.date)
+            values.put("companies", record.companies)
+            values.put("employee_name", record.employees)
+            values.put("kilos", record.kilos)
+
+
+            // Assuming your date column is unique or you want to update all records with the same date
+            val whereClause = "id = ?"
+            val whereArgs = arrayOf(record.date)
+
+            db.update("TeaRecords", values, whereClause, whereArgs)
+        }
+
+        db.close()
     }
 
 

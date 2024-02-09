@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.apptea.DBHelper
 import com.example.apptea.R
 import com.example.apptea.databinding.FragmentRecordsBinding
-import com.example.apptea.databinding.ItemTeaRecordBinding
+import com.example.apptea.databinding.ItemExpandedDayBinding
 import com.example.apptea.ui.records.DailyTeaRecord
 import com.example.apptea.ui.records.EditButtonClickListener
 import com.example.apptea.ui.records.EditRecordDialogFragment
@@ -46,7 +46,7 @@ class RecordsFragment : Fragment(), EditButtonClickListener, AddButtonClickListe
         recordsViewModel = ViewModelProvider(this).get(RecordsViewModel::class.java)
 
         // Find and pass the TableLayout from the item layout to the adapter
-        val itemTeaRecordBinding = ItemTeaRecordBinding.inflate(layoutInflater)
+        val itemTeaRecordBinding = ItemExpandedDayBinding.inflate(layoutInflater)
         val tableLayout = itemTeaRecordBinding.myTableLayout
 
         recordsAdapter = TeaRecordsAdapter(emptyMap(), tableLayout, this)

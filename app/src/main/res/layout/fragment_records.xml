@@ -27,7 +27,7 @@
         android:layout_height="match_parent"
         android:padding="5dp"
 
-        tools:listitem="@layout/item_tea_record" />
+        tools:listitem="@layout/item_expanded_day" />
 
 
     <!--    <androidx.recyclerview.widget.RecyclerView-->
