@@ -45,31 +45,52 @@ class RecordsFragment : Fragment(), EditButtonClickListener, AddButtonClickListe
         dbHelper = DBHelper(requireContext())
         recordsViewModel = ViewModelProvider(this).get(RecordsViewModel::class.java)
 
-        // Find and pass the TableLayout from the item layout to the adapter
-        val itemTeaRecordBinding = ItemExpandedDayBinding.inflate(layoutInflater)
-        val tableLayout = itemTeaRecordBinding.myTableLayout
-
-        recordsAdapter = TeaRecordsAdapter(emptyMap(), tableLayout, this)
-
-        binding.dailytearecordsrecyclerView.apply {
-            layoutManager = LinearLayoutManager(context)
-            adapter = recordsAdapter
-        }
+        setupRecyclerView()
 
         // Set click listener for add button
         binding.fabAddRecord.setOnClickListener {
             onAddButtonClick()
         }
 
-        // Observe teaRecords LiveData and update UI accordingly
-        recordsViewModel.teaRecords.observe(viewLifecycleOwner, Observer {
-            recordsAdapter.updateRecords(it.groupBy { record -> record.date })
+        observeRecords()
+        fetchRecords()
+    }
+
+    private fun setupRecyclerView() {
+        val itemTeaRecordBinding = ItemExpandedDayBinding.inflate(layoutInflater)
+        val tableLayout = itemTeaRecordBinding.myTableLayout
+        recordsAdapter = TeaRecordsAdapter(emptyMap(), tableLayout, this)
+        binding.dailytearecordsrecyclerView.apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = recordsAdapter
+        }
+    }
+
+    private fun observeRecords() {
+        recordsViewModel.teaRecords.observe(viewLifecycleOwner, Observer { teaRecords ->
+            recordsAdapter.updateRecords(teaRecords.groupBy { it.date })
             recordsAdapter.notifyDataSetChanged()
         })
+    }
 
-        // Fetch tea records
+    private fun fetchRecords() {
         recordsViewModel.fetchTeaRecords()
+    }
 
+    override fun onAddButtonClick() {
+        val fragmentManager = requireActivity().supportFragmentManager
+        val addDialogFragment = AddRecordDialogFragment()
+        addDialogFragment.show(fragmentManager, "AddRecordDialogFragment")
+    }
+
+    override fun onEditButtonClick(record: DailyTeaRecord) {
+        val fragmentManager = requireActivity().supportFragmentManager
+        val editDialogFragment = EditRecordDialogFragment.newInstance(record)
+        editDialogFragment.show(fragmentManager, "EditRecordDialogFragment")
+    }
+
+    override fun onAllRecordAdded(record: DailyTeaRecord) {
+        // Save the record to the database
         updateRecordsList()
     }
 
@@ -78,31 +99,4 @@ class RecordsFragment : Fragment(), EditButtonClickListener, AddButtonClickListe
         val recordsByDay = teaRecords.groupBy { it.date }
         recordsAdapter.updateRecords(recordsByDay)
     }
-
-    override fun onAddButtonClick() {
-        val fragmentManager: FragmentManager = requireActivity().supportFragmentManager
-        val addDialogFragment = AddRecordDialogFragment()
-        addDialogFragment.show(fragmentManager, "AddRecordDialogFragment")
-    }
-
-    override fun onEditButtonClick(record: DailyTeaRecord) {
-        val fragmentManager: FragmentManager = requireActivity().supportFragmentManager
-        val editDialogFragment = EditRecordDialogFragment.newInstance(record)
-        editDialogFragment.show(fragmentManager, "EditRecordDialogFragment")
-    }
-
-
-    override fun onAllRecordAdded(record: DailyTeaRecord) {
-        // Save the record to the database
-
-        // Refresh records after adding new data
-        updateRecordsList()
-    }
-
-
-
-
-
-
-
 }

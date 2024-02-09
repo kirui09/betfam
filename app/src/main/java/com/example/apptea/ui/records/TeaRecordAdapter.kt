@@ -16,6 +16,8 @@ import com.example.apptea.R
 import com.example.apptea.databinding.ItemExpandedDayBinding
 import com.example.apptea.databinding.ItemGeneralDayBinding
 import com.example.apptea.ui.records.DailyTeaRecord
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 interface EditButtonClickListener {
     fun onEditButtonClick(record: DailyTeaRecord)
@@ -65,24 +67,18 @@ class TeaRecordsAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(day: String) {
-            binding.generaldateTextView.text = day
+            // Format the date
+            val formattedDate = formatDate(day)
+            binding.generaldateTextView.text = formattedDate
+
             val recordsForDay = recordsByDay[day]
             val totalKilos = recordsForDay?.sumBy { it.kilos.toInt() } ?: 0
             binding.totalKilofForDay.text = "Total Kilos: $totalKilos"
 
-            binding.seeMoreButton.visibility = if (expandedPosition == absoluteAdapterPosition) View.GONE else View.VISIBLE
-            binding.seeLessButton.visibility = if (expandedPosition == absoluteAdapterPosition) View.VISIBLE else View.GONE
-
-
-
-
+            binding.seeMoreButton.visibility =
+                if (expandedPosition == absoluteAdapterPosition) View.GONE else View.VISIBLE
             binding.seeMoreButton.setOnClickListener {
-                expandedPosition = adapterPosition
-                notifyDataSetChanged()
-            }
-
-            binding.seeLessButton.setOnClickListener {
-                expandedPosition = RecyclerView.NO_POSITION
+                expandedPosition = absoluteAdapterPosition
                 notifyDataSetChanged()
             }
         }
@@ -94,6 +90,13 @@ class TeaRecordsAdapter(
         fun bind(day: String) {
             binding.dateOfInputTextView.text = day
             val recordsForDay = recordsByDay[day]
+
+            binding.seeLessButton.visibility = if (expandedPosition == absoluteAdapterPosition) View.VISIBLE else View.GONE
+            binding.seeLessButton.setOnClickListener {
+                expandedPosition = RecyclerView.NO_POSITION
+                notifyDataSetChanged()
+            }
+
             recordsForDay?.let {
                 binding.myTableLayout.removeAllViews() // Clear previous rows
                 // Populate table with records
@@ -108,11 +111,17 @@ class TeaRecordsAdapter(
             val recordsByDate = recordsForDay.groupBy { it.date }
 
             // Create rows for each record
+
+
+                // Create rows for each record
+            // Create rows for each record
             recordsByDate.forEach { (date, records) ->
                 // Create table header row with the date
                 val headerRow = TableRow(tableLayout.context)
                 val headerDateTextView = TextView(tableLayout.context)
-                headerDateTextView.text = date // Set the date text
+// Format the date
+                val formattedDate = formatDate(date)
+                headerDateTextView.text = formattedDate
                 headerDateTextView.setTypeface(null, Typeface.BOLD)
                 headerDateTextView.setPadding(5, 5, 5, 5)
                 headerRow.addView(headerDateTextView)
@@ -125,21 +134,24 @@ class TeaRecordsAdapter(
                     employeesTextView.text = record.employees
                     employeesTextView.setTypeface(null, Typeface.BOLD)
                     employeesTextView.setPadding(5, 5, 5, 5)
-                    employeesTextView.gravity = Gravity.CENTER_VERTICAL // Align content vertically center
+                    employeesTextView.gravity =
+                        Gravity.CENTER_VERTICAL // Align content vertically center
                     row.addView(employeesTextView)
 
                     val companyTextView = TextView(tableLayout.context)
                     companyTextView.text = record.companies
                     companyTextView.setTypeface(null, Typeface.BOLD)
                     companyTextView.setPadding(5, 5, 5, 5)
-                    companyTextView.gravity = Gravity.CENTER_VERTICAL // Align content vertically center
+                    companyTextView.gravity =
+                        Gravity.CENTER_VERTICAL // Align content vertically center
                     row.addView(companyTextView)
 
                     val kilosTextView = TextView(tableLayout.context)
                     kilosTextView.text = "${record.kilos} Kgs"
                     kilosTextView.setTypeface(null, Typeface.BOLD)
                     kilosTextView.setPadding(5, 5, 5, 5)
-                    kilosTextView.gravity = Gravity.CENTER_VERTICAL // Align content vertically center
+                    kilosTextView.gravity =
+                        Gravity.CENTER_VERTICAL // Align content vertically center
                     row.addView(kilosTextView)
 
                     val payTextView = TextView(tableLayout.context)
@@ -163,7 +175,49 @@ class TeaRecordsAdapter(
                     tableLayout.addView(row)
                 }
             }
+                // Calculate total kilos and total pay
+                val totalKilos = recordsForDay.sumByDouble { it.kilos }
+                val totalPayAmount = recordsForDay.sumByDouble { it.kilos * 8.0 }
+
+                // Add row for totals
+                val totalsRow = TableRow(tableLayout.context)
+
+                // Add empty TextViews for employees and companies
+                totalsRow.addView(TextView(tableLayout.context))
+                 totalsRow.addView(TextView(tableLayout.context))
+
+
+                // Add labels for totals
+                val totalsLabelTextView = TextView(tableLayout.context)
+                totalsLabelTextView.text = "Totals:"
+                totalsLabelTextView.setTypeface(null, Typeface.BOLD)
+                totalsLabelTextView.setPadding(5, 5, 5, 5)
+                totalsRow.addView(totalsLabelTextView)
+
+                // Add total kilos
+                val totalKilosTextView = TextView(tableLayout.context)
+                totalKilosTextView.text = "${totalKilos} Kgs"
+                totalKilosTextView.setTypeface(null, Typeface.BOLD)
+                totalKilosTextView.setPadding(5, 5, 5, 5)
+                totalsRow.addView(totalKilosTextView)
+
+                // Add total pay
+                val totalPayTextView = TextView(tableLayout.context)
+                totalPayTextView.text = "KSh.${totalPayAmount}"
+                totalPayTextView.setTypeface(null, Typeface.BOLD)
+                totalPayTextView.setPadding(5, 5, 5, 5)
+                totalsRow.addView(totalPayTextView)
+
+                // Add edit button column
+                totalsRow.addView(View(tableLayout.context)) // Add an empty View for edit button column
+
+                // Add totals row to the table layout
+                tableLayout.addView(totalsRow)
+
+
         }
+
+
     }
 
     fun updateRecords(newRecordsByDay: Map<String, List<DailyTeaRecord>>) {
@@ -177,4 +231,14 @@ class TeaRecordsAdapter(
             notifyDataSetChanged()
         }
     }
+
+    // Function to format the date into "Tuesday, 15th January, 2022" format
+    private fun formatDate(dateString: String): String {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH)
+        val date = dateFormat.parse(dateString)
+        val formattedDateFormat = SimpleDateFormat("EEEE, d MMMM, yyyy", Locale.ENGLISH)
+        return formattedDateFormat.format(date)
+    }
+
+
 }

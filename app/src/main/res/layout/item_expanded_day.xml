@@ -16,14 +16,17 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:cardCornerRadius="8dp"
-        android:padding="8dp">
+        android:padding="8dp"
+        android:layout_marginBottom="40dp">
+
+
 
 <TableLayout
     android:id="@+id/myTableLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:cardCornerRadius="8dp"
-    android:stretchColumns="1,2,2,2,2"
+    android:stretchColumns="*"
     android:padding="16dp"
     android:background="#3498db">
 
@@ -99,18 +102,18 @@
 
 
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="4dp">
-            <Button
-                android:id="@+id/seeLessButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="See Less" />
-        </RelativeLayout>
+
     </HorizontalScrollView>
+
+
+    <Button
+        android:id="@+id/seeLessButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="See Less"
+        android:layout_gravity="bottom|start"
+        android:layout_marginLeft="5dp"/>
+
 
 
 
