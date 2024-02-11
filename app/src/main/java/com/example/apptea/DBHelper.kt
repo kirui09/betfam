@@ -257,34 +257,6 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
 
 
-    fun getAllEmployeeNames(): List<String> {
-        val employeeNames = mutableListOf<String>()
-        val db = this.readableDatabase
-        val cursor = db.rawQuery("SELECT name FROM Employees", null)
-
-        while (cursor.moveToNext()) {
-            val name = cursor.getString(cursor.getColumnIndex("name"))
-            employeeNames.add(name)
-        }
-
-        cursor.close()
-        return employeeNames
-    }
-
-    fun getAllCompanyNames(): List<String> {
-        val companyNames = mutableListOf<String>()
-        val db = this.readableDatabase
-        val cursor = db.rawQuery("SELECT companyname FROM Companies", null)
-
-        while (cursor.moveToNext()) {
-            val name = cursor.getString(cursor.getColumnIndex("companyname"))
-            companyNames.add(name)
-        }
-
-        cursor.close()
-        return companyNames
-    }
-
     fun insertCompany(name: String, location: String): Boolean {
         val db = this.writableDatabase
         val cv = ContentValues()
@@ -355,32 +327,32 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
 
 
-        // Method to fetch tea records for the past 1 week
-        fun getTeaRecordsForPastWeek(): List<DailyRecord> {
-            val teaRecordsList = mutableListOf<DailyRecord>()
-            val currentDate = Calendar.getInstance()
-            val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-            val startDate = currentDate.clone() as Calendar
-            startDate.add(Calendar.DAY_OF_MONTH, -6) // Subtracts 6 days to get the past 1 week
+    // Method to fetch tea records for the past 1 week
+    fun getTeaRecordsForPastWeek(): List<DailyRecord> {
+        val teaRecordsList = mutableListOf<DailyRecord>()
+        val currentDate = Calendar.getInstance()
+        val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+        val startDate = currentDate.clone() as Calendar
+        startDate.add(Calendar.DAY_OF_MONTH, -6) // Subtracts 6 days to get the past 1 week
 
-            val db = this.readableDatabase
-            val query = "SELECT date, SUM(kilos) AS total_kilos FROM TeaRecords WHERE date BETWEEN ? AND ? GROUP BY date ORDER BY date ASC"
+        val db = this.readableDatabase
+        val query = "SELECT date, SUM(kilos) AS total_kilos FROM TeaRecords WHERE date BETWEEN ? AND ? GROUP BY date ORDER BY date ASC"
 
-            val cursor = db.rawQuery(query, arrayOf(formatter.format(startDate.time), formatter.format(currentDate.time)))
+        val cursor = db.rawQuery(query, arrayOf(formatter.format(startDate.time), formatter.format(currentDate.time)))
 
-            while (cursor.moveToNext()) {
-                val dateString = cursor.getString(cursor.getColumnIndex("date"))
-                val date = formatter.parse(dateString) // Convert String to Date
+        while (cursor.moveToNext()) {
+            val dateString = cursor.getString(cursor.getColumnIndex("date"))
+            val date = formatter.parse(dateString) // Convert String to Date
 
-                val totalKilos = cursor.getDouble(cursor.getColumnIndex("total_kilos"))
+            val totalKilos = cursor.getDouble(cursor.getColumnIndex("total_kilos"))
 
-                val record = DailyRecord(date, totalKilos)
-                teaRecordsList.add(record)
-            }
-
-            cursor.close()
-            return teaRecordsList
+            val record = DailyRecord(date, totalKilos)
+            teaRecordsList.add(record)
         }
+
+        cursor.close()
+        return teaRecordsList
+    }
 
     fun getCompanyKilosData(): Map<String, Float> {
         val companyKilosMap = mutableMapOf<String, Float>()
@@ -528,11 +500,12 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
         try {
             val query =
-                "SELECT date, employee_name, company, kilos FROM TeaRecords  ORDER BY date, company DESC"
+                "SELECT id, date, employee_name, company, kilos FROM TeaRecords  ORDER BY date, date  desc"
 
             val cursor = db.rawQuery(query, null)
 
             while (cursor.moveToNext()) {
+                val id = cursor.getLong(cursor.getColumnIndex("id"))
                 val date = cursor.getString(cursor.getColumnIndex("date"))
                 val employees = cursor.getString(cursor.getColumnIndex("employee_name"))
                 val companies = cursor.getString(cursor.getColumnIndex("company"))
@@ -541,7 +514,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
                 // Log the selected data
                 Log.d("DB_SELECTION", "Date: $date, Employee: $employees, Company: $companies, Kilos: $kilos")
 
-                val record = DailyTeaRecord(date, employees, companies, kilos)
+                val record = DailyTeaRecord(id , date, employees, companies, kilos)
                 teaRecordsList.add(record)
             }
 
@@ -556,27 +529,109 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         return teaRecordsList
     }
 
-    fun updateTeaRecord(records: List<DailyTeaRecord>) {
-        val db = this.writableDatabase
 
-        // Loop through the list of records and update each one
-        for (record in records) {
-            val values = ContentValues()
-            values.put("date", record.date)
-            values.put("companies", record.companies)
-            values.put("employee_name", record.employees)
-            values.put("kilos", record.kilos)
+    // Method to get all employee names
+    fun getAllEmployeeNames(): List<String> {
+        val employeeNames = mutableListOf<String>()
+        val db = this.readableDatabase
+        val query = "SELECT name FROM Employees"
+        val cursor: Cursor?
 
+        try {
+            cursor = db.rawQuery(query, null)
+            cursor?.let {
+                if (cursor.moveToFirst()) {
+                    do {
+                        val employeeName = cursor.getString(cursor.getColumnIndex("name"))
+                        employeeNames.add(employeeName)
+                        // Log the employee name being retrieved
 
-            // Assuming your date column is unique or you want to update all records with the same date
-            val whereClause = "id = ?"
-            val whereArgs = arrayOf(record.date)
+                    } while (cursor.moveToNext())
+                }
+                cursor.close()
+            }
+        } catch (e: Exception) {
+            // Handle exception
 
-            db.update("TeaRecords", values, whereClause, whereArgs)
+        } finally {
+            db.close()
         }
 
-        db.close()
+        return employeeNames
     }
+
+//    fun getAllEmployees(): List<Employee> {
+//        val employeeList = mutableListOf<Employee>()
+//        val db = this.readableDatabase
+//
+//        // Use the actual column names from the SELECT query
+//        val cursor = db.rawQuery("SELECT id, name, age, phone, employee_id FROM Employees", null)
+//
+//        while (cursor.moveToNext()) {
+//            // Retrieve values using the correct column names
+//            val id = cursor.getLong(cursor.getColumnIndex("id"))  // Make sure to use getLong for id
+//            val name = cursor.getString(cursor.getColumnIndex("name"))
+//            val age = cursor.getString(cursor.getColumnIndex("age"))
+//            val phoneNumber = cursor.getString(cursor.getColumnIndex("phone"))
+//            val employeeId = cursor.getString(cursor.getColumnIndex("employee_id"))
+//
+//            // Create Employee object with retrieved values
+//            val employee = Employee(id, name, age, phoneNumber, employeeId)
+//            employeeList.add(employee)
+//        }
+//
+//        cursor.close()
+//        return employeeList
+//    }
+
+    fun updateTeaRecord(record: DailyTeaRecord): Boolean {
+        val db = this.writableDatabase
+        val values = ContentValues()
+
+        values.put("date", record.date)
+        values.put("company", record.companies)
+        values.put("employee_name", record.employees)
+        values.put("kilos", record.kilos)
+
+        // Use the ID as the unique identifier for the WHERE clause
+        val whereClause = "id = ?"
+        val whereArgs = arrayOf(record.id.toString())
+
+        // Perform the update
+        val rowsUpdated = db.update("TeaRecords", values, whereClause, whereArgs)
+
+        db.close()
+
+        return rowsUpdated > 0
+    }
+    fun deleteRecord(id: Long): Boolean {
+        val db = this.writableDatabase
+        val result = db.delete("TeaRecords", "id=?", arrayOf(id.toString()))
+        db.close()
+        return result != -1
+    }
+
+
+    // In DBHelper.kt
+
+    fun getAllCompanyNames(): List<String> {
+        val companyNames = mutableListOf<String>()
+        val db = this.readableDatabase
+        val cursor = db.rawQuery("SELECT DISTINCT companyname FROM Companies", null)
+        cursor.use {
+            while (it.moveToNext()) {
+                val companyName = it.getString(it.getColumnIndex("companyname"))
+                companyNames.add(companyName)
+            }
+        }
+        return companyNames
+    }
+
+
+
+
+
+
 
 
 
@@ -613,7 +668,6 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
 
 }
-
 
 
 

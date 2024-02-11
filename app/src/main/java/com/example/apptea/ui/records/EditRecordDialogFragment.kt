@@ -1,18 +1,34 @@
 package com.example.apptea.ui.records
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
+import com.example.apptea.DBHelper
 import com.example.apptea.databinding.FragmentEditRecordDialogBinding
 import com.example.apptea.ui.records.DailyTeaRecord
+
+interface RecordUpdateListener {
+    fun onRecordUpdated()
+}
 
 class EditRecordDialogFragment : DialogFragment() {
 
     private lateinit var binding: FragmentEditRecordDialogBinding
     private var record: DailyTeaRecord? = null
+
+    private var recordUpdateListener: RecordUpdateListener? = null
+
+    fun setRecordUpdateListener(listener: RecordUpdateListener) {
+        recordUpdateListener = listener
+    }
+    // Call this method after successfully updating the record
+    private fun notifyRecordUpdated() {
+        recordUpdateListener?.onRecordUpdated()
+    }
 
     companion object {
         fun newInstance(record: DailyTeaRecord): EditRecordDialogFragment {
@@ -44,10 +60,11 @@ class EditRecordDialogFragment : DialogFragment() {
         populateUI()
 
         // Set click listener for the save button
-        binding.updatebuttonSaveAllRecords.setOnClickListener {
+        binding.updateRecordButton.setOnClickListener {
             // Validate fields and update record
             if (validateFields()) {
                 updateRecord()
+                notifyRecordUpdated() // Notify the parent fragment about the record update
                 dismiss() // Close the dialog after updating the record
             } else {
                 Toast.makeText(context, "Validation failed!", Toast.LENGTH_SHORT).show()
@@ -73,7 +90,50 @@ class EditRecordDialogFragment : DialogFragment() {
     }
 
     // Function to update the record in the database
+    // Function to update the record in the database
+    // Function to update the record in the database
+    // Function to update the record in the database
     private fun updateRecord() {
+        record?.let { existingRecord ->
+            try {
+                val dbHelper = DBHelper(requireContext())
 
+                // Create a DailyTeaRecord object with the updated values including the ID
+                val updatedRecord = DailyTeaRecord(
+                    id = existingRecord.id, // Set the ID of the existing record
+                    date = binding.updaterecordEntryTime.text.toString(),
+                    companies = binding.updateautoCompleteCompanyname.text.toString(),
+                    employees = binding.updateautoCompleteEmployeeName.text.toString(),
+                    kilos = binding.updateTextEmployeeKilos.text.toString().toDouble()
+                )
+
+                // Log the update operation details
+                Log.d("EditRecordDialog", "Updating record:")
+                Log.d("EditRecordDialog", "ID: ${updatedRecord.id}")
+                Log.d("EditRecordDialog", "Date: ${updatedRecord.date}")
+                Log.d("EditRecordDialog", "Companies: ${updatedRecord.companies}")
+                Log.d("EditRecordDialog", "Employees: ${updatedRecord.employees}")
+                Log.d("EditRecordDialog", "Kilos: ${updatedRecord.kilos}")
+
+                // Update the record in the database
+                val isUpdated = dbHelper.updateTeaRecord(updatedRecord)
+
+                if (isUpdated) {
+                    Toast.makeText(context, "Record updated successfully", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, "Failed to update record", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                // Handle any exceptions here (e.g., log or notify)
+                e.printStackTrace()
+                Toast.makeText(context, "An error occurred while updating record", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 }
+
+
+
+
+
+

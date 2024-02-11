@@ -1,5 +1,6 @@
 package com.example.apptea.ui.employees
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,10 +10,15 @@ import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.example.apptea.R
 
-
 class EmployeeAdapter(private var employeeList: List<Employee>) :
     RecyclerView.Adapter<EmployeeAdapter.EmployeeViewHolder>() {
 
+    private val employeeNames: MutableList<String> = mutableListOf()
+
+    init {
+        // Initialize the employeeNames list
+        employeeNames.addAll(employeeList.mapNotNull { it.name })
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EmployeeViewHolder {
         val itemView =
@@ -55,10 +61,38 @@ class EmployeeAdapter(private var employeeList: List<Employee>) :
     override fun getItemCount() = employeeList.size
 
     // Update LiveData in Place
-    fun updateData(newList: List<*>) {
-        employeeList = newList as List<Employee>
+    fun updateData(newList: List<Employee>) {
+        // Clear the employeeNames list
+        employeeNames.clear()
+        // Update the employeeList and add new names to the employeeNames list
+        employeeList = newList
+        employeeNames.addAll(employeeList.mapNotNull { it.name })
         notifyDataSetChanged()
+        // Log the employee names
+        logEmployeeNames()
     }
+
+    // Get the list of employee names
+    fun getAllEmployeeNames(): List<String> {
+        val names = mutableListOf<String>()
+        for (employee in employeeList) {
+            employee.name?.let { names.add(it) }
+        }
+        return names
+    }
+
+    // Method to log employee names
+    private fun logEmployeeNames() {
+        try {
+            Log.d("EmployeeAdapter", "Employee Names:")
+            employeeNames.forEachIndexed { index, name ->
+                Log.d("EmployeeAdapter", "Employee ${index + 1}: $name")
+            }
+        } catch (e: Exception) {
+            Log.e("EmployeeAdapter", "Error logging employee names: ${e.message}")
+        }
+    }
+
 
     inner class EmployeeViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val nameTextView: TextView = itemView.findViewById(R.id.nameTextView)
@@ -66,8 +100,6 @@ class EmployeeAdapter(private var employeeList: List<Employee>) :
         val phoneNumberTextView: TextView = itemView.findViewById(R.id.phoneNumberTextView)
         val employeeIdTextView: TextView = itemView.findViewById(R.id.employeeIdTextView)
         val editButton: ImageView = itemView.findViewById(R.id.update_button)
-
         val deleteButton: ImageView = itemView.findViewById(R.id.delete_employee_button)
     }
-
 }

@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<androidx.swiperefreshlayout.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/swipe_refresh_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -7,6 +13,9 @@
     android:layout_height="match_parent"
     tools:context=".ui.records.RecordsFragment"
     android:id="@+id/fragment_container">
+
+
+
 
     <!-- TextView for displaying totals -->
     <TextView
@@ -21,6 +30,8 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentEnd="true"/>
 
+
+
     <!-- RecyclerView for displaying daily tea records -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/dailytearecordsrecyclerView"
@@ -29,6 +40,8 @@
         android:layout_below="@id/totalsTextView"
         android:padding="5dp"
         tools:listitem="@layout/item_expanded_day" />
+
+
 
     <!-- FloatingActionButton for adding records -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -43,4 +56,8 @@
         android:layout_gravity="bottom|end"
         app:elevation="10dp" />
 
+
 </RelativeLayout>
+
+
+</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

@@ -83,6 +83,8 @@ dependencies {
     implementation ("androidx.lifecycle:lifecycle-common-java8:2.3.1")
     implementation ("com.google.dagger:dagger:2.38.1")
     kapt ("com.google.dagger:dagger-compiler:2.38.1")
+    implementation ("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+
 
 }
 

@@ -70,11 +70,11 @@
         <!-- Save Button -->
 
         <Button
-            android:id="@+id/updatebuttonSaveAllRecords"
+            android:id="@+id/updateRecordButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:text="Save All Records"/>
+            android:text="Update Record"/>
 
     </LinearLayout>
 

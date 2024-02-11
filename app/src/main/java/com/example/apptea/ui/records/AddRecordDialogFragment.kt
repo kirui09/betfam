@@ -10,6 +10,7 @@ import android.widget.*
 import androidx.fragment.app.DialogFragment
 import com.example.apptea.DBHelper
 import com.example.apptea.R
+import com.example.apptea.ui.employees.EmployeeAdapter
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -18,6 +19,8 @@ class AddRecordDialogFragment : DialogFragment() {
     private lateinit var dbh: DBHelper
     private var tempRecords: MutableList<Record> = mutableListOf()
     var recordSavedListener: AddRecordDialogFragmentListener? = null
+
+    internal lateinit var employeeAdapter: EmployeeAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -29,129 +32,154 @@ class AddRecordDialogFragment : DialogFragment() {
         dbh = DBHelper(requireContext())
 
         val editTextDate = view.findViewById<EditText>(R.id.recordEntryTime)
-        val autoCompleteEmployee = view.findViewById<AutoCompleteTextView>(R.id.autoCompleteEmployeeName)
-        val autoCompleteCompany = view.findViewById<AutoCompleteTextView>(R.id.autoCompleteCompanyname)
+        val spinnerCompanyName = view.findViewById<Spinner>(R.id.spinnerCompanyName)
+        val spinnerEmployeeName = view.findViewById<Spinner>(R.id.spinnerEmployeeName)
         val editTextKilos = view.findViewById<EditText>(R.id.editTextEmployeeKilos)
-        // Set the input type to numberDecimal
+
         editTextKilos.inputType =
             InputType.TYPE_NUMBER_FLAG_DECIMAL or InputType.TYPE_NUMBER_FLAG_SIGNED
         val buttonSaveRecord = view.findViewById<Button>(R.id.buttonSaveRecord)
         val buttonSaveAllRecords = view.findViewById<Button>(R.id.buttonSaveAllRecords)
 
-        // Set the default date to today
         val currentDate = Calendar.getInstance()
         val formattedDate =
             SimpleDateFormat("yyyy-MM-dd", Locale.US).format(currentDate.time)
         editTextDate.setText(formattedDate)
 
-        // Show DatePickerDialog when the date EditText is clicked
         editTextDate.setOnClickListener {
             showDatePickerDialog(currentDate, editTextDate)
         }
 
         buttonSaveRecord.setOnClickListener {
-            // Handle the "Save Record" button click
             saveTempRecord()
         }
 
         buttonSaveAllRecords.setOnClickListener {
-            // Handle the "Save All Records" button click
             saveAllRecords()
         }
+
+        // Step 1: Initialize MyDBHelper and retrieve employee names
+        val dbHelper = DBHelper(requireContext())
+        var employeeNames = dbHelper.getAllEmployeeNames()
+      // Prepend "Select Employee" to the list of employee names
+        val employeeNamesWithSelectOption = listOf("Select Employee") + employeeNames
+        // Step 2: Create an adapter for the employee spinner and set it
+        val employeeAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, employeeNamesWithSelectOption)
+        employeeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerEmployeeName.adapter = employeeAdapter
+        // Step 3: Set default position for the spinner (Select Employee cannot be selected)
+        spinnerEmployeeName.setSelection(0, false)
+
+        // Retrieve company names from the database
+        val companyNames = dbh.getAllCompanyNames()
+
+        // Prepend "Select Company" to the list of employee names
+        val companyNamesWithSelectOption = listOf("Select Company") + companyNames
+        // Step 2: Create an adapter for the company spinner and set it
+        val companyAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, companyNamesWithSelectOption)
+        companyAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerCompanyName.adapter = companyAdapter
+        // Step 3: Set default position for the spinner (Select Employee cannot be selected)
+        spinnerCompanyName.setSelection(0, false)
 
         return view
     }
 
     private fun saveTempRecord() {
         // Handle the "Save Record" button click
-        val date = getEditTextText(R.id.recordEntryTime)
-        val company = getAutoCompleteText(R.id.autoCompleteCompanyname)
-        val employee = getAutoCompleteText(R.id.autoCompleteEmployeeName)
-        val kilosString = getEditTextText(R.id.editTextEmployeeKilos)
+        val dateEditText = getView()?.findViewById<EditText>(R.id.recordEntryTime)
+        val companySpinner = getView()?.findViewById<Spinner>(R.id.spinnerCompanyName)
+        val employeeSpinner = getView()?.findViewById<Spinner>(R.id.spinnerEmployeeName)
+        val kilosEditText = getView()?.findViewById<EditText>(R.id.editTextEmployeeKilos)
+
+        val date = dateEditText?.text.toString()
+        val company = companySpinner?.selectedItem.toString()
+        val employee = employeeSpinner?.selectedItem.toString()
+        val kilosString = kilosEditText?.text.toString()
 
         if (validateInput(date, company, employee, kilosString)) {
             val kilos = kilosString.toDouble()
 
-            // Create a Record object
             val record = Record(date, company, employee, kilos)
-
-            // Add the record to the temporary list
             tempRecords.add(record)
-
-            // Notify the listener about the saved record
             recordSavedListener?.onRecordAdded()
 
-            // Refresh records in RecordsFragment
+            // Clear all fields
+            employeeSpinner?.setSelection(0, false)
+            kilosEditText?.setText("")
 
 
-            // Clear the form
-            clearForm()
+            // Remove the employee from the spinner adapter if the company is not changed
+            if (employee != "Select Employee") {
+                val employeeAdapter = employeeSpinner?.adapter as? ArrayAdapter<String>
+                employeeAdapter?.remove(employee)
+                employeeAdapter?.notifyDataSetChanged()
+            }
 
 
+            // Show toast indicating the record has been saved temporarily
+            Toast.makeText(requireContext(), " $employee has been saved temporarily. Enter Records For Next Employee..", Toast.LENGTH_LONG).show()
         } else {
             showToast("Please enter all fields")
         }
     }
 
+
+
     private fun saveAllRecords() {
-        // Handle the "Save All Records" button click
-        if (tempRecords.isNotEmpty()) {
-            // Include the last record from the form
-            val date = getEditTextText(R.id.recordEntryTime)
-            val employeename = getAutoCompleteText(R.id.autoCompleteEmployeeName)
-            val company = getAutoCompleteText(R.id.autoCompleteCompanyname)
-            val kilosString = getEditTextText(R.id.editTextEmployeeKilos)
+        val date = getView()?.findViewById<EditText>(R.id.recordEntryTime)?.text.toString()
+        val company =
+            getView()?.findViewById<Spinner>(R.id.spinnerCompanyName)?.selectedItem.toString()
+        val employee =
+            getView()?.findViewById<Spinner>(R.id.spinnerEmployeeName)?.selectedItem.toString()
+        val kilosString =
+            getView()?.findViewById<EditText>(R.id.editTextEmployeeKilos)?.text.toString()
 
-            if (validateInput(date, company,employeename, kilosString)) {
-                val kilos = kilosString.toDouble()
+        if (validateInput(date, company, employee, kilosString)) {
+            val kilos = kilosString.toDouble()
+            val record = Record(date, company, employee, kilos)
 
-                // Create a Record object for the last record from the form
-                val lastRecord = Record(date,  company,employeename, kilos)
+            // Add the last record to tempRecords
+            tempRecords.add(record)
 
-                // Add the last record from the form to the temporary list
-                tempRecords.add(lastRecord)
-            }
+            if (tempRecords.size == 1) {
+                // If only one record is present, save it directly to the database
+                val success = DBHelper.getInstance().insertTeaRecord(record)
 
-            // Save all records to the database using DBHelper
-            val success = DBHelper.getInstance().insertTeaRecords(tempRecords)
-
-            if (success) {
-                showToast("All Records saved successfully")
-                // Clear the temporary list
-                tempRecords.clear()
-
-                // Notify the listener about the saved records
-                recordSavedListener?.onAllRecordsAdded()
-
-                // Refresh records in RecordsFragmet
+                if (success) {
+                    showToast("Record saved successfully")
+                    recordSavedListener?.onRecordAdded()
+                    recordSavedListener?.onAllRecordsAdded()
+                } else {
+                    showToast("Failed to save record")
+                }
             } else {
-                showToast("Failed to save all records")
+                // If there are multiple records, save them all to the database
+                val success = DBHelper.getInstance().insertTeaRecords(tempRecords)
+
+                if (success) {
+                    showToast("All Records saved successfully")
+                    tempRecords.clear()
+                    recordSavedListener?.onAllRecordsAdded()
+                } else {
+                    showToast("Failed to save all records")
+                }
             }
         } else {
-            showToast("No records to save")
+            showToast("Please enter all fields")
         }
-        // Close the dialog
+
         dismiss()
     }
 
 
 
     private fun validateInput(date: String, company: String, employee: String, kilos: String): Boolean {
-        return date.isNotEmpty() && company.isNotEmpty() && employee.isNotEmpty() && kilos.isNotEmpty()
-    }
-
-    private fun getEditTextText(viewId: Int): String {
-        val editText = view?.findViewById<EditText>(viewId)
-        return editText?.text?.toString()?.trim() ?: ""
-    }
-
-    private fun getAutoCompleteText(viewId: Int): String {
-        val autoCompleteTextView = view?.findViewById<AutoCompleteTextView>(viewId)
-        return autoCompleteTextView?.text?.toString()?.trim() ?: ""
+        return date.isNotEmpty() && company.isNotEmpty() && employee.isNotEmpty() && kilos.isNotEmpty() &&
+                employee != "Select Employee" && company != "Select Company"
     }
 
     private fun showToast(message: String) {
-        // Display a toast message
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 
@@ -159,7 +187,6 @@ class AddRecordDialogFragment : DialogFragment() {
         val datePickerDialog = DatePickerDialog(
             requireContext(),
             { _: DatePicker, year: Int, month: Int, dayOfMonth: Int ->
-                // Update the EditText with the selected date
                 val selectedDate = Calendar.getInstance()
                 selectedDate.set(year, month, dayOfMonth)
                 val formattedDate =
@@ -171,18 +198,9 @@ class AddRecordDialogFragment : DialogFragment() {
             calendar.get(Calendar.DAY_OF_MONTH)
         )
 
-        datePickerDialog.datePicker.maxDate = System.currentTimeMillis() // Prevent future dates
+        datePickerDialog.datePicker.maxDate = System.currentTimeMillis()
         datePickerDialog.show()
     }
-
-    private fun clearForm() {
-        // Clear the form fields
-
-        view?.findViewById<AutoCompleteTextView>(R.id.autoCompleteEmployeeName)?.text?.clear()
-        view?.findViewById<EditText>(R.id.editTextEmployeeKilos)?.text?.clear()
-    }
-
-
 
     interface AddRecordDialogFragmentListener {
         fun onRecordAdded()

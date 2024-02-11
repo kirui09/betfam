@@ -18,7 +18,7 @@
             android:layout_width="222dp"
             android:layout_height="wrap_content"
             android:layout_marginLeft="20dp"
-            android:layout_marginTop="32dp"
+            android:layout_marginTop="5dp"
             android:layout_marginRight="20dp">
 
             <TextView
@@ -73,7 +73,7 @@
                 android:layout_below="@id/sky_details"
                 android:fontFamily="sans-serif-thin"
                 android:text="25°C"
-                android:textSize="50sp" />
+                android:textSize="40sp" />
 
 
         </RelativeLayout>
@@ -89,6 +89,8 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:padding="20dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
         android:background="@drawable/border_background">
 
         <com.github.mikephil.charting.charts.BarChart
@@ -104,6 +106,8 @@
     <FrameLayout
         android:id="@+id/thirdPart"
         android:layout_width="match_parent"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:padding="20dp"

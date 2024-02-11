@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.apptea.DBHelper
 import com.example.apptea.R
 import com.example.apptea.databinding.FragmentEmployeesBinding
+import com.example.apptea.ui.records.AddRecordDialogFragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class EmployeesFragment : Fragment(), AddEmployeeDialogFragment.OnEmployeeSavedListener,
@@ -26,6 +27,7 @@ class EmployeesFragment : Fragment(), AddEmployeeDialogFragment.OnEmployeeSavedL
     private lateinit var employeesViewModel: EmployeesViewModel
     private lateinit var recyclerView: RecyclerView
     private lateinit var employeeAdapter: EmployeeAdapter
+    private lateinit var employeeList: MutableList<Employee>
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -49,6 +51,7 @@ class EmployeesFragment : Fragment(), AddEmployeeDialogFragment.OnEmployeeSavedL
         // Observe changes in the employee list and update the adapter
         employeesViewModel.employeeList.observe(viewLifecycleOwner, Observer { employees ->
             Log.d("EmployeesFragment", "Observed ${employees.size} employees")
+            employeeList = employees.toMutableList() // Store the employee list locally
             employeeAdapter.updateData(employees)
             employeeAdapter.notifyDataSetChanged()
         })
@@ -88,6 +91,12 @@ class EmployeesFragment : Fragment(), AddEmployeeDialogFragment.OnEmployeeSavedL
     override fun onDeleteClick(employee: Employee) {
         showDeleteConfirmationDialog(employee)
     }
+
+    // Method to pass the list of employee names to AddRecordDialogFragment
+    private fun getEmployeeNames(): List<String> {
+        return employeeList.mapNotNull { it.name }
+    }
+
 
     private fun showDeleteConfirmationDialog(employee: Employee) {
         val dialog = AlertDialog.Builder(requireContext())
