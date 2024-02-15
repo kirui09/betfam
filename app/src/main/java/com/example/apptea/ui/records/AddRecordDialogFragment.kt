@@ -2,7 +2,9 @@ package com.example.apptea.ui.records
 
 import android.app.DatePickerDialog
 import android.os.Bundle
+import android.text.InputFilter
 import android.text.InputType
+import android.text.Spanned
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -34,7 +36,13 @@ class AddRecordDialogFragment : DialogFragment() {
         val editTextDate = view.findViewById<EditText>(R.id.recordEntryTime)
         val spinnerCompanyName = view.findViewById<Spinner>(R.id.spinnerCompanyName)
         val spinnerEmployeeName = view.findViewById<Spinner>(R.id.spinnerEmployeeName)
+
+        // Find the EditText for kilos
         val editTextKilos = view.findViewById<EditText>(R.id.editTextEmployeeKilos)
+
+        // Set input filter to restrict the number of digits
+        editTextKilos.filters = arrayOf<InputFilter>(DecimalDigitsInputFilter(4))
+
 
         editTextKilos.inputType =
             InputType.TYPE_NUMBER_FLAG_DECIMAL or InputType.TYPE_NUMBER_FLAG_SIGNED
@@ -200,6 +208,26 @@ class AddRecordDialogFragment : DialogFragment() {
 
         datePickerDialog.datePicker.maxDate = System.currentTimeMillis()
         datePickerDialog.show()
+    }
+
+
+    // Define a custom InputFilter class
+    private class DecimalDigitsInputFilter(private val maxDigitsBeforeDecimalPoint: Int) :
+        InputFilter {
+        override fun filter(
+            source: CharSequence?,
+            start: Int,
+            end: Int,
+            dest: Spanned?,
+            dstart: Int,
+            dend: Int
+        ): CharSequence? {
+            val builder = StringBuilder(dest)
+            builder.replace(dstart, dend, source?.subSequence(start, end).toString())
+            return if (!builder.toString().matches(Regex("^\\d{0,$maxDigitsBeforeDecimalPoint}+(\\.\\d{0,4})?$"))) {
+                if (source!!.length > 0) "" else dest?.subSequence(dstart, dend)
+            } else null
+        }
     }
 
     interface AddRecordDialogFragmentListener {

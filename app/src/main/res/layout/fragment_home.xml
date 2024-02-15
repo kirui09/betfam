@@ -5,8 +5,8 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="ui.home.HomeFragment"
-    android:background="@drawable/app_background">
+    tools:context="ui.home.HomeFragment">
+
 
     <FrameLayout
         android:id="@+id/firstPart"
@@ -27,7 +27,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/poppins_semibold"
                 android:text="@string/dashboard_header"
-                android:textColor="#FFFFFF"
+                android:textColor="#000000"
                 android:textSize="22sp" />
 
             <ImageView
@@ -44,7 +44,8 @@
                 android:layout_below="@+id/weather"
                 android:fontFamily="@font/poppins"
                 android:text="Todays Weather"
-                android:textSize="20sp" />
+                android:textSize="20sp"
+                android:textColor="@color/black"/>
 
 
             <TextView
@@ -54,6 +55,7 @@
                 android:layout_below="@id/todays_weather"
                 android:fontFamily="@font/poppins"
                 android:text="Litein"
+                android:textColor="@color/black"
                 android:textSize="20sp" />
 
             <TextView
@@ -63,6 +65,7 @@
                 android:layout_below="@id/my_city"
                 android:fontFamily="@font/poppins"
                 android:text="Clear Sky"
+                android:textColor="@color/black"
                 android:textSize="18sp" />
 
 
@@ -72,6 +75,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@id/sky_details"
                 android:fontFamily="sans-serif-thin"
+                android:textColor="@color/black"
                 android:text="25°C"
                 android:textSize="40sp" />
 

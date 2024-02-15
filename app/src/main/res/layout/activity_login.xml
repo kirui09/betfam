@@ -7,7 +7,7 @@
     tools:context=".Login"
     android:gravity="center"
     android:padding="16dp"
-    android:background="@drawable/app_background">
+    android:background="@color/gyey">
 
     <LinearLayout
         android:layout_width="match_parent"

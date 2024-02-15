@@ -41,21 +41,22 @@
 
 
 
-        <AutoCompleteTextView
-            android:id="@+id/updateautoCompleteCompanyname"
+        <Spinner
+            android:id="@+id/spinnerCompanyName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="text"
+            android:padding="18dp"
             android:layout_marginTop="8dp"
-            android:hint="Company Plucked To"/>
+            android:hint="Company Plucked To" />
 
 
-        <AutoCompleteTextView
-            android:id="@+id/updateautoCompleteEmployeeName"
+        <Spinner
+            android:id="@+id/spinnerEmployeeName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Employee Name"
-            android:layout_marginTop="8dp" />
+            android:padding="18dp"
+            android:layout_marginTop="8dp"
+            android:hint="Employee Name" />
 
 
         <!-- ID -->

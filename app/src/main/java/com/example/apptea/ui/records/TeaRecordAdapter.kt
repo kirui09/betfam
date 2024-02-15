@@ -102,8 +102,9 @@ class TeaRecordsAdapter(
         }
 
         private fun populateTable(recordsForDay: List<DailyTeaRecord>) {
+            val sortedRecords = recordsForDay.sortedByDescending { it.date }
             val tableLayout = binding.myTableLayout
-            val recordsByDate = recordsForDay.groupBy { it.date }
+            val recordsByDate = sortedRecords.groupBy { it.date }
 
             recordsByDate.forEach { (date, records) ->
                 val headerRow = TableRow(tableLayout.context)

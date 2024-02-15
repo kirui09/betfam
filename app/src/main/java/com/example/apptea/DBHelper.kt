@@ -358,7 +358,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         val companyKilosMap = mutableMapOf<String, Float>()
 
         val db = this.readableDatabase
-        val query = "SELECT company, SUM(kilos) AS total_kilos FROM TeaRecords GROUP BY company ORDER BY total_kilos DESC"
+        val query = "SELECT company, SUM(kilos) AS total_kilos FROM TeaRecords GROUP BY company "
 
         val cursor = db.rawQuery(query, null)
 
@@ -500,7 +500,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
         try {
             val query =
-                "SELECT id, date, employee_name, company, kilos FROM TeaRecords  ORDER BY date, date  desc"
+                "SELECT id, date, employee_name, company, kilos FROM TeaRecords  ORDER BY date desc"
 
             val cursor = db.rawQuery(query, null)
 
