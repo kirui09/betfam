@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.payment_types.EditSupervisorPaymentDialogFragment">
+
+    <!-- EditText for editing Supervisor Payment -->
+    <EditText
+        android:id="@+id/editTextSupervisorPayment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter new Supervisor Payment"/>
+
+    <!-- Save Button -->
+    <Button
+        android:id="@+id/buttonSaveSupervisorPayment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/editTextSupervisorPayment"
+        android:text="Save"
+        />
+
+</RelativeLayout>
