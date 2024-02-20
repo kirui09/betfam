@@ -91,6 +91,7 @@
     <string name="menu_employees">My Employees</string>
     <string name="menu_managers"> My Managers</string>
     <string name="menu_companies">My Companies</string>
+    <string name="menu_payment_types">Payment Types</string>
 
     <string name="hello_blank_fragment">Hello blank fragment</string>
 

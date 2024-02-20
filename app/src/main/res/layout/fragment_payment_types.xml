@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:padding="16dp"
+    tools:context=".ui.payment_types.PaymentTypesFragment">
+
+
+
+
+
+    <!-- Supervisor Payment TextView -->
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/textViewSupervisorPayment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Supervisor Payment"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"/>
+
+    <!-- Supervisor Payment TextInputLayout -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/textInputLayoutSupervisorPayment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/textViewSupervisorPayment"
+        android:layout_marginTop="8dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editTextSupervisorPayment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:inputType="numberDecimal"
+                android:layout_toStartOf="@id/buttonEditSupervisorPayment" />
+
+            <Button
+                android:id="@+id/buttonEditSupervisorPayment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:padding="16dp"
+                android:text="Edit"/>
+        </RelativeLayout>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Basic Payment TextView -->
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/textViewBasicPayment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Basic Payment"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:layout_below="@id/textInputLayoutSupervisorPayment"
+        android:layout_marginTop="16dp"/>
+
+
+
+    <!-- Basic Payment EditText -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/textInputLayoutBasicPayment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/textViewBasicPayment"
+        android:layout_marginTop="8dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editTextBasicPayment"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:inputType="numberDecimal"
+                android:layout_toStartOf="@id/buttonEditBasicPayment" />
+
+            <Button
+                android:id="@+id/buttonEditBasicPayment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:padding="16dp"
+                android:text="Edit"/>
+        </RelativeLayout>
+    </com.google.android.material.textfield.TextInputLayout>
+
+
+</RelativeLayout>

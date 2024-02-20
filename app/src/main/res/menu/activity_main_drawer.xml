@@ -29,6 +29,11 @@
             android:title="My Companies"
             android:icon="@drawable/ic_baseline_factory_24"/>
 
+        <item
+            android:id="@+id/nav_payment_types"
+            android:title="Payment Types"
+            android:icon="@drawable/baseline_payments_24"/>
+
 
         <item android:title="Profile">
 

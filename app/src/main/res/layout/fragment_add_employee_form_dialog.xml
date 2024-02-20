@@ -21,36 +21,84 @@
             android:textColor="@color/teal_200"/>
 
 
-        <EditText
-            android:id="@+id/editTextEmployeeName"
+        <!-- Employee Name -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textInputLayoutEmployeeName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="text"
-            android:hint="Employee Name"/>
+            android:hint="Employee Name">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editTextEmployeeName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="25dp"
+            android:textSize="16sp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/PayTypeTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Pay Per Kilo">
+
+            <Spinner
+                android:id="@+id/editTextPayType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="25dp"
+                android:textSize="16sp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Age -->
-        <EditText
-            android:id="@+id/editTextEmployeeAge"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textInputLayoutEmployeeAge"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="number"
-            android:hint="Age(Optional)"/>
+            android:hint="Age(Optional)">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editTextEmployeeAge"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="25dp"
+            android:textSize="16sp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Phone Number -->
-        <EditText
-            android:id="@+id/editTextEmployeePhoneNumber"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textInputLayoutEmployeePhoneNumber"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="phone"
-            android:hint="Phone Number(Optional)"/>
+            android:hint="Phone Number(Optional)">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editTextEmployeePhoneNumber"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="25dp"
+            android:textSize="16sp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
 
         <!-- ID -->
-        <EditText
-            android:id="@+id/editTextEmployeeID"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textInputLayoutEmployeeID"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="number"
-            android:hint="ID(Optional)"/>
+            android:hint="ID(Optional)">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editTextEmployeeID"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="25dp"
+            android:textSize="16sp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Save Button -->
         <Button
