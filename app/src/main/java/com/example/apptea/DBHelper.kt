@@ -36,6 +36,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         createEmployeesTable(db)
         createCompaniesTable(db)
         createTeaRecordsTable(db)
+        createPaymentTypesTable(db)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -44,6 +45,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         db.execSQL("DROP TABLE IF EXISTS Employees")
         db.execSQL("DROP TABLE IF EXISTS Companies")
         db.execSQL("DROP TABLE IF EXISTS TeaRecords")
+        db.execSQL("DROP TABLE IF EXISTS PaymentTypes")
         onCreate(db)
     }
 
@@ -99,6 +101,15 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
                     "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     "companyname TEXT, " +
                     "companylocation TEXT)"
+        )
+    }
+
+    private fun createPaymentTypesTable(db: SQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS PaymentTypes ( " +
+
+                    "supervisorPay INT, " +
+                    "basicPay INT)"
         )
     }
 
