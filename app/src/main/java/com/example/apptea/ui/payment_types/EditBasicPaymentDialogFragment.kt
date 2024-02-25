@@ -15,8 +15,6 @@ interface OnBasicPaymentUpdatedListener {
     fun onBasicPaymentUpdated(basicPayment: String)
 }
 
-
-
 class EditBasicPaymentDialogFragment : DialogFragment() {
 
     private var onBasicPaymentUpdatedListener: OnBasicPaymentUpdatedListener? = null
@@ -57,12 +55,12 @@ class EditBasicPaymentDialogFragment : DialogFragment() {
             val updatedBasicPaymentInt = updatedBasicPayment.toIntOrNull()
 
             if (updatedBasicPaymentInt != null) {
-                // Create basic payment object
-                val basicPaymentObj = BasicPayment(updatedBasicPaymentInt)
+                // Create a BasicPayment instance with the updated value
+                val basicPayment = BasicPayment(updatedBasicPaymentInt)
 
                 // Update record in the database
                 val dbHelper = DBHelper(requireContext())
-                val success = dbHelper.updateBasicPay(basicPaymentObj)
+                val success = dbHelper.updateBasicPay(basicPayment)
 
                 if (success) {
                     // Notify the listener that the basic payment has been updated
@@ -84,7 +82,6 @@ class EditBasicPaymentDialogFragment : DialogFragment() {
                     Toast.LENGTH_SHORT
                 ).show()
             }
-            dismiss()
         }
 
 

@@ -6,7 +6,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Toast
 import androidx.fragment.app.DialogFragment
+import com.example.apptea.DBHelper
 import com.example.apptea.R
 
 interface EditSupervisorPaymentListener {
@@ -22,18 +24,18 @@ class EditSupervisorPaymentDialogFragment : DialogFragment() {
     }
 
     companion object {
-        const val ARG_DEFAULT_PAYMENT = "default_payment"
-
-        fun newInstance(defaultPayment: String): EditSupervisorPaymentDialogFragment {
-            return EditSupervisorPaymentDialogFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_DEFAULT_PAYMENT, defaultPayment)
-                }
-            }
+        fun newInstance(supervisorPayment: String): EditSupervisorPaymentDialogFragment {
+            val fragment = EditSupervisorPaymentDialogFragment()
+            val args = Bundle()
+            args.putString("supervisorPayment", supervisorPayment)
+            fragment.arguments = args
+            return fragment
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
+                              savedInstanceState: Bundle?):
+            View? {
         return inflater.inflate(R.layout.fragment_edit_supervisor_payment_dialog, container, false)
     }
 
@@ -44,23 +46,45 @@ class EditSupervisorPaymentDialogFragment : DialogFragment() {
         val editTextSupervisorPayment = view.findViewById<EditText>(R.id.editTextSupervisorPayment)
         val buttonSave = view.findViewById<Button>(R.id.buttonSaveSupervisorPayment)
 
-
         // Get the default payment value from arguments
-        val defaultPayment = arguments?.getString(ARG_DEFAULT_PAYMENT) ?: ""
+        val supervisorPayment = arguments?.getString("supervisorPayment")
 
-        // Set the default value to the EditText
-        editTextSupervisorPayment.setText(defaultPayment)
+        // Check if supervisor payment is null before accessing its value
+        if (!supervisorPayment.isNullOrEmpty()) {
+            editTextSupervisorPayment.setText(supervisorPayment)
+        }
 
-        // Set OnClickListener for the Save button
         buttonSave.setOnClickListener {
-            // Get the edited value from the EditText
-            val newValue = editTextSupervisorPayment.text.toString()
 
-            // Call the listener method to notify the parent fragment
-            listener?.onSupervisorPaymentEdited(newValue)
+            val updatedSupervisorPayment = editTextSupervisorPayment.text.toString()
+            val updatedSupervisorPaymentInt = updatedSupervisorPayment.toIntOrNull()
 
-            // Dismiss the dialog fragment
-            dismiss()
+            if (updatedSupervisorPaymentInt != null) {
+                // Update record in the database
+                val dbHelper = DBHelper(requireContext())
+                val success = dbHelper.updateSupervisorPay(updatedSupervisorPaymentInt)
+
+                if (success) {
+                    // Notify the listener that the supervisor payment has been updated
+                    listener?.onSupervisorPaymentEdited(updatedSupervisorPayment)
+
+                    // Dismiss the dialog
+                    dismiss()
+                } else {
+                    Toast.makeText(
+                        requireContext(),
+                        "Failed to update supervisor payment in the database",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } else {
+                Toast.makeText(
+                    requireContext(),
+                    "Please enter a valid numeric supervisor payment",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
         }
     }
 }
+

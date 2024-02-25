@@ -114,7 +114,33 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
                     "type TEXT NOT NULL, " +
                     "amount INTEGER NOT NULL)"
         )
+
+        // Check if there are no entries in the table
+        val query = "SELECT COUNT(*) FROM PaymentTypes"
+        val cursor = db.rawQuery(query, null)
+        cursor.moveToFirst()
+        val count = cursor.getInt(0)
+        cursor.close()
+
+        // If no entries exist, insert default values for "Basic" and "Supervisor"
+        if (count == 0) {
+            insertDefaultPaymentTypes(db)
+        }
     }
+
+    private fun insertDefaultPaymentTypes(db: SQLiteDatabase) {
+        val defaultPaymentTypes = arrayOf("Basic", "Supervisor")
+        val defaultAmount = 0 // Set the default amount here
+
+        for (paymentType in defaultPaymentTypes) {
+            val values = ContentValues().apply {
+                put("type", paymentType)
+                put("amount", defaultAmount)
+            }
+            db.insert("PaymentTypes", null, values)
+        }
+    }
+
 
 
 
@@ -690,7 +716,20 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         return try {
             val rowsAffected = db.update("PaymentTypes", values, whereClause, whereArgs)  // Execute the update statement with the WHERE clause
             db.close()
-            rowsAffected > 0  // Return true if at least one row was affected (updated)
+
+            // Add log messages for debugging
+            Log.d("DB_UPDATE", "Rows affected: $rowsAffected")
+
+            val success = rowsAffected > 0  // Check if at least one row was affected (updated)
+
+            // Log success or failure
+            if (success) {
+                Log.d("DB_UPDATE", "Basic payment updated successfully")
+            } else {
+                Log.e("DB_UPDATE", "Failed to update basic payment")
+            }
+
+            success  // Return true if at least one row was affected (updated)
         } catch (e: Exception) {
             Log.e("DB_ERROR", "Error updating basic payment: ${e.message}")
             false  // Return false indicating that the update operation failed

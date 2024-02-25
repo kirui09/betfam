@@ -5,15 +5,13 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
+import android.widget.ImageButton
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.apptea.DBHelper
 import com.example.apptea.R
 import com.google.android.material.textview.MaterialTextView
-import com.example.apptea.ui.payment_types.EditBasicPaymentDialogFragment
-import com.example.apptea.ui.payment_types.EditSupervisorPaymentListener
-import com.example.apptea.ui.payment_types.OnBasicPaymentUpdatedListener
 
 class PaymentTypesFragment : Fragment(), EditSupervisorPaymentListener, OnBasicPaymentUpdatedListener {
 
@@ -34,18 +32,18 @@ class PaymentTypesFragment : Fragment(), EditSupervisorPaymentListener, OnBasicP
         // Log payment types for debugging
         Log.d("PaymentTypesFragment", "Payment Types: $paymentTypes")
 
-        // Update text views with retrieved payment values
+         //Update text views with retrieved payment values
         paymentTypes["Supervisor"]?.let {
-            updatePaymentText(textSupervisorPayment, "$it Kenya Shillings")
+            updatePaymentText(textSupervisorPayment, "$it ")
         }
 
         paymentTypes["Basic"]?.let {
-            updatePaymentText(textBasicPayment, "$it Kenya Shillings")
+            updatePaymentText(textBasicPayment, "$it ")
         }
 
         // Find the "Edit" buttons
-        val buttonEditSupervisorPayment = view.findViewById<Button>(R.id.buttonEditSupervisorPayment)
-        val buttonEditBasicPayment = view.findViewById<Button>(R.id.buttonEditBasicPayment)
+        val buttonEditSupervisorPayment = view.findViewById<ImageButton>(R.id.buttonEditSupervisorPayment)
+        val buttonEditBasicPayment = view.findViewById<ImageButton>(R.id.buttonEditBasicPayment)
 
         // Set OnClickListener to open the edit dialog fragment for Supervisor Payment
         buttonEditSupervisorPayment.setOnClickListener {
@@ -87,4 +85,3 @@ class PaymentTypesFragment : Fragment(), EditSupervisorPaymentListener, OnBasicP
         // Update the payment text view if needed
     }
 }
-
