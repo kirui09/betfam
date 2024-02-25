@@ -30,6 +30,7 @@ class EmployeeAdapter(private var employeeList: List<Employee>) :
         val currentEmployee = employeeList[position]
 
         holder.nameTextView.text = currentEmployee.name
+        holder.empTypeTextView.text = currentEmployee.empType
         holder.ageTextView.text = currentEmployee.age
         holder.phoneNumberTextView.text = currentEmployee.phoneNumber
         holder.employeeIdTextView.text = currentEmployee.employeeId
@@ -96,6 +97,7 @@ class EmployeeAdapter(private var employeeList: List<Employee>) :
 
     inner class EmployeeViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val nameTextView: TextView = itemView.findViewById(R.id.nameTextView)
+        val empTypeTextView: TextView = itemView.findViewById(R.id.empTypeTextView)
         val ageTextView: TextView = itemView.findViewById(R.id.ageTextView)
         val phoneNumberTextView: TextView = itemView.findViewById(R.id.phoneNumberTextView)
         val employeeIdTextView: TextView = itemView.findViewById(R.id.employeeIdTextView)

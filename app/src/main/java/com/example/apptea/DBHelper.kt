@@ -6,13 +6,12 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.example.apptea.ui.companies.Company
 import com.example.apptea.ui.employees.Employee
+import com.example.apptea.ui.payment_types.BasicPayment
 import com.example.apptea.ui.records.DailyRecord
 import com.example.apptea.ui.records.DailyTeaRecord
-import com.example.apptea.ui.records.EditableTeaRecord
 import com.example.apptea.ui.records.Record
 import com.example.apptea.ui.records.TeaRecord
 import java.text.SimpleDateFormat
@@ -70,16 +69,20 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         )
     }
 
+
     private fun createEmployeesTable(db: SQLiteDatabase) {
         db.execSQL(
             "CREATE TABLE IF NOT EXISTS Employees ( " +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     "name TEXT, " +
+                    "emp_type TEXT, " + // Fixed syntax: added comma after "emp_type TEXT"
                     "age INTEGER, " +
                     "phone TEXT, " +
-                    "employee_id TEXT)"
+                    "employee_id TEXT" + // Removed trailing comma
+                    ")"
         )
     }
+
 
     private fun createTeaRecordsTable(db: SQLiteDatabase) {
         db.execSQL(
@@ -106,12 +109,14 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
     private fun createPaymentTypesTable(db: SQLiteDatabase) {
         db.execSQL(
-            "CREATE TABLE IF NOT EXISTS PaymentTypes ( " +
-
-                    "supervisorPay INT, " +
-                    "basicPay INT)"
+            "CREATE TABLE IF NOT EXISTS PaymentTypes (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    "type TEXT NOT NULL, " +
+                    "amount INTEGER NOT NULL)"
         )
     }
+
+
 
     fun insertFarmer(
         firstName: String,
@@ -167,9 +172,11 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         val cv = ContentValues()
 
         cv.put("name", employee.name)
+        cv.put("emp_type", employee.empType)
         cv.put("age", employee.age)
         cv.put("phone", employee.phoneNumber)
         cv.put("employee_id", employee.employeeId)
+        // Adding employee type
         val result = db.insert("Employees", null, cv)
         return result != -1L
     }
@@ -247,26 +254,23 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         val db = this.readableDatabase
 
         // Use the actual column names from the SELECT query
-        val cursor = db.rawQuery("SELECT id, name, age, phone, employee_id FROM Employees", null)
+        val cursor = db.rawQuery("SELECT id, name,emp_type , age, phone, employee_id FROM Employees", null)
 
         while (cursor.moveToNext()) {
             // Retrieve values using the correct column names
             val id = cursor.getLong(cursor.getColumnIndex("id"))  // Make sure to use getLong for id
             val name = cursor.getString(cursor.getColumnIndex("name"))
+            val empType = cursor.getString(cursor.getColumnIndex("emp_type")) // Retrieve employee type
             val age = cursor.getString(cursor.getColumnIndex("age"))
             val phoneNumber = cursor.getString(cursor.getColumnIndex("phone"))
             val employeeId = cursor.getString(cursor.getColumnIndex("employee_id"))
-
             // Create Employee object with retrieved values
-            val employee = Employee(id, name, age, phoneNumber, employeeId)
+            val employee = Employee(id, name, empType, age, phoneNumber, employeeId)
             employeeList.add(employee)
         }
-
         cursor.close()
         return employeeList
     }
-
-
 
     fun insertCompany(name: String, location: String): Boolean {
         val db = this.writableDatabase
@@ -418,6 +422,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
             val db = this.writableDatabase
             val contentValues = ContentValues()
             contentValues.put("id", employee.id)
+            contentValues.put("emp_type", employee.empType)
             contentValues.put("name", employee.name)
             contentValues.put("age", employee.age)
             contentValues.put("phone", employee.phoneNumber)
@@ -511,7 +516,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
         try {
             val query =
-                "SELECT id, date, employee_name, company, kilos FROM TeaRecords  ORDER BY date desc"
+                "SELECT id, date, employee_name, company, kilos, emp_type FROM TeaRecords  ORDER BY date desc"
 
             val cursor = db.rawQuery(query, null)
 
@@ -521,11 +526,12 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
                 val employees = cursor.getString(cursor.getColumnIndex("employee_name"))
                 val companies = cursor.getString(cursor.getColumnIndex("company"))
                 val kilos = cursor.getDouble(cursor.getColumnIndex("kilos"))
+                val emp_type = cursor.getString(cursor.getColumnIndex("emp_type"))
 
                 // Log the selected data
                 Log.d("DB_SELECTION", "Date: $date, Employee: $employees, Company: $companies, Kilos: $kilos")
 
-                val record = DailyTeaRecord(id , date, employees, companies, kilos)
+                val record = DailyTeaRecord(id , date, employees, companies, kilos, emp_type)
                 teaRecordsList.add(record)
             }
 
@@ -637,6 +643,60 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         }
         return companyNames
     }
+
+    // Add this method to your DBHelper class
+    fun getPaymentTypes(): Map<String, Int> {
+        val paymentTypes = mutableMapOf<String, Int>()
+        val db = this.readableDatabase
+
+        try {
+            val query = "SELECT type, amount FROM PaymentTypes"
+            val cursor = db.rawQuery(query, null)
+
+            while (cursor.moveToNext()) {
+                val type = cursor.getString(cursor.getColumnIndex("type"))
+                val amount = cursor.getInt(cursor.getColumnIndex("amount"))
+                paymentTypes[type] = amount
+            }
+
+            cursor.close()
+        } catch (e: Exception) {
+            Log.e("DB_ERROR", "Error while retrieving payment types: ${e.message}")
+        } finally {
+            db.close()
+        }
+
+        return paymentTypes
+    }
+
+
+
+
+    fun updateSupervisorPay(newPay: Int) {
+        val db = this.writableDatabase
+        val values = ContentValues()
+        values.put("amount", newPay)
+        db.update("PaymentTypes", values, null, null)
+        db.close()
+    }
+
+    fun updateBasicPay(basicPayment: BasicPayment): Boolean {
+        val db = this.writableDatabase
+        val values = ContentValues()
+        values.put("amount", basicPayment.amount)
+        val whereClause = "type = ?"  // Define the WHERE clause
+        val whereArgs = arrayOf("Basic")  // Define the arguments for the WHERE clause
+
+        return try {
+            val rowsAffected = db.update("PaymentTypes", values, whereClause, whereArgs)  // Execute the update statement with the WHERE clause
+            db.close()
+            rowsAffected > 0  // Return true if at least one row was affected (updated)
+        } catch (e: Exception) {
+            Log.e("DB_ERROR", "Error updating basic payment: ${e.message}")
+            false  // Return false indicating that the update operation failed
+        }
+    }
+
 
 
 

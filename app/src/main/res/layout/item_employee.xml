@@ -55,6 +55,22 @@
             android:layout_marginTop="4dp">
 
             <TextView
+                android:id="@+id/empTypeTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Employee Type"
+                android:textStyle="bold"
+                android:padding="5dp"/>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="4dp">
+
+            <TextView
                 android:id="@+id/ageTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

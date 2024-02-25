@@ -30,7 +30,9 @@ class TeaRecordsAdapter(
     private var recordsByDay: Map<String, List<DailyTeaRecord>>,
     private val tableLayout: TableLayout,
     private val editButtonClickListener: EditButtonClickListener,
-    private val deleteButtonClickListener: DeleteButtonClickListener
+    private val deleteButtonClickListener: DeleteButtonClickListener,
+    private val defaultBasicPayment: Double,  // Default payment for basic employees
+    private val defaultSupervisorPayment: Double  // Default payment for supervisor employees
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private val VIEW_TYPE_COLLAPSED = 1
@@ -140,8 +142,9 @@ class TeaRecordsAdapter(
                     kilosTextView.gravity = Gravity.CENTER_VERTICAL
                     row.addView(kilosTextView)
 
+                    // Calculate pay based on employee type
+                    val payAmount = calculatePay(record.kilos.toDouble(), record.empType)
                     val payTextView = TextView(tableLayout.context)
-                    val payAmount = record.kilos * 8
                     payTextView.text = "KSh.$payAmount"
                     payTextView.setTypeface(null, Typeface.BOLD)
                     payTextView.setPadding(5, 5, 5, 5)
@@ -238,5 +241,13 @@ class TeaRecordsAdapter(
         val date = dateFormat.parse(dateString)
         val formattedDateFormat = SimpleDateFormat("EEEE, d MMMM, yyyy", Locale.ENGLISH)
         return formattedDateFormat.format(date)
+    }
+
+    private fun calculatePay(kilos: Double, employeeType: String): Double {
+        return if (employeeType.equals("Supervisor", ignoreCase = true)) {
+            kilos * defaultSupervisorPayment
+        } else {
+            kilos * defaultBasicPayment
+        }
     }
 }

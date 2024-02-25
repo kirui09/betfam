@@ -12,6 +12,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.apptea.DBHelper
 import com.example.apptea.R
 import com.example.apptea.databinding.FragmentEmployeesBinding
@@ -19,7 +20,7 @@ import com.example.apptea.ui.records.AddRecordDialogFragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class EmployeesFragment : Fragment(), AddEmployeeDialogFragment.OnEmployeeSavedListener,
-    EmployeeAdapter.OnDeleteClickListener {
+    EmployeeAdapter.OnDeleteClickListener, EditEmployeeDialogFragment.OnEmployeeUpdatedListener {
 
     private var _binding: FragmentEmployeesBinding? = null
     private val binding get() = _binding!!
@@ -28,6 +29,7 @@ class EmployeesFragment : Fragment(), AddEmployeeDialogFragment.OnEmployeeSavedL
     private lateinit var recyclerView: RecyclerView
     private lateinit var employeeAdapter: EmployeeAdapter
     private lateinit var employeeList: MutableList<Employee>
+    private lateinit var swipeRefreshLayout: SwipeRefreshLayout
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -38,6 +40,8 @@ class EmployeesFragment : Fragment(), AddEmployeeDialogFragment.OnEmployeeSavedL
 
         _binding = FragmentEmployeesBinding.inflate(inflater, container, false)
         val root: View = binding.root
+
+        swipeRefreshLayout = root.findViewById(R.id.employeeswipeRefreshLayout)
 
         // Set up RecyclerView
         recyclerView = root.findViewById(R.id.recyclerView)
@@ -54,6 +58,7 @@ class EmployeesFragment : Fragment(), AddEmployeeDialogFragment.OnEmployeeSavedL
             employeeList = employees.toMutableList() // Store the employee list locally
             employeeAdapter.updateData(employees)
             employeeAdapter.notifyDataSetChanged()
+            swipeRefreshLayout.isRefreshing = false // Stop the refresh animation
         })
 
         // Fetch employees when the fragment is created
@@ -72,6 +77,11 @@ class EmployeesFragment : Fragment(), AddEmployeeDialogFragment.OnEmployeeSavedL
             )
         }
 
+        swipeRefreshLayout.setOnRefreshListener {
+            // Refresh the employee list when swipe-to-refresh is triggered
+            employeesViewModel.fetchEmployees()
+        }
+
         return root
     }
 
@@ -86,17 +96,25 @@ class EmployeesFragment : Fragment(), AddEmployeeDialogFragment.OnEmployeeSavedL
         // Handle the logic to refresh your fragment
         // For example, reload the data or re-fetch the records
         employeesViewModel.fetchEmployees()
+        swipeRefreshLayout.isRefreshing = true // Start the refresh animation
     }
 
     override fun onDeleteClick(employee: Employee) {
         showDeleteConfirmationDialog(employee)
     }
 
+    override fun onEmployeeUpdated() {
+        // Handle the event when an employee is updated
+        // For example, refresh your RecyclerView here
+        employeesViewModel.fetchEmployees()
+        refreshRecyclerView()
+        swipeRefreshLayout.isRefreshing = true // Start the refresh animation
+    }
+
     // Method to pass the list of employee names to AddRecordDialogFragment
     private fun getEmployeeNames(): List<String> {
         return employeeList.mapNotNull { it.name }
     }
-
 
     private fun showDeleteConfirmationDialog(employee: Employee) {
         val dialog = AlertDialog.Builder(requireContext())
@@ -129,4 +147,11 @@ class EmployeesFragment : Fragment(), AddEmployeeDialogFragment.OnEmployeeSavedL
 
         dbHelper.close()
     }
+
+    private fun refreshRecyclerView() {
+        // Your code to refresh the RecyclerView
+        employeesViewModel.fetchEmployees()
+        swipeRefreshLayout.isRefreshing = true // Start the refresh animation
+    }
 }
+

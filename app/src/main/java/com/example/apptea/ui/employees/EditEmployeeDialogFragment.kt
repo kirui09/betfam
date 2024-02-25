@@ -4,9 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
-import android.widget.Toast
+import android.widget.*
 import androidx.fragment.app.DialogFragment
 import com.example.apptea.DBHelper
 import com.example.apptea.R
@@ -36,6 +34,7 @@ class EditEmployeeDialogFragment : DialogFragment() {
         val view = inflater.inflate(R.layout.fragment_edit_employee_dialog, container, false)
 
         val updateEmployeeName = view.findViewById<EditText>(R.id.updateEmployeeName)
+        val spinnerEmpType = view.findViewById<Spinner>(R.id.spinnerEmpType)
         val updateEmployeeAge = view.findViewById<EditText>(R.id.updateEmployeeAge)
         val updateEmployeePhoneNumber = view.findViewById<EditText>(R.id.updateEmployeePhoneNumber)
         val updateEmployeeID = view.findViewById<EditText>(R.id.updateEmployeeID)
@@ -49,6 +48,18 @@ class EditEmployeeDialogFragment : DialogFragment() {
             updateEmployeeAge.setText(employee.age)
             updateEmployeePhoneNumber.setText(employee.phoneNumber)
             updateEmployeeID.setText(employee.employeeId)
+            // Set up the spinner with options
+            val employeeTypes = arrayOf("Basic Employee", "Supervisor")
+            val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, employeeTypes)
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            spinnerEmpType.adapter = adapter
+            // Set the selected item in the spinner
+            if (!employee.empType.isNullOrEmpty()) {
+                val empTypeIndex = employeeTypes.indexOf(employee.empType)
+                if (empTypeIndex != -1) {
+                    spinnerEmpType.setSelection(empTypeIndex)
+                }
+            }
         }
 
         updateButtonEmployee.setOnClickListener {
@@ -56,12 +67,14 @@ class EditEmployeeDialogFragment : DialogFragment() {
             val updatedAge = updateEmployeeAge.text.toString()
             val updatedPhoneNumber = updateEmployeePhoneNumber.text.toString()
             val updatedID = updateEmployeeID.text.toString()
+            val updatedEmpType = spinnerEmpType.selectedItem.toString()
 
-            if (updatedName.isNotEmpty() ) {
+            if (updatedName.isNotEmpty()) {
                 // Create an Employee object with the updated information
                 val updatedEmployee = Employee(
                     id = employee?.id,  // Pass the existing ID
                     name = updatedName,
+                    empType = updatedEmpType,
                     age = updatedAge,
                     phoneNumber = updatedPhoneNumber,
                     employeeId = updatedID
@@ -74,11 +87,14 @@ class EditEmployeeDialogFragment : DialogFragment() {
                     Toast.makeText(
                         requireContext(),
                         "Record updated successfully",
-                        Toast.LENGTH_SHORT
+                        Toast.LENGTH_LONG
                     ).show()
 
                     // Notify the listener that the employee has been updated
                     onEmployeeUpdatedListener?.onEmployeeUpdated()
+
+                    // Dismiss the dialog
+                    dismiss()
                 } else {
                     Toast.makeText(
                         requireContext(),
@@ -89,8 +105,6 @@ class EditEmployeeDialogFragment : DialogFragment() {
 
                 dbHelper.close()
             }
-
-            dismiss()
         }
 
         return view
@@ -100,3 +114,4 @@ class EditEmployeeDialogFragment : DialogFragment() {
         fun onEmployeeUpdated()
     }
 }
+

@@ -41,10 +41,10 @@
             android:id="@+id/PayTypeTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Pay Per Kilo">
+            android:hint="Employee Type">
 
             <Spinner
-                android:id="@+id/editTextPayType"
+                android:id="@+id/spinnerEmpType"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingTop="25dp"
