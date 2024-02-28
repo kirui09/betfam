@@ -33,10 +33,15 @@ class EditSupervisorPaymentDialogFragment : DialogFragment() {
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?):
-            View? {
-        return inflater.inflate(R.layout.fragment_edit_supervisor_payment_dialog, container, false)
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        return inflater.inflate(
+            R.layout.fragment_edit_supervisor_payment_dialog,
+            container,
+            false
+        )
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -55,7 +60,6 @@ class EditSupervisorPaymentDialogFragment : DialogFragment() {
         }
 
         buttonSave.setOnClickListener {
-
             val updatedSupervisorPayment = editTextSupervisorPayment.text.toString()
             val updatedSupervisorPaymentInt = updatedSupervisorPayment.toIntOrNull()
 
@@ -85,6 +89,9 @@ class EditSupervisorPaymentDialogFragment : DialogFragment() {
                 ).show()
             }
         }
+
     }
 }
+
+
 

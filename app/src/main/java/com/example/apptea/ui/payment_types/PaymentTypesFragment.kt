@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
-import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.apptea.DBHelper
@@ -15,15 +14,18 @@ import com.google.android.material.textview.MaterialTextView
 
 class PaymentTypesFragment : Fragment(), EditSupervisorPaymentListener, OnBasicPaymentUpdatedListener {
 
+    private lateinit var textSupervisorPayment: MaterialTextView
+    private lateinit var textBasicPayment: MaterialTextView
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_payment_types, container, false)
 
-        // Find the MaterialTextViews
-        val textSupervisorPayment = view.findViewById<MaterialTextView>(R.id.textSupervisorPayment)
-        val textBasicPayment = view.findViewById<MaterialTextView>(R.id.textBasicPayment)
+        // Initialize MaterialTextViews
+        textSupervisorPayment = view.findViewById(R.id.textSupervisorPayment)
+        textBasicPayment = view.findViewById(R.id.textBasicPayment)
 
         // Fetch payment types and amounts from the database
         val dbHelper = DBHelper(requireContext())
@@ -32,7 +34,7 @@ class PaymentTypesFragment : Fragment(), EditSupervisorPaymentListener, OnBasicP
         // Log payment types for debugging
         Log.d("PaymentTypesFragment", "Payment Types: $paymentTypes")
 
-         //Update text views with retrieved payment values
+        // Update text views with retrieved payment values
         paymentTypes["Supervisor"]?.let {
             updatePaymentText(textSupervisorPayment, "$it ")
         }
@@ -70,18 +72,17 @@ class PaymentTypesFragment : Fragment(), EditSupervisorPaymentListener, OnBasicP
 
     // Implementation of the listener function for Supervisor Payment edit
     override fun onSupervisorPaymentEdited(newValue: String) {
-        // Handle the edited value here if needed
-        // For now, just show a toast message
+        // Update the payment text view
+        updatePaymentText(textSupervisorPayment, "$newValue ")
+        // Show a toast message
         Toast.makeText(requireContext(), "Supervisor Payment updated: $newValue", Toast.LENGTH_SHORT).show()
-        // Update the payment text view if needed
-        // updatePaymentText(textSupervisorPayment, "$newValue Kenya Shillings")
     }
 
     // Implementation of the listener function for Basic Payment edit
     override fun onBasicPaymentUpdated(basicPayment: String) {
-        // Handle the updated basic payment here if needed
-        // For now, just show a toast message
+        // Update the payment text view
+        updatePaymentText(textBasicPayment, "$basicPayment ")
+        // Show a toast message
         Toast.makeText(requireContext(), "Basic Payment updated: $basicPayment", Toast.LENGTH_SHORT).show()
-        // Update the payment text view if needed
     }
 }

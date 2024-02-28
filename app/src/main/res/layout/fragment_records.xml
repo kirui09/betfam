@@ -39,7 +39,11 @@
         android:layout_height="match_parent"
         android:layout_below="@id/totalsTextView"
         android:padding="5dp"
+        android:visibility="visible"
+        android:divider="@drawable/divider_horizontal"
+        android:dividerHeight="1dp"
         tools:listitem="@layout/item_expanded_day" />
+
 
 
 

@@ -91,7 +91,7 @@ class EditEmployeeDialogFragment : DialogFragment() {
                     ).show()
 
                     // Notify the listener that the employee has been updated
-                    onEmployeeUpdatedListener?.onEmployeeUpdated()
+                    onEmployeeUpdatedListener?.onEmployeeUpdated(updatedEmployee)
 
                     // Dismiss the dialog
                     dismiss()
@@ -111,7 +111,7 @@ class EditEmployeeDialogFragment : DialogFragment() {
     }
 
     interface OnEmployeeUpdatedListener {
-        fun onEmployeeUpdated()
+        fun onEmployeeUpdated(employee: Employee)
     }
 }
 

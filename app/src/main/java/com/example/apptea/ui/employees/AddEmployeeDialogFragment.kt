@@ -35,8 +35,8 @@ class AddEmployeeDialogFragment : DialogFragment() {
         val buttonSaveEmployee = view.findViewById<Button>(R.id.buttonSaveEmployee)
         val spinnerEmpType = view.findViewById<Spinner>(R.id.spinnerEmpType)
 
-        // Define the options for the spinner
-        val empTypes = arrayOf("Basic Employee", "Supervisor")
+        // Define the options for the spinner including "Select Employee" as the default option
+        val empTypes = arrayOf("Select Employee Type", "Basic Employee", "Supervisor")
 
         // Create an adapter for the spinner
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, empTypes)
@@ -54,6 +54,12 @@ class AddEmployeeDialogFragment : DialogFragment() {
             val id = editTextEmployeeID.text.toString().trim()
             val empType = spinnerEmpType.selectedItem.toString()
 
+            // Check if the user has selected an employee type
+            if (empType == "Select Employee Type") {
+                showToast("Please select an employee type")
+                return@setOnClickListener
+            }
+
             // Check for empty values
             if (name.isEmpty()) {
                 showToast("Add Employee Name")
@@ -61,7 +67,7 @@ class AddEmployeeDialogFragment : DialogFragment() {
             }
 
             // Create an Employee object
-            val employee = Employee(id = null,empType = empType, name = name, age = age, phoneNumber = phoneNumber, employeeId = id )
+            val employee = Employee(id = null, empType = empType, name = name, age = age, phoneNumber = phoneNumber, employeeId = id)
 
             // Save employee to the database
             saveEmployeeToDatabase(employee)

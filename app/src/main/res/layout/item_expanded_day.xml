@@ -68,6 +68,9 @@
             android:textColor="#ffffff"
             android:textStyle="bold" />
 
+
+
+
         <TextView
             android:id="@+id/totalKilosTextView"
             android:layout_width="0dp"
@@ -88,8 +91,28 @@
             android:textColor="#ffffff"
             android:textStyle="bold" />
 
+        <!-- Add ImageButtons for edit and delete icons -->
+        <ImageView
+            android:id="@+id/editButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_baseline_edit_24"
+            android:layout_gravity="center"
+            android:layout_marginStart="8dp" />
 
+        <ImageView
+            android:id="@+id/deleteButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_baseline_delete_24"
+            android:layout_gravity="center"
+            android:layout_marginStart="8dp" />
 
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="3dp"
+            android:background="@color/gyey"/>
 
 
     </TableRow>

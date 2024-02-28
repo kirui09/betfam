@@ -535,6 +535,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
 
 
+    // Method to fetch all tea records from the database
     fun getAllTeaRecords(): List<DailyTeaRecord> {
         val teaRecordsList = mutableListOf<DailyTeaRecord>()
         val teaRecordsLiveData = MutableLiveData<List<DailyTeaRecord>>()
@@ -542,25 +543,23 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
         try {
             val query =
-                "SELECT id, date, employee_name, company, kilos, emp_type FROM TeaRecords  ORDER BY date desc"
+                "SELECT id, date, company, employee_name,  kilos  FROM TeaRecords  ORDER BY date desc"
 
             val cursor = db.rawQuery(query, null)
 
             while (cursor.moveToNext()) {
                 val id = cursor.getLong(cursor.getColumnIndex("id"))
                 val date = cursor.getString(cursor.getColumnIndex("date"))
-                val employees = cursor.getString(cursor.getColumnIndex("employee_name"))
                 val companies = cursor.getString(cursor.getColumnIndex("company"))
+                val employees = cursor.getString(cursor.getColumnIndex("employee_name"))
                 val kilos = cursor.getDouble(cursor.getColumnIndex("kilos"))
-                val emp_type = cursor.getString(cursor.getColumnIndex("emp_type"))
 
                 // Log the selected data
                 Log.d("DB_SELECTION", "Date: $date, Employee: $employees, Company: $companies, Kilos: $kilos")
 
-                val record = DailyTeaRecord(id , date, employees, companies, kilos, emp_type)
+                val record = DailyTeaRecord(id , date, companies, employees, kilos)
                 teaRecordsList.add(record)
             }
-
             cursor.close()
             teaRecordsLiveData.postValue(teaRecordsList)
         } catch (e: Exception) {
@@ -571,6 +570,8 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
         return teaRecordsList
     }
+
+
 
 
     // Method to get all employee names
@@ -698,13 +699,37 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
 
 
-    fun updateSupervisorPay(newPay: Int) {
+    fun updateSupervisorPay(newPay: Int): Boolean {
         val db = this.writableDatabase
         val values = ContentValues()
         values.put("amount", newPay)
-        db.update("PaymentTypes", values, null, null)
-        db.close()
+        val whereClause = "type = ?"  // Define the WHERE clause
+        val whereArgs = arrayOf("Supervisor")  // Define the arguments for the WHERE clause
+
+        return try {
+            val rowsAffected = db.update("PaymentTypes", values, whereClause, whereArgs)  // Execute the update statement with the WHERE clause
+            db.close()
+
+            // Add log messages for debugging
+            Log.d("DB_UPDATE", "Rows affected: $rowsAffected")
+
+            val success = rowsAffected > 0  // Check if at least one row was affected (updated)
+
+            // Log success or failure
+            if (success) {
+                Log.d("DB_UPDATE", "Supervisor payment updated successfully")
+            } else {
+                Log.e("DB_UPDATE", "Failed to update supervisor payment")
+            }
+
+            success  // Return true if at least one row was affected (updated)
+        } catch (e: Exception) {
+            Log.e("DB_ERROR", "Error updating supervisor payment: ${e.message}")
+            false  // Return false indicating that the update operation failed
+        }
     }
+
+
 
     fun updateBasicPay(basicPayment: BasicPayment): Boolean {
         val db = this.writableDatabase
@@ -737,7 +762,49 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
     }
 
 
+    // Method to fetch supervisor pay from the database
+    fun getSupervisorPay(): Double {
+        val selectQuery = "SELECT amount FROM PaymentTypes WHERE type = 'Supervisor'"
+        val db = this.readableDatabase
+        var supervisorPay: Double = 0.0
+        val cursor: Cursor?
 
+        try {
+            cursor = db.rawQuery(selectQuery, null)
+            if (cursor.moveToFirst()) {
+                supervisorPay = cursor.getDouble(cursor.getColumnIndex("amount"))
+            }
+            cursor.close()
+        } catch (e: Exception) {
+            Log.e("DB_ERROR", "Error fetching supervisor pay: ${e.message}")
+        } finally {
+            db.close()
+        }
+
+        return supervisorPay
+    }
+
+    // Method to fetch basic pay from the database
+    fun getBasicPay(): Double {
+        val selectQuery = "SELECT amount FROM PaymentTypes WHERE type = 'Basic'"
+        val db = this.readableDatabase
+        var basicPay: Double = 0.0
+        val cursor: Cursor?
+
+        try {
+            cursor = db.rawQuery(selectQuery, null)
+            if (cursor.moveToFirst()) {
+                basicPay = cursor.getDouble(cursor.getColumnIndex("amount"))
+            }
+            cursor.close()
+        } catch (e: Exception) {
+            Log.e("DB_ERROR", "Error fetching basic pay: ${e.message}")
+        } finally {
+            db.close()
+        }
+
+        return basicPay
+    }
 
 
 

@@ -57,7 +57,6 @@ class EmployeesFragment : Fragment(), AddEmployeeDialogFragment.OnEmployeeSavedL
             Log.d("EmployeesFragment", "Observed ${employees.size} employees")
             employeeList = employees.toMutableList() // Store the employee list locally
             employeeAdapter.updateData(employees)
-            employeeAdapter.notifyDataSetChanged()
             swipeRefreshLayout.isRefreshing = false // Stop the refresh animation
         })
 
@@ -103,17 +102,14 @@ class EmployeesFragment : Fragment(), AddEmployeeDialogFragment.OnEmployeeSavedL
         showDeleteConfirmationDialog(employee)
     }
 
-    override fun onEmployeeUpdated() {
-        // Handle the event when an employee is updated
-        // For example, refresh your RecyclerView here
-        employeesViewModel.fetchEmployees()
-        refreshRecyclerView()
-        swipeRefreshLayout.isRefreshing = true // Start the refresh animation
-    }
-
-    // Method to pass the list of employee names to AddRecordDialogFragment
-    private fun getEmployeeNames(): List<String> {
-        return employeeList.mapNotNull { it.name }
+    override fun onEmployeeUpdated(updatedEmployee: Employee) {
+        // Update the RecyclerView with the edited employee
+        val index = employeeList.indexOfFirst { it.id == updatedEmployee.id }
+        if (index != -1) {
+            employeeList[index] = updatedEmployee
+            // Notify the adapter that the data at the specific position has changed
+            employeeAdapter.notifyItemChanged(index)
+        }
     }
 
     private fun showDeleteConfirmationDialog(employee: Employee) {
@@ -147,11 +143,4 @@ class EmployeesFragment : Fragment(), AddEmployeeDialogFragment.OnEmployeeSavedL
 
         dbHelper.close()
     }
-
-    private fun refreshRecyclerView() {
-        // Your code to refresh the RecyclerView
-        employeesViewModel.fetchEmployees()
-        swipeRefreshLayout.isRefreshing = true // Start the refresh animation
-    }
 }
-

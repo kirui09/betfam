@@ -84,7 +84,6 @@ class EditBasicPaymentDialogFragment : DialogFragment() {
             }
         }
 
-
         return view
     }
 }
