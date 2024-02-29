@@ -543,7 +543,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
         try {
             val query =
-                "SELECT id, date, company, employee_name,  kilos  FROM TeaRecords  ORDER BY date desc"
+                "SELECT id, date,company, employee_name, kilos  FROM TeaRecords  ORDER BY date desc"
 
             val cursor = db.rawQuery(query, null)
 
@@ -554,12 +554,14 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
                 val employees = cursor.getString(cursor.getColumnIndex("employee_name"))
                 val kilos = cursor.getDouble(cursor.getColumnIndex("kilos"))
 
+
                 // Log the selected data
                 Log.d("DB_SELECTION", "Date: $date, Employee: $employees, Company: $companies, Kilos: $kilos")
 
                 val record = DailyTeaRecord(id , date, companies, employees, kilos)
                 teaRecordsList.add(record)
             }
+
             cursor.close()
             teaRecordsLiveData.postValue(teaRecordsList)
         } catch (e: Exception) {
@@ -808,7 +810,18 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
 
 
-
+    fun getEmployeeType(employeeName: String): String {
+        val db = this.readableDatabase
+        var type = ""
+        val query = "SELECT emp_type FROM Employees where name = ?"
+        val cursor: Cursor = db.rawQuery(query, arrayOf(employeeName))
+        if (cursor.moveToFirst()) {
+            type = cursor.getString(cursor.getColumnIndex("emp_type"))
+        }
+        cursor.close()
+        db.close()
+        return type
+    }
 
 
 

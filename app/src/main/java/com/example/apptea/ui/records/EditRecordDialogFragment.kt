@@ -166,6 +166,7 @@ class EditRecordDialogFragment : DialogFragment() {
                     companies = binding.spinnerCompanyName.selectedItem.toString(),
                     employees = binding.spinnerEmployeeName.selectedItem.toString(),
                     kilos = binding.updateTextEmployeeKilos.text.toString().toDouble(),
+
                 )
 
                 // Log the update operation details
