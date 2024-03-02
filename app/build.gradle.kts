@@ -85,6 +85,7 @@ dependencies {
     implementation ("com.google.dagger:dagger:2.38.1")
     kapt ("com.google.dagger:dagger-compiler:2.38.1")
     implementation ("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+    implementation ("androidx.navigation:navigation-fragment-ktx")
 
 
 }

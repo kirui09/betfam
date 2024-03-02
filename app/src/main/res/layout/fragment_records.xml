@@ -1,67 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.swiperefreshlayout.widget.SwipeRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/swipe_refresh_layout"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.records.RecordsFragment"
-    android:id="@+id/fragment_container">
+    tools:context=".ui.records.RecordsFragment">
 
-
-
-
-    <!-- TextView for displaying totals -->
-    <TextView
-        android:id="@+id/totalsTextView"
+    <com.google.android.material.tabs.TabLayout
+        android:id="@+id/tabLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="10dp"
-        android:background="#3E3737"
-        android:text="Total"
-        android:textColor="@color/white"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"/>
+        android:layout_height="wrap_content" >
+        
+        
+        <com.google.android.material.tabs.TabItem
+            android:text="TEa Records"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
+        <com.google.android.material.tabs.TabItem
+            android:text="PAYMENTS"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        
+    </com.google.android.material.tabs.TabLayout>
 
-
-    <!-- RecyclerView for displaying daily tea records -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/dailytearecordsrecyclerView"
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/totalsTextView"
-        android:padding="5dp"
-        android:visibility="visible"
-        android:divider="@drawable/divider_horizontal"
-        android:dividerHeight="1dp"
-        tools:listitem="@layout/item_expanded_day" />
+        android:layout_below="@id/tabLayout"/>
 
 
 
 
-    <!-- FloatingActionButton for adding records -->
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/fabAddRecord"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:layout_margin="16dp"
-        android:src="@drawable/ic_baseline_add_24"
-        app:backgroundTint="#185CE3"
-        android:layout_gravity="bottom|end"
-        app:elevation="10dp" />
 
 
 </RelativeLayout>
-
-
-</androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
