@@ -20,14 +20,13 @@
             app:cardCornerRadius="8dp"
             android:stretchColumns="*"
             android:padding="16dp"
-            android:background="#3498db">
+            android:background="@color/brown">
 
-        <TableRow
-            android:id="@+id/table_row"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="#3498db"
-            android:padding="8dp">
+            <TableRow
+                android:id="@+id/table_row_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="8dp">
 
 
             <!-- Date -->
@@ -39,6 +38,14 @@
                 android:textSize="16sp"
                 android:textStyle="bold"/>
 
+            </TableRow>
+
+        <TableRow
+            android:id="@+id/table_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp">
+
         <!-- Employee Name -->
         <TextView
             android:id="@+id/paymentemployeeNameTextView"
@@ -48,27 +55,37 @@
             android:textSize="18sp"
             android:textStyle="bold" />
 
-
-
         <!-- Kilos -->
         <TextView
             android:id="@+id/paymentkilosTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Pay"
+            android:text="Kilos"
             android:textSize="18sp"
             android:textStyle="bold"/>
 
         <!-- Add more payment details as needed -->
 
+            <!-- Kilos -->
+            <TextView
+                android:id="@+id/paymentTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pay"
+                android:textSize="18sp"
+                android:textStyle="bold"/>
         </TableRow>
-
-
-
-
-
         </TableLayout>
-
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="4dp">
+            <Button
+                android:id="@+id/seelessPayButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="See Less.." />
+        </RelativeLayout>
     </LinearLayout>
-
 </androidx.cardview.widget.CardView>

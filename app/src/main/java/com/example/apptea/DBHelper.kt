@@ -12,6 +12,7 @@ import com.example.apptea.ui.employees.Employee
 import com.example.apptea.ui.payment_types.BasicPayment
 import com.example.apptea.ui.records.DailyRecord
 import com.example.apptea.ui.records.DailyTeaRecord
+import com.example.apptea.ui.records.Payment
 import com.example.apptea.ui.records.Record
 import com.example.apptea.ui.records.TeaRecord
 import java.text.SimpleDateFormat
@@ -573,9 +574,6 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         return teaRecordsList
     }
 
-
-
-
     // Method to get all employee names
     fun getAllEmployeeNames(): List<String> {
         val employeeNames = mutableListOf<String>()
@@ -826,36 +824,28 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
 
 
-//    fun getAllTeaRecords(): List<DailyTeaRecord> {
-//        val teaRecordsList = mutableListOf<DailyTeaRecord>()
-//        val db = this.readableDatabase
-//        val query = "SELECT id, date, company, employee_name, kilos, pay FROM TeaRecords ORDER BY date DESC"
-//
-//        val cursor = db.rawQuery(query, null)
-//
-//        while (cursor.moveToNext()) {
-//            val id = cursor.getInt(cursor.getColumnIndex("id"))
-//            val date = cursor.getString(cursor.getColumnIndex("date"))
-//            val employees = cursor.getString(cursor.getColumnIndex("employee_name"))?.split(",") ?: emptyList()
-//            val companies = cursor.getString(cursor.getColumnIndex("company"))?.split(",") ?: emptyList()
-//            val kilos = cursor.getDouble(cursor.getColumnIndex("kilos"))
-//            val pay = cursor.getDouble(cursor.getColumnIndex("pay"))
-//
-//            val record = DailyTeaRecord(id, date, employees, companies, kilos, pay)
-//            teaRecordsList.add(record)
-//        }
-//
-//        cursor.close()
-//        db.close() // Close the database connection
-//        return teaRecordsList
-//    }
 
+    fun getAllPayments(): MutableLiveData<List<Payment>> {
+        val paymentsLiveData = MutableLiveData<List<Payment>>()
+        val db = readableDatabase.use { db ->
+            val payments = mutableListOf<Payment>()
+            val queryBuilder = StringBuilder("SELECT id, date, employee_name, kilos FROM TeaRecords")
+            queryBuilder.append(" ORDER BY date ASC") // Modify order if needed
+            val query = queryBuilder.toString()
 
-
-
-
-
-
+            db.rawQuery(query, null).use { cursor ->
+                while (cursor.moveToNext()) {
+                    val id = cursor.getLong(cursor.getColumnIndex("id"))
+                    val date = cursor.getString(cursor.getColumnIndex("date"))
+                    val employeeName = cursor.getString(cursor.getColumnIndex("employee_name"))
+                    val kilos = cursor.getDouble(cursor.getColumnIndex("kilos"))
+                    payments.add(Payment(id, date, employeeName, kilos))
+                }
+            }
+            paymentsLiveData.postValue(payments)
+        }
+        return paymentsLiveData
+    }
 
 }
 

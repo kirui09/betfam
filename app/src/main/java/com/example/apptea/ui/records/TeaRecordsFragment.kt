@@ -1,3 +1,4 @@
+
 package com.example.apptea.ui.records
 
 import android.app.AlertDialog
@@ -43,24 +44,17 @@ class TeaRecordsFragment : Fragment(), EditButtonClickListener, AddButtonClickLi
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         dbHelper = DBHelper(requireContext())
         recordsViewModel = ViewModelProvider(this).get(RecordsViewModel::class.java)
         employeeAdapter = EmployeeAdapter(emptyList())
-
         fetchPaymentTypes() // Fetch supervisor and basic pay from the database
-
         setupRecyclerView()
-
         // Set click listener for add button
-
         binding.fabAddRecord.setOnClickListener {
             onAddButtonClick()
         }
-
         observeRecords()
         fetchRecords()
-
         val swipeRefreshLayout = view.findViewById<SwipeRefreshLayout>(R.id.swipe_refresh_layout)
         swipeRefreshLayout.setOnRefreshListener {
             // Call the function to refresh the records
