@@ -829,23 +829,59 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         val paymentsLiveData = MutableLiveData<List<Payment>>()
         val db = readableDatabase.use { db ->
             val payments = mutableListOf<Payment>()
-            val queryBuilder = StringBuilder("SELECT id, date, employee_name, kilos FROM TeaRecords")
+            val queryBuilder = StringBuilder("SELECT id, date, employee_name, kilos ,pay FROM TeaRecords")
             queryBuilder.append(" ORDER BY date ASC") // Modify order if needed
             val query = queryBuilder.toString()
 
             db.rawQuery(query, null).use { cursor ->
                 while (cursor.moveToNext()) {
-                    val id = cursor.getLong(cursor.getColumnIndex("id"))
+                    val id = cursor.getInt(cursor.getColumnIndex("id"))
                     val date = cursor.getString(cursor.getColumnIndex("date"))
                     val employeeName = cursor.getString(cursor.getColumnIndex("employee_name"))
                     val kilos = cursor.getDouble(cursor.getColumnIndex("kilos"))
-                    payments.add(Payment(id, date, employeeName, kilos))
+                    val paymentAmount = cursor.getDouble(cursor.getColumnIndex("pay"))
+                    payments.add(Payment(id, date, employeeName, kilos,paymentAmount))
                 }
             }
             paymentsLiveData.postValue(payments)
         }
         return paymentsLiveData
     }
+
+
+
+
+    fun insertPaymentToTeaRecords(payment: Payment) {
+        val db = this.writableDatabase
+        val values = ContentValues()
+
+        // Check if the payment already exists in the database
+        if (!paymentExists(db, payment.id, payment.date, payment.employeeName)) {
+            // Payment does not exist, so insert it
+            values.put("id", payment.id)
+            values.put("date", payment.date)
+            values.put("employee_name", payment.employeeName)
+            values.put("pay", payment.paymentAmount)
+            db.insert("TeaRecords", null, values)
+        } else {
+            // Payment already exists, so update it
+            val whereClause = "id = ? AND date = ? AND employee_name = ?"
+            val whereArgs = arrayOf(payment.id.toString(), payment.date, payment.employeeName)
+            values.put("pay", payment.paymentAmount)
+            db.update("TeaRecords", values, whereClause, whereArgs)
+        }
+
+        db.close()
+    }
+    // Check if a payment with the given id, date, and name already exists in the database
+    private fun paymentExists(db: SQLiteDatabase, id: Int, date: String, name: String): Boolean {
+        val query = "SELECT * FROM TeaRecords WHERE id = ? AND date = ? AND employee_name = ?"
+        val cursor = db.rawQuery(query, arrayOf(id.toString(), date, name))
+        val exists = cursor.count > 0
+        cursor.close()
+        return exists
+    }
+
 
 }
 

@@ -46,6 +46,12 @@
                 android:textStyle="bold"
                 android:padding="5dp"/>
 
+            <CheckBox
+                android:id="@+id/checkedpayCheckBox"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"/>
+
         </RelativeLayout>
 
         <RelativeLayout
@@ -57,9 +63,9 @@
                 android:id="@+id/seeMorePayButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="See More.." />
+                android:background="@color/brown"
+                android:text="See Full List.." />
         </RelativeLayout>
-
 
 
 

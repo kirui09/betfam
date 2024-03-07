@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.apptea.DBHelper
 import com.example.apptea.R
+import com.example.apptea.SharedPreferencesHelper
 
 class PaymentFragment : Fragment() {
 
@@ -18,6 +19,7 @@ class PaymentFragment : Fragment() {
     private lateinit var dbHelper: DBHelper
     private var supervisorPay: Double = 0.00
     private var basicPay: Double = 0.00
+    private lateinit var sharedPreferencesHelper: SharedPreferencesHelper // Added sharedPreferencesHelper property
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -31,8 +33,10 @@ class PaymentFragment : Fragment() {
         // Fetch payment types
         val paymentTypes = dbHelper.getPaymentTypes()
 
-        // Pass an empty LinkedHashMap to the adapter
-        paymentAdapter = PaymentAdapter(requireContext(), LinkedHashMap(), dbHelper)
+        sharedPreferencesHelper = SharedPreferencesHelper(requireContext()) // Initialize sharedPreferencesHelper
+
+        paymentAdapter = PaymentAdapter(requireContext(), LinkedHashMap(), dbHelper, sharedPreferencesHelper) // Initialize paymentAdapter
+
         recyclerView.adapter = paymentAdapter
 
         fetchPaymentTypes()

@@ -1,4 +1,6 @@
 // SharedPreferencesHelper.kt
+package com.example.apptea
+
 import android.content.Context
 import android.content.SharedPreferences
 
@@ -18,5 +20,17 @@ class SharedPreferencesHelper(context: Context) {
     fun getPhoneNumber(): String {
         return sharedPreferences.getString(KEY_PHONE_NUMBER, "") ?: ""
     }
+
+
+    fun getCheckBoxState(): Boolean {
+        return sharedPreferences.getBoolean("CHECKBOX_STATE", false)
+    }
+
+    fun saveCheckBoxState(state: Boolean) {
+        val editor = sharedPreferences.edit()
+        editor.putBoolean("CHECKBOX_STATE", state)
+        editor.apply()
+    }
+
 
 }

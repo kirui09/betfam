@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.example.apptea.DBHelper
 import com.example.apptea.MainActivity
 import com.example.apptea.R
@@ -22,33 +23,25 @@ import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import com.github.mikephil.charting.utils.ColorTemplate
-import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
-import kotlinx.coroutines.Dispatchers
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
 class HomeFragment : Fragment() {
 
-
     private var _binding: FragmentHomeBinding? = null
     private lateinit var barChart: BarChart
     private lateinit var txtdashboard: TextView
 
-    // Add TextViews for displaying weather information
     private lateinit var skyDetailsTextView: TextView
     private lateinit var myCityTextView: TextView
     private lateinit var todaysTemperatureTextView: TextView
 
-
     // This property is only valid between onCreateView and onDestroyView.
     private val binding get() = _binding!!
-
-
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -63,7 +56,6 @@ class HomeFragment : Fragment() {
         skyDetailsTextView = binding.skyDetails
         todaysTemperatureTextView = binding.todaysTemprature
 
-
         // Initialize PieChart
         val pieChart: PieChart = binding.pieChart
         initializePieChart(pieChart)
@@ -72,19 +64,38 @@ class HomeFragment : Fragment() {
         barChart = binding.barChart
         initializeBarChart()
 
+        // Initialize bottom navigation
+        val bottomNav = root.findViewById<BottomNavigationView>(R.id.bottom_nav)
+        bottomNav.setOnNavigationItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.bottom_home -> {
+                    // Handle navigation to HomeFragment
+                    // No action needed as we are already in HomeFragment
+                    true
+                }
+                R.id.bottom_schedule -> {
+                    // Navigate to ScheduleFragment
+                    findNavController().navigate(R.id.action_homeFragment_to_scheduleFragment)
+                    true
+                }
+                R.id.bottom_charts -> {
+                    // Navigate to ChartsFragment
+                    findNavController().navigate(R.id.action_homeFragment_to_chartsFragment)
+                    true
+                }
+                else -> false
+            }
+        }
 
         return root
     }
 
     fun handleWeatherResult(weatherInfo: MainActivity.WeatherInfo) {
         // Handle the result and update UI elements
-
         myCityTextView.text = weatherInfo.city
         skyDetailsTextView.text = weatherInfo.description
         todaysTemperatureTextView.text = weatherInfo.temperature
     }
-
-
 
     private fun initializeBarChart() {
         // Fetch data from the database for the past week
@@ -133,10 +144,6 @@ class HomeFragment : Fragment() {
         barChart.invalidate()
     }
 
-
-
-
-
     private fun initializePieChart(pieChart: PieChart) {
         val dbHelper = DBHelper(requireContext())
         val companyKilosData = dbHelper.getCompanyKilosData()
@@ -174,9 +181,6 @@ class HomeFragment : Fragment() {
     fun updateDashboardText(firstName: String) {
         txtdashboard.text = "Welcome, $firstName!"
     }
-
-
-
 
     override fun onDestroyView() {
         super.onDestroyView()

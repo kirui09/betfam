@@ -36,7 +36,7 @@ class AddEmployeeDialogFragment : DialogFragment() {
         val spinnerEmpType = view.findViewById<Spinner>(R.id.spinnerEmpType)
 
         // Define the options for the spinner including "Select Employee" as the default option
-        val empTypes = arrayOf("Select Employee Type", "Basic Employee", "Supervisor")
+        val empTypes = arrayOf("Select Employee Type", "Basic", "Supervisor")
 
         // Create an adapter for the spinner
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, empTypes)

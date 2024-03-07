@@ -1,8 +1,7 @@
-
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="ui.home.HomeFragment">
@@ -86,7 +85,6 @@
 
     </FrameLayout>
 
-
     <FrameLayout
         android:id="@+id/secondPart"
         android:layout_width="match_parent"
@@ -106,7 +104,6 @@
 
     </FrameLayout>
 
-
     <FrameLayout
         android:id="@+id/thirdPart"
         android:layout_width="match_parent"
@@ -124,5 +121,12 @@
             android:id="@+id/pie_chart"/>
 
     </FrameLayout>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:menu="@menu/bottom_navigation_bar"
+        android:id="@+id/bottom_nav" />
+
 
 </LinearLayout>

@@ -1,15 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.records.PaymentFragment">
 
+
+    <TextView
+        android:id="@+id/totalpaymenttextview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:background="#3E3737"
+        android:text="Total"
+        android:textColor="@color/white"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/paymentRecyclerView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_below="@id/totalpaymenttextview" />
 
 
 
-</FrameLayout>
+</RelativeLayout>
