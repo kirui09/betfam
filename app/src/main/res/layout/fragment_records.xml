@@ -19,6 +19,11 @@
         <com.google.android.material.tabs.TabItem
             android:text="PAYMENTS"
             android:layout_width="wrap_content"
+            android:layout_height="20dp"
+            />
+        <com.google.android.material.tabs.TabItem
+            android:text="Monthly/Yearly"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
         
     </com.google.android.material.tabs.TabLayout>

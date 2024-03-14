@@ -11,15 +11,14 @@
         android:id="@+id/bottom_schedule"
         android:title="Schedule"
         android:icon="@drawable/ic_baseline_calendar_month_24"
-        app:actionViewClass="android.widget.ImageView"
-        app:showAsAction="ifRoom"
-        android:onClick="@id/action_homeFragment_to_scheduleFragment" />
+        app:actionViewClass="android.widget.ImageView"/>
+<!--        android:onClick="@id/action_homeFragment_to_scheduleFragment" />-->
 
     <item
         android:id="@+id/bottom_charts"
         android:title="Charts"
         android:icon="@drawable/baseline_bar_chart_24"
-        app:actionViewClass="android.widget.ImageView"
-        app:showAsAction="ifRoom"
-        android:onClick="@id/action_homeFragment_to_chartsFragment" />
+        app:actionViewClass="android.widget.ImageView"/>
+<!--        android:onClick="@id/action_homeFragment_to_chartsFragment" />-->
+
 </menu>

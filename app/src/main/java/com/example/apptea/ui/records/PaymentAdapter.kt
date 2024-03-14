@@ -1,6 +1,5 @@
 package com.example.apptea.ui.records
 
-import android.app.AlertDialog
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -8,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.TextView
-import android.widget.Toast
+import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.apptea.DBHelper
 import com.example.apptea.R
@@ -20,7 +19,7 @@ import java.util.Locale
 class PaymentAdapter(
     private val context: Context,
     private val groupedData: LinkedHashMap<String, ArrayList<Payment>>,
-    private val dbHelper: DBHelper,
+    private val dbHelper: DBHelper ,// Database helper to fetch employee type
     private val sharedPreferencesHelper: SharedPreferencesHelper
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
@@ -34,7 +33,6 @@ class PaymentAdapter(
         val paymentKilosTextView: TextView = itemView.findViewById(R.id.paymentkilosTextView)
         val paymentTextView: TextView = itemView.findViewById(R.id.paymentTextView)
         val seeLessButton: Button = itemView.findViewById(R.id.seelessPayButton)
-        val checkBox: CheckBox = itemView.findViewById(R.id.checkedpayCheckBox)
     }
 
     inner class GeneralPayViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -69,57 +67,50 @@ class PaymentAdapter(
             holder.paymentKilosTextView.text = ""
             holder.paymentTextView.text = ""
 
+            // Concatenate employee names, kilos, and payment for the day
             payments?.forEach { payment ->
                 holder.paymentEmployeeNameTextView.append(payment.employeeName + "\n")
                 holder.paymentKilosTextView.append("${NumberFormat.getInstance().format(payment.kilos)} Kilos\n")
 
                 val employeeType = dbHelper.getEmployeeType(payment.employeeName)
+
+                // Use the calculatePay function to calculate payment based on employee type and kilos
                 val paymentAmount = calculatePay(payment, employeeType)
                 holder.paymentTextView.append("Ksh ${NumberFormat.getInstance().format(paymentAmount)}\n")
             }
 
             holder.seeLessButton.setOnClickListener {
+                // Handle collapsing here
                 expandedPosition = RecyclerView.NO_POSITION
                 notifyDataSetChanged()
             }
         } else if (holder is GeneralPayViewHolder) {
             val formattedDate = formatDate(day)
-            holder.generalPayDateTextView.text = formattedDate
+            holder.generalPayDateTextView.text = formattedDate // Set the formatted date for the general pay
 
+            // Calculate and display the sum of all payments for the day
             val totalPayment = payments?.sumByDouble { payment ->
                 val employeeType = dbHelper.getEmployeeType(payment.employeeName)
                 calculatePay(payment, employeeType)
             } ?: 0.0
             holder.totalPayForDayTextView.text = "Total Payment: Ksh ${NumberFormat.getInstance().format(totalPayment)}"
 
+
             val isChecked = sharedPreferencesHelper.getCheckBoxState()
             holder.checkBox.isChecked = isChecked
 
-            holder.checkBox.setOnCheckedChangeListener(null)
             holder.checkBox.setOnCheckedChangeListener { _, isChecked ->
                 if (isChecked) {
-                    val alertDialogBuilder = AlertDialog.Builder(context)
-                    alertDialogBuilder.apply {
-                        setTitle("Confirm Payment")
-                        setMessage("Heva you madepayments for ${formattedDate}?")
-                        setPositiveButton("Yes") { _, _ ->
-                            payments?.forEach { payment ->
-                                insertPaymentToTeaRecords(payment)
-                            }
-                            sharedPreferencesHelper.saveCheckBoxState(true)
-                            Toast.makeText(context, "Payment saved successfully", Toast.LENGTH_SHORT).show()
-                        }
-                        setNegativeButton("No") { dialog, _ ->
-                            dialog.dismiss()
-                            holder.checkBox.isChecked = false
-                        }
-                        setCancelable(false)
+                    // Iterate through payments and save each payment to TeaRecords table
+                    payments?.forEach { payment ->
+                        // Perform database operation to save payment to TeaRecords table
+                        savePaymentToTeaRecords(payment)
                     }
-                    alertDialogBuilder.create().show()
                 }
             }
 
             holder.seeMorePayButton.setOnClickListener {
+                // Handle expanding here
                 expandedPosition = position
                 notifyDataSetChanged()
             }
@@ -149,11 +140,13 @@ class PaymentAdapter(
 
     private fun calculatePay(payment: Payment, employeeType: String): Double {
         val kilos = payment.kilos
-        val payRate = dbHelper.getPaymentTypes()[employeeType] ?: return 0.0
+        // Fetch the pay rate based on the employee type
+        val payRate = dbHelper.getPaymentTypes()[employeeType] ?: return 0.0 // Use 0.0 if pay rate not found
         return kilos * payRate
     }
 
-    private fun insertPaymentToTeaRecords(payment: Payment) {
+    private fun savePaymentToTeaRecords(payment: Payment) {
+        // Assuming dbHelper is an instance of your DBHelper class
         dbHelper.insertPaymentToTeaRecords(payment)
     }
 }

@@ -29,8 +29,9 @@ class RecordsFragment : Fragment() {
 
         TabLayoutMediator(tabLayout, viewPager) { tab, position ->
             tab.text = when (position) {
-                0 -> "Records"
+                0 -> " Records"
                 1 -> "Payments"
+                2-> "Monthly/ Yearly Payments"
                 else -> ""
             }
         }.attach()
