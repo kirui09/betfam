@@ -10,8 +10,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.apptea.DBHelper
 import com.example.apptea.R
 import com.example.apptea.SharedPreferencesHelper
-import java.util.*
-import kotlin.collections.ArrayList
 
 class MonthlyPaymentFragment : Fragment() {
 
@@ -44,11 +42,20 @@ class MonthlyPaymentFragment : Fragment() {
         }
     }
 
-    private fun getMonthlyPayments(): ArrayList<Payment> {
-        // Dummy data, replace this with your actual data retrieval logic
-        val calendar = Calendar.getInstance()
-        val currentYear = calendar.get(Calendar.YEAR)
-        val currentMonth = calendar.get(Calendar.MONTH) + 1 // Month starts from 0
-        return dbHelper.getAllPayments(currentYear, currentMonth)
+    private fun getMonthlyPayments(): LinkedHashMap<String, ArrayList<MonthlyPayment>> {
+        val monthlyPaymentsMap = LinkedHashMap<String, ArrayList<MonthlyPayment>>()
+        val allMonthlyPayments = dbHelper.getSumOfKilosForEachEmployee()
+
+        // Group payments by month
+        for (payment in allMonthlyPayments) {
+            val month = payment.date.substring(0, 7) // Extract yyyy-MM from the date
+            if (!monthlyPaymentsMap.containsKey(month)) {
+                monthlyPaymentsMap[month] = ArrayList()
+            }
+            monthlyPaymentsMap[month]?.add(payment)
+        }
+
+        return monthlyPaymentsMap
     }
+
 }

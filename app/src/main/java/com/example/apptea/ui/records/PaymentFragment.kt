@@ -50,7 +50,7 @@ class PaymentFragment : Fragment() {
         paymentsLiveData.observe(viewLifecycleOwner) { payments ->
             val groupedPayments = LinkedHashMap<String, ArrayList<Payment>>()
             for (payment in payments) {
-                val date = payment.date // Assuming date is a String representing the date
+                val date = payment.date //
                 if (groupedPayments.containsKey(date)) {
                     groupedPayments[date]?.add(payment)
                 } else {

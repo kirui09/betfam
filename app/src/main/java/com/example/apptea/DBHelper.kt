@@ -12,6 +12,7 @@ import com.example.apptea.ui.employees.Employee
 import com.example.apptea.ui.payment_types.BasicPayment
 import com.example.apptea.ui.records.DailyRecord
 import com.example.apptea.ui.records.DailyTeaRecord
+import com.example.apptea.ui.records.MonthlyPayment
 import com.example.apptea.ui.records.Payment
 import com.example.apptea.ui.records.Record
 import com.example.apptea.ui.records.TeaRecord
@@ -881,6 +882,34 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         cursor.close()
         return exists
     }
+
+
+    // Method to fetch the sum of kilos for each employee
+
+    fun getSumOfKilosForEachEmployee(): ArrayList<MonthlyPayment> {
+        val monthlyPayments = ArrayList<MonthlyPayment>()
+        val db = this.readableDatabase
+        val query = "SELECT date, employee_name, SUM(pay) as totalpay FROM TeaRecords GROUP BY date"
+        val cursor: Cursor? = db.rawQuery(query, null)
+        cursor?.use {
+            if (it.moveToFirst()) {
+                do {
+                    val date = it.getString(0)
+                    val employeeName = it.getString(1)
+                    val paymentAmount = it.getDouble(2)
+                    val monthlyPayment = MonthlyPayment(date, employeeName, paymentAmount)
+                    monthlyPayments.add(monthlyPayment)
+                } while (it.moveToNext())
+            }
+        }
+        cursor?.close()
+        return monthlyPayments
+    }
+
+
+
+
+
 
 
 }
