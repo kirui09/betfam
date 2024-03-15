@@ -71,9 +71,7 @@ class PaymentAdapter(
             payments?.forEach { payment ->
                 holder.paymentEmployeeNameTextView.append(payment.employeeName + "\n")
                 holder.paymentKilosTextView.append("${NumberFormat.getInstance().format(payment.kilos)} Kilos\n")
-
                 val employeeType = dbHelper.getEmployeeType(payment.employeeName)
-
                 // Use the calculatePay function to calculate payment based on employee type and kilos
                 val paymentAmount = calculatePay(payment, employeeType)
                 holder.paymentTextView.append("Ksh ${NumberFormat.getInstance().format(paymentAmount)}\n")
