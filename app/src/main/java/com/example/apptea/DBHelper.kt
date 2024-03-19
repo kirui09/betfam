@@ -825,7 +825,6 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
 
 
-
     fun getAllPayments(): MutableLiveData<List<Payment>> {
         val paymentsLiveData = MutableLiveData<List<Payment>>()
         val db = readableDatabase.use { db ->
@@ -848,8 +847,6 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         }
         return paymentsLiveData
     }
-
-
 
 
     fun insertPaymentToTeaRecords(payment: Payment) {
@@ -889,7 +886,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
     fun getSumOfKilosForEachEmployee(): ArrayList<MonthlyPayment> {
         val monthlyPayments = ArrayList<MonthlyPayment>()
         val db = this.readableDatabase
-        val query = "SELECT distinct date, employee_name, SUM(pay) AS totalpay FROM TeaRecords GROUP BY date, employee_name"
+        val query = "SELECT date, employee_name, SUM(pay) AS totalpay FROM TeaRecords GROUP BY   date , employee_name"
         val cursor: Cursor? = db.rawQuery(query, null)
         cursor?.use {
             if (it.moveToFirst()) {
@@ -905,11 +902,6 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         cursor?.close()
         return monthlyPayments
     }
-
-
-
-
-
 
 
 }

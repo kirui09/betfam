@@ -7,7 +7,8 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.TextView
-import androidx.cardview.widget.CardView
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
 import com.example.apptea.DBHelper
 import com.example.apptea.R
@@ -19,7 +20,7 @@ import java.util.Locale
 class PaymentAdapter(
     private val context: Context,
     private val groupedData: LinkedHashMap<String, ArrayList<Payment>>,
-    private val dbHelper: DBHelper ,// Database helper to fetch employee type
+    private val dbHelper: DBHelper, // Database helper to fetch employee type
     private val sharedPreferencesHelper: SharedPreferencesHelper
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
@@ -45,11 +46,13 @@ class PaymentAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (viewType) {
             VIEW_TYPE_ITEM_PAYMENT -> {
-                val view = LayoutInflater.from(parent.context).inflate(R.layout.item_payment, parent, false)
+                val view =
+                    LayoutInflater.from(parent.context).inflate(R.layout.item_payment, parent, false)
                 PaymentViewHolder(view)
             }
             VIEW_TYPE_GENERAL_PAY -> {
-                val view = LayoutInflater.from(parent.context).inflate(R.layout.item_general_pay, parent, false)
+                val view =
+                    LayoutInflater.from(parent.context).inflate(R.layout.item_general_pay, parent, false)
                 GeneralPayViewHolder(view)
             }
             else -> throw IllegalArgumentException("Invalid view type")
@@ -91,21 +94,38 @@ class PaymentAdapter(
                 val employeeType = dbHelper.getEmployeeType(payment.employeeName)
                 calculatePay(payment, employeeType)
             } ?: 0.0
-            holder.totalPayForDayTextView.text = "Total Payment: Ksh ${NumberFormat.getInstance().format(totalPayment)}"
+            holder.totalPayForDayTextView.text =
+                "Total Payment: Ksh ${NumberFormat.getInstance().format(totalPayment)}"
 
 
             val isChecked = sharedPreferencesHelper.getCheckBoxState()
             holder.checkBox.isChecked = isChecked
 
-            holder.checkBox.setOnCheckedChangeListener { _, isChecked ->
-                if (isChecked) {
+            holder.checkBox.setOnCheckedChangeListener(null) // Remove previous listener
+
+            holder.checkBox.setOnClickListener {
+                val alertDialogBuilder = AlertDialog.Builder(context)
+                alertDialogBuilder.setTitle("Confirm")
+                alertDialogBuilder.setMessage("Are you sure you want to save these payments?")
+                alertDialogBuilder.setPositiveButton("Yes") { _, _ ->
                     // Iterate through payments and save each payment to TeaRecords table
                     payments?.forEach { payment ->
                         // Perform database operation to save payment to TeaRecords table
                         savePaymentToTeaRecords(payment)
                     }
+                    // Update the shared preferences to reflect the checkbox state
+                    sharedPreferencesHelper.saveCheckBoxState(true)
+                    // Show a toast message to indicate that data is saved
+                    Toast.makeText(context, "Payments saved to database", Toast.LENGTH_SHORT).show()
                 }
+                alertDialogBuilder.setNegativeButton("No") { dialog, _ ->
+                    dialog.dismiss()
+                    holder.checkBox.isChecked = false
+                }
+                val alertDialog = alertDialogBuilder.create()
+                alertDialog.show()
             }
+
 
             holder.seeMorePayButton.setOnClickListener {
                 // Handle expanding here

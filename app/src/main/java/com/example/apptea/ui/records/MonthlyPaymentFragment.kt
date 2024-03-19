@@ -34,7 +34,8 @@ class MonthlyPaymentFragment : Fragment() {
         sharedPreferencesHelper = SharedPreferencesHelper(requireContext())
 
         val monthlyPayments = getMonthlyPayments()
-        paymentAdapter = MonthlyPaymentAdapter(requireContext(), monthlyPayments)
+        paymentAdapter = MonthlyPaymentAdapter(dbHelper, requireContext(), monthlyPayments)
+
 
         recyclerView.apply {
             layoutManager = LinearLayoutManager(requireContext())

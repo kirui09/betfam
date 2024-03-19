@@ -68,7 +68,6 @@ dependencies {
     implementation("androidx.multidex:multidex:2.0.1")
     implementation ("androidx.lifecycle:lifecycle-extensions:2.2.0")
     implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.2.0")
-    implementation ("com.github.AnyChart:AnyChart-Android:1.1.5")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.7.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.6")
