@@ -853,32 +853,46 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         val db = this.writableDatabase
         val values = ContentValues()
 
-        // Check if the payment already exists in the database
-        if (!paymentExists(db, payment.id, payment.date, payment.employeeName)) {
-            // Payment does not exist, so insert it
-            values.put("id", payment.id)
-            values.put("date", payment.date)
-            values.put("employee_name", payment.employeeName)
-            values.put("pay", payment.paymentAmount)
-            db.insert("TeaRecords", null, values)
-        } else {
-            // Payment already exists, so update it
-            val whereClause = "id = ? AND date = ? AND employee_name = ?"
-            val whereArgs = arrayOf(payment.id.toString(), payment.date, payment.employeeName)
-            values.put("pay", payment.paymentAmount)
-            db.update("TeaRecords", values, whereClause, whereArgs)
+        try {
+            // Check if the payment already exists in the database
+            if (!paymentExists(db, payment.id, payment.date, payment.employeeName, payment.kilos)) {
+                // Payment does not exist, so insert it
+                values.put("id", payment.id)
+                values.put("date", payment.date)
+                values.put("employee_name", payment.employeeName)
+                values.put("kilos", payment.kilos)
+                values.put("pay", payment.paymentAmount) // Ensure "pay" is included for new records
+                db.insert("TeaRecords", null, values)
+                Log.d("DBHelper", "Inserted new payment record: Employee ${payment.employeeName}, Date ${payment.date}, Payment Ksh ${payment.paymentAmount}")
+            } else {
+                // Payment already exists, so update it
+                val whereClause = "id = ? AND date = ? AND employee_name = ? AND kilos = ?"
+                val whereArgs = arrayOf(payment.id.toString(), payment.date, payment.employeeName, payment.kilos.toString())
+                values.put("pay", payment.paymentAmount)
+                val rowsAffected = db.update("TeaRecords", values, whereClause, whereArgs)
+                if (rowsAffected > 0) {
+                    Log.d("DBHelper", "Updated payment record: Employee ${payment.employeeName}, Date ${payment.date}, Payment Ksh ${payment.paymentAmount}")
+                } else {
+                    Log.e("DBHelper", "Failed to update payment record for ${payment.employeeName} on ${payment.date}")
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("DBHelper", "Error saving payment record: ${e.localizedMessage}")
+        } finally {
+            db.close()
         }
-
-        db.close()
     }
+
     // Check if a payment with the given id, date, and name already exists in the database
-    private fun paymentExists(db: SQLiteDatabase, id: Int, date: String, name: String): Boolean {
-        val query = "SELECT * FROM TeaRecords WHERE id = ? AND date = ? AND employee_name = ?"
-        val cursor = db.rawQuery(query, arrayOf(id.toString(), date, name))
+    private fun paymentExists(db: SQLiteDatabase, id: Int, date: String, name: String, kilos: Double): Boolean {
+        val query = "SELECT * FROM TeaRecords WHERE id = ? AND date = ? AND employee_name = ? AND kilos = ?"
+        // Explicitly create an array of strings for the query parameters
+        val cursor = db.rawQuery(query, arrayOf(id.toString(), date, name, kilos.toString()))
         val exists = cursor.count > 0
         cursor.close()
         return exists
     }
+
 
 
     // Method to fetch the sum of kilos for each employee
@@ -902,6 +916,52 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         cursor?.close()
         return monthlyPayments
     }
+
+    fun getPaymentDetailsForEmployeeAndMonth(employeeName: String, month: Int, year: Int): List<Payment> {
+        val db = readableDatabase
+        val payments = mutableListOf<Payment>()
+
+        val query = "SELECT date, pay FROM TeaRecords WHERE employee_name = ? AND strftime('%m', date) = ? AND strftime('%Y', date) = ? ORDER BY date ASC"
+
+        Log.d("DBHelper", "Executing query for employee: $employeeName, month: $month, year: $year")
+
+        try {
+            val cursor = db.rawQuery(query, arrayOf(employeeName, String.format("%02d", month), year.toString()))
+
+            if (cursor.moveToFirst()) {
+                Log.d("DBHelper", "Found payment records for $employeeName, $month/$year")
+
+                do {
+                    val date = cursor.getString(cursor.getColumnIndexOrThrow("date"))
+                    val pay = cursor.getDouble(cursor.getColumnIndexOrThrow("pay"))
+
+                    Log.d("DBHelper", "Date: $date, Pay: $pay")
+
+                    // Create a Payment object with the retrieved data
+                    val payment = Payment(
+                        id = 0, // Assuming you don't need the id for display purposes
+                        date = date,
+                        employeeName = employeeName,
+                        kilos = 0.0, // Assuming you don't need the kilos for display purposes
+                        paymentAmount = pay
+                    )
+
+                    payments.add(payment)
+                } while (cursor.moveToNext())
+            } else {
+                Log.d("DBHelper", "No payment records found for $employeeName, $month/$year")
+            }
+
+            cursor.close()
+        } catch (e: Exception) {
+            Log.e("DBHelper", "Error executing query: ${e.message}")
+        } finally {
+            db.close()
+        }
+
+        return payments
+    }
+
 
 
 }

@@ -76,5 +76,12 @@
 
         </TableLayout>
 
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="4dp"
+            android:id="@+id/showlessdetails"
+            android:src="@drawable/baseline_keyboard_arrow_up_24"/>
+
     </LinearLayout>
 </androidx.cardview.widget.CardView>

@@ -1,6 +1,9 @@
 package com.example.apptea.ui.records
 
+import android.content.ContentValues
 import android.content.Context
+import android.database.sqlite.SQLiteDatabase
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -104,26 +107,32 @@ class PaymentAdapter(
             holder.checkBox.setOnCheckedChangeListener(null) // Remove previous listener
 
             holder.checkBox.setOnClickListener {
-                val alertDialogBuilder = AlertDialog.Builder(context)
-                alertDialogBuilder.setTitle("Confirm")
-                alertDialogBuilder.setMessage("Are you sure you want to save these payments?")
-                alertDialogBuilder.setPositiveButton("Yes") { _, _ ->
-                    // Iterate through payments and save each payment to TeaRecords table
-                    payments?.forEach { payment ->
-                        // Perform database operation to save payment to TeaRecords table
-                        savePaymentToTeaRecords(payment)
+                if (holder.checkBox.isChecked) {
+                    val alertDialogBuilder = AlertDialog.Builder(context)
+                    alertDialogBuilder.setTitle("Confirm")
+                    alertDialogBuilder.setMessage("Are you sure you want to save these payments?")
+                    alertDialogBuilder.setPositiveButton("Yes") { _, _ ->
+                        // Iterate through payments and save each payment to TeaRecords table
+                        payments?.forEach { payment ->
+                            val employeeType = dbHelper.getEmployeeType(payment.employeeName)
+                            val paymentAmount = calculatePay(payment, employeeType)
+
+                            // Create a new instance of Payment with the updated paymentAmount
+                            val updatedPayment = payment.copy(paymentAmount = paymentAmount)
+                            savePaymentToTeaRecords(updatedPayment)
+                        }
+                        // Update the shared preferences to reflect the checkbox state
+                        sharedPreferencesHelper.saveCheckBoxState(true)
+                        // Show a toast message to indicate that data is saved
+                        Toast.makeText(context, "Payments saved to database", Toast.LENGTH_SHORT).show()
                     }
-                    // Update the shared preferences to reflect the checkbox state
-                    sharedPreferencesHelper.saveCheckBoxState(true)
-                    // Show a toast message to indicate that data is saved
-                    Toast.makeText(context, "Payments saved to database", Toast.LENGTH_SHORT).show()
+                    alertDialogBuilder.setNegativeButton("No") { dialog, _ ->
+                        dialog.dismiss()
+                        holder.checkBox.isChecked = false
+                    }
+                    val alertDialog = alertDialogBuilder.create()
+                    alertDialog.show()
                 }
-                alertDialogBuilder.setNegativeButton("No") { dialog, _ ->
-                    dialog.dismiss()
-                    holder.checkBox.isChecked = false
-                }
-                val alertDialog = alertDialogBuilder.create()
-                alertDialog.show()
             }
 
 
@@ -158,13 +167,55 @@ class PaymentAdapter(
 
     private fun calculatePay(payment: Payment, employeeType: String): Double {
         val kilos = payment.kilos
-        // Fetch the pay rate based on the employee type
         val payRate = dbHelper.getPaymentTypes()[employeeType] ?: return 0.0 // Use 0.0 if pay rate not found
+        Log.d("PaymentAdapter", "Calculating pay for $employeeType: $kilos * $payRate")
         return kilos * payRate
     }
 
+
     private fun savePaymentToTeaRecords(payment: Payment) {
-        // Assuming dbHelper is an instance of your DBHelper class
-        dbHelper.insertPaymentToTeaRecords(payment)
+        val db = dbHelper.writableDatabase
+        val values = ContentValues().apply {
+            put("id", payment.id)
+            put("date", payment.date)
+            put("employee_name", payment.employeeName)
+            put("kilos", payment.kilos)
+            put("pay", payment.paymentAmount)
+        }
+
+        try {
+            // Check if the payment already exists in the database
+            if (!paymentExists(db, payment.id, payment.date, payment.employeeName, payment.kilos)) {
+                // Payment does not exist, so insert it
+                db.insert("TeaRecords", null, values)
+                Log.d("DBHelper", "Inserted payment record for ${payment.employeeName} on ${payment.date}")
+            } else {
+                // Payment already exists, so update it
+                val whereClause = "id = ? AND date = ? AND employee_name = ? AND kilos = ?"
+                val whereArgs = arrayOf(
+                    payment.id.toString(),
+                    payment.date,
+                    payment.employeeName,
+                    payment.kilos.toString()
+                )
+                db.update("TeaRecords", values, whereClause, whereArgs)
+                Log.d("DBHelper", "Updated payment record for ${payment.employeeName} on ${payment.date} with payment ${payment.paymentAmount}")
+            }
+        } catch (e: Exception) {
+            Log.e("DBHelper", "Error saving payment record: ${e.localizedMessage}")
+        } finally {
+            db.close()
+        }
     }
+
+
+    private fun paymentExists(db: SQLiteDatabase, id: Int, date: String, name: String, kilos: Double): Boolean {
+        val query = "SELECT * FROM TeaRecords WHERE id = ? AND date = ? AND employee_name = ? AND kilos = ?"
+        // Explicitly create an array of strings for the query parameters
+        val cursor = db.rawQuery(query, arrayOf(id.toString(), date, name, kilos.toString()))
+        val exists = cursor.count > 0
+        cursor.close()
+        return exists
+    }
+
 }
