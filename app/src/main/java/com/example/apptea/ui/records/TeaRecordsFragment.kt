@@ -1,4 +1,3 @@
-
 package com.example.apptea.ui.records
 
 import android.app.AlertDialog
@@ -11,14 +10,11 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import androidx.viewpager2.widget.ViewPager2
 import com.example.apptea.DBHelper
 import com.example.apptea.R
 import com.example.apptea.databinding.FragmentTeaRecordsBinding
 import com.example.apptea.databinding.ItemExpandedDayBinding
 import com.example.apptea.ui.employees.EmployeeAdapter
-import com.google.android.material.tabs.TabLayout
-
 interface AddButtonClickListener {
     fun onAddButtonClick()
     fun onAllRecordAdded(record: DailyTeaRecord)

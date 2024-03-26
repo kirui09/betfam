@@ -6,3 +6,4 @@ data class Record(
     val employee: String,
     val kilos: Double
 )
+

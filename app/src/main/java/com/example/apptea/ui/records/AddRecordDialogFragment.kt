@@ -5,14 +5,22 @@ import android.os.Bundle
 import android.text.InputFilter
 import android.text.InputType
 import android.text.Spanned
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.DialogFragment
+import com.android.volley.AuthFailureError
+import com.android.volley.Response
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
 import com.example.apptea.DBHelper
 import com.example.apptea.R
 import com.example.apptea.ui.employees.EmployeeAdapter
+import com.google.gson.Gson
+import org.json.JSONArray
+import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -24,6 +32,8 @@ class AddRecordDialogFragment : DialogFragment() {
 
     internal lateinit var employeeAdapter: EmployeeAdapter
 
+    private lateinit var savingProgressBar: ProgressBar
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -32,6 +42,8 @@ class AddRecordDialogFragment : DialogFragment() {
         val view = inflater.inflate(R.layout.fragment_add_record_dialog, container, false)
 
         dbh = DBHelper(requireContext())
+
+        savingProgressBar=view.findViewById(R.id.savingprogressBar)
 
         val editTextDate = view.findViewById<EditText>(R.id.recordEntryTime)
         val spinnerCompanyName = view.findViewById<Spinner>(R.id.spinnerCompanyName)
@@ -167,6 +179,8 @@ class AddRecordDialogFragment : DialogFragment() {
 
                 if (success) {
                     showToast("All Records saved successfully")
+                    // Ensure records are populated
+                    sendRecordsToGoogleSheet(tempRecords)
                     tempRecords.clear()
                     recordSavedListener?.onAllRecordsAdded()
                 } else {
@@ -176,9 +190,8 @@ class AddRecordDialogFragment : DialogFragment() {
         } else {
             showToast("Please enter all fields")
         }
-
-        dismiss()
     }
+
 
 
 
@@ -229,6 +242,64 @@ class AddRecordDialogFragment : DialogFragment() {
             } else null
         }
     }
+
+    private fun sendRecordsToGoogleSheet(records: List<Record>) {
+        savingProgressBar.visibility = View.VISIBLE
+
+        if (isAdded) { // Check if the Fragment is attached
+            val activity = requireActivity() // Get the Activity instance
+            val queue = Volley.newRequestQueue(activity) // Create the RequestQueue
+            val url = "https://script.google.com/macros/s/AKfycbyrtbT9dFdxXhO7u9Hkc7Kr0YsHYHTmlAm8Rl9YVchcxel6Z8IuXS4CaiCv0-87oJHklg/exec"
+
+            // Convert records list to JSONArray with the correct field names
+            val jsonArray = JSONArray()
+            for (record in records) {
+                val jsonObject = JSONObject()
+                jsonObject.put("date", record.date)
+                jsonObject.put("companyName", record.company)
+                jsonObject.put("employeeName", record.employee)
+                jsonObject.put("employeeKilos", record.kilos)
+                jsonArray.put(jsonObject)
+            }
+
+            // Create the POST request
+            val stringRequest = object : StringRequest(Method.POST, url,
+                Response.Listener { response ->
+                    // Handle response
+                    if (isAdded) {
+                        savingProgressBar.visibility = View.GONE
+                        Toast.makeText(requireContext(), response, Toast.LENGTH_LONG).show()
+                        dismiss() // Dismiss the dialog fragment
+                    }
+                },
+                Response.ErrorListener { error ->
+                    // Handle error
+                    if (isAdded) {
+                        savingProgressBar.visibility = View.GONE
+                        Toast.makeText(requireContext(), "Error: ${error.message}", Toast.LENGTH_LONG).show()
+                    }
+                }
+            ) {
+                @Throws(AuthFailureError::class)
+                override fun getBody(): ByteArray {
+                    // Return the JSON as the body of the request
+                    return jsonArray.toString().toByteArray(Charsets.UTF_8)
+                }
+
+                override fun getHeaders(): Map<String, String> {
+                    val headers = HashMap<String, String>()
+                    headers["Content-Type"] = "application/json; charset=utf-8"
+                    return headers
+                }
+            }
+
+            // Add the request to the RequestQueue
+            queue.add(stringRequest)
+        } else {
+            Log.e("AddRecordDialogFragment", "Fragment is not attached to an Activity")
+        }
+    }
+
 
     interface AddRecordDialogFragmentListener {
         fun onRecordAdded()

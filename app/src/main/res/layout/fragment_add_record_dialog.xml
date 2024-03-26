@@ -6,12 +6,15 @@
     android:background="@drawable/rounded_corner"
     tools:context=".ui.records.AddRecordDialogFragment">
 
+
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center"
         android:padding="16dp">
+
 
         <TextView
             android:layout_width="match_parent"
@@ -94,6 +97,22 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:text="Save All Records" />
+
+        <RelativeLayout
+            android:id="@+id/writeProgressLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ProgressBar
+                android:id="@+id/savingprogressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:visibility="gone"/>
+
+        </RelativeLayout>
+
 
     </LinearLayout>
 
