@@ -190,6 +190,7 @@ class AddRecordDialogFragment : DialogFragment() {
         } else {
             showToast("Please enter all fields")
         }
+        dismiss()
     }
 
 
