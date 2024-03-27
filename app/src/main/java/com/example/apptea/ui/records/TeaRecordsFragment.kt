@@ -1,6 +1,8 @@
 package com.example.apptea.ui.records
 
 import android.app.AlertDialog
+import android.content.Context
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -132,5 +134,26 @@ class TeaRecordsFragment : Fragment(), EditButtonClickListener, AddButtonClickLi
         supervisorPay = dbHelper.getSupervisorPay()
         basicPay = dbHelper.getBasicPay()
     }
+
+
+//    private fun isInternetAvailable(context: Context): Boolean {
+//        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+//        val activeNetwork = connectivityManager.activeNetworkInfo
+//        return activeNetwork != null && activeNetwork.isConnected
+//    }
+//
+//
+//    fun syncUnsyncedRecords(context: Context) {
+//        val dbHelper = DBHelper(context)
+//        val unsyncedRecords = dbHelper.getUnsyncedRecords() // Implement this method in DBHelper
+//        if (unsyncedRecords.isNotEmpty()) {
+//            // Use the existing sendRecordsToGoogleSheet method to sync
+//            sendRecordsToGoogleSheet(unsyncedRecords)
+//            // After successful sync, mark these records as 'synced' in your local database
+//        }
+//    }
+
+
+
 }
 

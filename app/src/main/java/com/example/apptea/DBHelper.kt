@@ -15,6 +15,7 @@ import com.example.apptea.ui.records.DailyTeaRecord
 import com.example.apptea.ui.records.MonthlyPayment
 import com.example.apptea.ui.records.Payment
 import com.example.apptea.ui.records.Record
+import com.example.apptea.ui.records.SyncedRecord
 import com.example.apptea.ui.records.TeaRecord
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -93,11 +94,13 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
                     "date TEXT, " +
                     "employee_name TEXT, " +
                     "company TEXT, " +
-                    "kilos DECIMAL, " + // Added comma
-                    "pay DECIMAL" +
+                    "kilos DECIMAL, " +
+                    "pay DECIMAL, " + // Add a comma here
+                    "synced INTEGER DEFAULT 0" + // Add the 'synced' column with a default value of 0
                     ")"
         )
     }
+
 
 
     private fun createCompaniesTable(db: SQLiteDatabase) {
@@ -960,6 +963,33 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         }
 
         return payments
+    }
+
+    fun markRecordsAsSynced(recordIds: List<Int>) {
+        val ids = recordIds.joinToString(",")
+        val query = "UPDATE TeaRecords SET synced = 1 WHERE id IN ($ids)"
+        val db = writableDatabase
+        db.execSQL(query)
+    }
+
+    fun getUnsyncedRecords(): List<SyncedRecord> {
+        val records = mutableListOf<SyncedRecord>()
+        val query = "SELECT * FROM TeaRecords WHERE synced = 0"
+        val db = readableDatabase
+        val cursor = db.rawQuery(query, null)
+        while (cursor.moveToNext()) {
+            val id = cursor.getLong(cursor.getColumnIndex("id"))
+            val date = cursor.getString(cursor.getColumnIndex("date"))
+            val employeeName = cursor.getString(cursor.getColumnIndex("employee_name"))
+            val company = cursor.getString(cursor.getColumnIndex("company"))
+            val kilos = cursor.getDouble(cursor.getColumnIndex("kilos"))
+            val pay = cursor.getDouble(cursor.getColumnIndex("pay"))
+            val synced = cursor.getInt(cursor.getColumnIndex("synced"))
+            val record = SyncedRecord(id, date, employeeName, company, kilos, pay, synced)
+            records.add(record)
+        }
+        cursor.close()
+        return records
     }
 
 

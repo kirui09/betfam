@@ -1,8 +1,10 @@
 // TeaRecordsAdapter.kt
 package com.example.apptea.ui.records
 
+import android.content.Context
 import android.graphics.Color
 import android.graphics.Typeface
+import android.net.ConnectivityManager
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -255,4 +257,7 @@ class TeaRecordsAdapter(
             kilos * basicPay // Use the appropriate payment rate for basic employees
         }
     }
+
+
+
 }

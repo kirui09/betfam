@@ -1,6 +1,7 @@
 package com.example.apptea
 
 
+import android.content.Context
 import android.os.AsyncTask
 import android.os.Bundle
 import android.view.Menu
@@ -136,6 +137,16 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
+//    fun syncUnsyncedRecords(context: Context) {
+//        val dbHelper = DBHelper(context)
+//        val unsyncedRecords = dbHelper.getUnsyncedRecords()
+//        if (unsyncedRecords.isNotEmpty()) {
+//            // Use the existing sendRecordsToGoogleSheet method to sync
+//            sendRecordsToGoogleSheet(unsyncedRecords)
+//            // After successful sync, mark these records as 'synced' in your local database
+//        }
+//    }
 
     data class WeatherInfo(
         val temperature: String,
