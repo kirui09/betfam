@@ -122,7 +122,7 @@ class AddRecordDialogFragment : DialogFragment() {
         if (validateInput(date, company, employee, kilosString)) {
             val kilos = kilosString.toDouble()
 
-            val record = Record(-1, date, company, employee, kilos)
+            val record = Record(id, date, company, employee, kilos)
             tempRecords.add(record)
             recordSavedListener?.onRecordAdded()
 
@@ -183,8 +183,8 @@ class AddRecordDialogFragment : DialogFragment() {
                 val success = DBHelper.getInstance().insertTeaRecords(tempRecords)
                 if (success) {
                     showToast("All Records saved successfully")
+                    val recordIds = tempRecords.map { it.id } // Get the IDs of the records
                     sendRecordsToGoogleSheet(tempRecords) { // Mark records as synced in your SQLite database
-                        val recordIds = tempRecords.map { it.id }
                         markRecordsAsSyncedInDatabase(recordIds)
                         tempRecords.clear()
                         recordSavedListener?.onAllRecordsAdded()
@@ -195,6 +195,7 @@ class AddRecordDialogFragment : DialogFragment() {
             }
         }
     }
+
 
 
 
