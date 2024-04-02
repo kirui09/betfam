@@ -3,12 +3,15 @@ package com.example.apptea.ui.records
 import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
+import android.graphics.Typeface
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.CheckBox
+import android.widget.TableLayout
+import android.widget.TableRow
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -68,19 +71,51 @@ class PaymentAdapter(
 
         if (holder is PaymentViewHolder) {
             val formattedDate = formatDate(day)
-            holder.paymentDateTextView.text = formattedDate
-            holder.paymentEmployeeNameTextView.text = ""
-            holder.paymentKilosTextView.text = ""
-            holder.paymentTextView.text = ""
+            val tableLayout = holder.itemView.findViewById<TableLayout>(R.id.paymentTableLayout)
+            tableLayout.removeAllViews()
 
-            // Concatenate employee names, kilos, and payment for the day
+
+            // Create a date row
+            val dateRow = TableRow(holder.itemView.context)
+            val dateTextView = TextView(holder.itemView.context)
+            dateTextView.text = "$formattedDate"
+            dateTextView.setTypeface(null, Typeface.BOLD)
+            dateRow.addView(dateTextView)
+            tableLayout.addView(dateRow)
+
+            // Create a header row
+            val headerRow = TableRow(holder.itemView.context)
+            val headerEmployeeNameTextView = TextView(holder.itemView.context)
+            val headerKilosTextView = TextView(holder.itemView.context)
+            val headerPaymentTextView = TextView(holder.itemView.context)
+//            headerEmployeeNameTextView.text = "Employee Name"
+//            headerKilosTextView.text = "Kilos"
+//            headerPaymentTextView.text = "Payment"
+            headerRow.addView(headerEmployeeNameTextView)
+            headerRow.addView(headerKilosTextView)
+            headerRow.addView(headerPaymentTextView)
+            tableLayout.addView(headerRow)
+
+            // Add rows for each payment
             payments?.forEach { payment ->
-                holder.paymentEmployeeNameTextView.append(payment.employeeName + "\n")
-                holder.paymentKilosTextView.append("${NumberFormat.getInstance().format(payment.kilos)} Kilos\n")
+                val row = TableRow(holder.itemView.context)
+                val employeeNameTextView = TextView(holder.itemView.context)
+                employeeNameTextView.setTypeface(null, Typeface.BOLD)
+                val kilosTextView = TextView(holder.itemView.context)
+                kilosTextView.setTypeface(null, Typeface.BOLD)
+                val paymentTextView = TextView(holder.itemView.context)
+                paymentTextView.setTypeface(null, Typeface.BOLD)
+
+                employeeNameTextView.text = payment.employeeName
+                kilosTextView.text = "${NumberFormat.getInstance().format(payment.kilos)} Kilos"
                 val employeeType = dbHelper.getEmployeeType(payment.employeeName)
-                // Use the calculatePay function to calculate payment based on employee type and kilos
                 val paymentAmount = calculatePay(payment, employeeType)
-                holder.paymentTextView.append("Ksh ${NumberFormat.getInstance().format(paymentAmount)}\n")
+                paymentTextView.text = "Ksh ${NumberFormat.getInstance().format(paymentAmount)}"
+
+                row.addView(employeeNameTextView)
+                row.addView(kilosTextView)
+                row.addView(paymentTextView)
+                tableLayout.addView(row)
             }
 
             holder.seeLessButton.setOnClickListener {
@@ -88,7 +123,8 @@ class PaymentAdapter(
                 expandedPosition = RecyclerView.NO_POSITION
                 notifyDataSetChanged()
             }
-        } else if (holder is GeneralPayViewHolder) {
+        }
+        else if (holder is GeneralPayViewHolder) {
             val formattedDate = formatDate(day)
             holder.generalPayDateTextView.text = formattedDate // Set the formatted date for the general pay
 

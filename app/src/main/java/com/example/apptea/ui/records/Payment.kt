@@ -9,5 +9,14 @@ data class Payment(
 )
 
 
+data class PaymentDetail(
+    val date: String,
+    val paymentAmount: Double
+)
+
+
+
+
+
 
 

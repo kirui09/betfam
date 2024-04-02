@@ -196,12 +196,6 @@ class AddRecordDialogFragment : DialogFragment() {
         }
     }
 
-
-
-
-
-
-
     private fun validateInput(date: String, company: String, employee: String, kilos: String): Boolean {
         return date.isNotEmpty() && company.isNotEmpty() && employee.isNotEmpty() && kilos.isNotEmpty() &&
                 employee != "Select Employee" && company != "Select Company"
