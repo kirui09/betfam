@@ -1,3 +1,4 @@
+
 package com.example.apptea.ui.records
 
 import android.content.Context
@@ -7,11 +8,14 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.Animation
+import android.view.animation.Transformation
 import android.widget.ImageButton
-import android.widget.LinearLayout
+import android.widget.ProgressBar
 import android.widget.TableLayout
 import android.widget.TableRow
 import android.widget.TextView
+import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import com.example.apptea.DBHelper
 import com.example.apptea.R
@@ -20,6 +24,9 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.LinkedHashMap
+
+
+
 
 class MonthlyPaymentAdapter(
     private val dbHelper: DBHelper,
@@ -49,10 +56,9 @@ class MonthlyPaymentAdapter(
         if (holder is GeneralViewHolder) {
             holder.bind(month, payments)
         } else if (holder is ExpandedViewHolder) {
-            holder.bind(month, payments) // Pass the month parameter here
+            holder.bind(month, payments)
         }
     }
-
 
     override fun getItemCount(): Int {
         return groupedData.size
@@ -96,9 +102,7 @@ class MonthlyPaymentAdapter(
         private val showLessButton: ImageButton = itemView.findViewById(R.id.showlessdetails)
 
         init {
-            // Set onClickListener for the "Show Less" button
             showLessButton.setOnClickListener {
-                // Collapse the expanded view
                 expandedPosition = RecyclerView.NO_POSITION
                 notifyDataSetChanged()
             }
@@ -108,26 +112,65 @@ class MonthlyPaymentAdapter(
             val formattedMonth = getFormattedMonth(month)
             monthTextView.text = formattedMonth
 
-            // Clear the existing content in the imageButtonContainer
             imageButtonContainer.removeAllViews()
 
             if (payments != null) {
-                populateTable(
-                    imageButtonContainer,
-                    payments,
-                    month
-                ) // Pass the month parameter here
+                populateTable(imageButtonContainer, payments, month)
             }
 
-            // Set the initial visibility of the expanded view
-            imageButtonContainer.visibility = if (adapterPosition == expandedPosition) {
-                View.VISIBLE
+            // Set initial visibility to GONE
+            imageButtonContainer.visibility = if (adapterPosition == expandedPosition) View.VISIBLE else View.GONE
+
+            // Animate the expansion
+            if (adapterPosition == expandedPosition) {
+                imageButtonContainer.post {
+                    val animation = object : Animation() {
+                        override fun applyTransformation(interpolatedTime: Float, t: Transformation) {
+                            imageButtonContainer.visibility = View.VISIBLE
+                            imageButtonContainer.alpha = interpolatedTime
+                        }
+
+                        override fun willChangeBounds(): Boolean {
+                            return true
+                        }
+                    }
+                    animation.duration = 500 // Duration in milliseconds (adjust as needed)
+                    imageButtonContainer.startAnimation(animation)
+                }
             } else {
-                View.GONE
+                imageButtonContainer.visibility = View.GONE
+            }
+
+            // Toggle expandedPosition when clicked
+            imageButtonContainer.setOnClickListener {
+                val wasExpanded = expandedPosition == adapterPosition
+                expandedPosition = if (wasExpanded) RecyclerView.NO_POSITION else adapterPosition
+                if (wasExpanded) {
+                    val animation = object : Animation() {
+                        override fun applyTransformation(interpolatedTime: Float, t: Transformation) {
+                            imageButtonContainer.alpha = 1 - interpolatedTime
+                        }
+
+                        override fun willChangeBounds(): Boolean {
+                            return true
+                        }
+                    }
+                    animation.duration = 500 // Duration in milliseconds (adjust as needed)
+                    animation.setAnimationListener(object : Animation.AnimationListener {
+                        override fun onAnimationStart(animation: Animation?) {}
+                        override fun onAnimationRepeat(animation: Animation?) {}
+                        override fun onAnimationEnd(animation: Animation?) {
+                            imageButtonContainer.visibility = View.GONE
+                        }
+                    })
+                    imageButtonContainer.startAnimation(animation)
+                }
+                notifyDataSetChanged()
             }
         }
-    }
 
+
+    }
 
     private fun getFormattedMonth(month: String): String {
         val sdf = SimpleDateFormat("yyyy-MM", Locale.getDefault())
@@ -143,6 +186,7 @@ class MonthlyPaymentAdapter(
         paymentList: ArrayList<MonthlyPayment>,
         month: String
     ) {
+
         // Create a TableRow for the date
         val dateRow = TableRow(context)
         dateRow.layoutParams = TableLayout.LayoutParams(
@@ -180,18 +224,15 @@ class MonthlyPaymentAdapter(
         separator.setBackgroundColor(Color.BLACK)
         tableLayout.addView(separator)
 
-        // Continue with the rest of the table as before
         val employeePaymentMap = paymentList.groupBy { it.employeeName }
 
         employeePaymentMap.forEach { (employeeName, payments) ->
-            // Create a TableRow to hold the row content
             val tableRow = TableRow(context)
             tableRow.layoutParams = TableLayout.LayoutParams(
                 TableLayout.LayoutParams.MATCH_PARENT,
                 TableLayout.LayoutParams.WRAP_CONTENT
             )
 
-            // Add employee name to the second column
             val nameTextView = TextView(context)
             nameTextView.text = employeeName
             nameTextView.setPadding(5, 5, 5, 5)
@@ -199,61 +240,125 @@ class MonthlyPaymentAdapter(
             nameTextView.textSize = 16f
             tableRow.addView(nameTextView)
 
-            // Calculate the total payment amount for the employee
-            val totalPaymentAmount = payments.sumByDouble { it.paymentAmount }
 
-            // Add total payment amount to the third column
+
+            val totalPaymentAmount = payments.sumByDouble { it.paymentAmount }
             val paymentAmountTextView = TextView(context)
-            paymentAmountTextView.text = NumberFormat.getInstance().format(totalPaymentAmount)
+            paymentAmountTextView.text = "TOT: Ksh ${NumberFormat.getInstance().format(totalPaymentAmount)}"
             paymentAmountTextView.setPadding(5, 5, 5, 5)
             paymentAmountTextView.setTypeface(null, Typeface.BOLD)
             paymentAmountTextView.textSize = 16f
             tableRow.addView(paymentAmountTextView)
 
-            // Add image button to the fourth column
+
+            val progressBar = ProgressBar(context, null, android.R.attr.progressBarStyleHorizontal)
+            progressBar.layoutParams = TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT, 1f)
+            progressBar.progressDrawable = context.resources.getDrawable(R.drawable.progress_bar_white, null) // Set custom drawable
+            progressBar.progress = 50 // Set the initial progress value
+            tableRow.addView(progressBar)
+
+
             val imageButton = ImageButton(context)
             imageButton.setImageResource(R.drawable.baseline_keyboard_arrow_down_24)
             imageButton.setBackgroundColor(Color.TRANSPARENT)
             tableRow.addView(imageButton)
 
-            // Add the payment details (hidden initially) to a new row below the current row
-            val detailsRow = TableRow(context)
-            detailsRow.layoutParams = TableLayout.LayoutParams(
+            val detailsTable = TableLayout(context)
+            detailsTable.layoutParams = TableLayout.LayoutParams(
                 TableLayout.LayoutParams.MATCH_PARENT,
                 TableLayout.LayoutParams.WRAP_CONTENT
             )
-            detailsRow.visibility = View.GONE
+            detailsTable.visibility = View.GONE
 
-            val detailsTextView = TextView(context)
-            val paymentDetailsString = buildPaymentDetailsString(employeeName, month)
-            Log.d("PaymentDetails", "Payment details string: $paymentDetailsString")
-            detailsTextView.text = paymentDetailsString
-            detailsRow.addView(detailsTextView)
+            val paymentDetailsList = buildPaymentDetailsList(employeeName, month)
+            paymentDetailsList.forEach { paymentDetail ->
+                val detailsRow = TableRow(context)
+                detailsRow.layoutParams = TableLayout.LayoutParams(
+                    TableLayout.LayoutParams.MATCH_PARENT,
+                    TableLayout.LayoutParams.WRAP_CONTENT
+                )
 
+                // Create a TextView for the date
+                val dateTextView = TextView(context)
+                dateTextView.text = paymentDetail.date
+                dateTextView.setPadding(5, 5, 5, 5)
+                dateTextView.setTypeface(null, Typeface.BOLD)
+                val dateLayoutParams = TableRow.LayoutParams(
+                    TableRow.LayoutParams.WRAP_CONTENT,
+                    TableRow.LayoutParams.WRAP_CONTENT
+                )
+                dateLayoutParams.setMargins(0, 0, 20, 0) // Add a right margin of 20px
+                dateTextView.layoutParams = dateLayoutParams
+                detailsRow.addView(dateTextView)
 
-            // Set onClickListener for the image button
-            // Set onClickListener for the image button
-            imageButton.setOnClickListener {
-                if (detailsRow.visibility == View.VISIBLE) {
-                    // If detailsRow is visible, change image to arrow down and hide detailsRow
-                    imageButton.setImageResource(R.drawable.baseline_keyboard_arrow_down_24)
-                    detailsRow.visibility = View.GONE
+// Create a TextView for the payment amount
+                // Create a TextView for the payment amount or "Pending"
+                val paymentAmountTextView = TextView(context)
+                if (paymentDetail.paymentAmount > 0) {
+                    paymentAmountTextView.text = "Ksh ${NumberFormat.getInstance().format(paymentDetail.paymentAmount)}"
                 } else {
-                    // If detailsRow is not visible, change image to arrow up and show detailsRow
+                    paymentAmountTextView.text = "Pending"
+                }
+                paymentAmountTextView.setPadding(5, 5, 5, 5)
+                paymentAmountTextView.setTypeface(null, Typeface.BOLD)
+                val paymentLayoutParams = TableRow.LayoutParams(
+                    TableRow.LayoutParams.WRAP_CONTENT,
+                    TableRow.LayoutParams.WRAP_CONTENT)
+                paymentLayoutParams.setMargins(20, 0, 0, 0) // Add a left margin of 20px
+                paymentAmountTextView.layoutParams = paymentLayoutParams
+                detailsRow.addView(paymentAmountTextView)
+
+// Create a check ImageButton or "Pending"
+                val checkImageButton = ImageButton(context)
+                if (paymentDetail.paymentAmount > 0) {
+                    checkImageButton.setImageResource(R.drawable.baseline_check_24)
+                } else {
+                    checkImageButton.setImageResource(R.drawable.baseline_pending_24) // Assuming you have a "Pending" icon
+                }
+                checkImageButton.setBackgroundColor(Color.TRANSPARENT)
+                val checkLayoutParams = TableRow.LayoutParams(
+                    TableRow.LayoutParams.WRAP_CONTENT,
+                    TableRow.LayoutParams.WRAP_CONTENT
+                )
+                checkLayoutParams.setMargins(20, 0, 0, 0) // Add a left margin of 20px
+                checkImageButton.layoutParams = checkLayoutParams
+                detailsRow.addView(checkImageButton)
+
+
+// Set an OnClickListener for the check ImageButton
+                checkImageButton.setOnClickListener {
+                    Toast.makeText(context, "Paid", Toast.LENGTH_SHORT).show()
+                }
+
+                // Add a separator line
+                val separator = View(context)
+                separator.layoutParams = TableLayout.LayoutParams(
+                    TableLayout.LayoutParams.MATCH_PARENT,
+                    1
+                )
+                separator.setBackgroundColor(Color.BLACK)
+                tableLayout.addView(separator)
+
+                detailsTable.addView(detailsRow)
+            }
+
+            imageButton.setOnClickListener {
+                if (detailsTable.visibility == View.VISIBLE) {
+                    imageButton.setImageResource(R.drawable.baseline_keyboard_arrow_down_24)
+                    detailsTable.visibility = View.GONE
+                } else {
                     imageButton.setImageResource(R.drawable.baseline_keyboard_arrow_up_24)
-                    detailsRow.visibility = View.VISIBLE
+                    detailsTable.visibility = View.VISIBLE
                 }
             }
 
-
-            // Add the tableRow to the tableLayout
             tableLayout.addView(tableRow)
-            tableLayout.addView(detailsRow)
+            tableLayout.addView(detailsTable)
         }
     }
 
-    private fun buildPaymentDetailsString(employeeName: String, month: String): String {
-        val paymentDetails = StringBuilder()
+    private fun buildPaymentDetailsList(employeeName: String, month: String): List<PaymentDetail> {
+        val paymentDetailsList = mutableListOf<PaymentDetail>()
 
         // Parse the month string to extract the month and year values
         val monthYear = SimpleDateFormat("yyyy-MM", Locale.getDefault()).parse(month)
@@ -269,17 +374,22 @@ class MonthlyPaymentAdapter(
 
         Log.d("PaymentDetails", "Number of payment records: ${payments.size}")
 
-        // Build the payment details string
+        // Build the payment details list
         payments.forEach { payment ->
-            val dateFormat = SimpleDateFormat("EEE, d MMMM, yyyy", Locale.ENGLISH)
+            val dateFormat = SimpleDateFormat("EEE, d MMMM ", Locale.ENGLISH)
             val formattedDate = dateFormat.format(SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH).parse(payment.date))
-            paymentDetails.append("$formattedDate: Ksh ${NumberFormat.getInstance().format(payment.paymentAmount)}\n")
+            paymentDetailsList.add(PaymentDetail(formattedDate, payment.paymentAmount))
         }
 
-        val paymentDetailsString = paymentDetails.toString()
-        Log.d("PaymentDetails", "Payment details: $paymentDetailsString")
-
-        return paymentDetailsString
+        return paymentDetailsList
     }
+
+    private fun calculatePay(payment: Payment, employeeType: String): Double {
+        val kilos = payment.kilos
+        val payRate = dbHelper.getPaymentTypes()[employeeType] ?: return 0.0 // Use 0.0 if pay rate not found
+        Log.d("PaymentAdapter", "Calculating pay for $employeeType: $kilos * $payRate")
+        return kilos * payRate
+    }
+
 
 }
