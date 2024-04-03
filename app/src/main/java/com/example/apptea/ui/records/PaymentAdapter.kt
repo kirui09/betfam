@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.CheckBox
+import android.widget.ImageButton
 import android.widget.TableLayout
 import android.widget.TableRow
 import android.widget.TextView
@@ -47,6 +48,11 @@ class PaymentAdapter(
         val totalPayForDayTextView: TextView = itemView.findViewById(R.id.totalpayForDay)
         val seeMorePayButton: Button = itemView.findViewById(R.id.seeMorePayButton)
         val checkBox: CheckBox = itemView.findViewById(R.id.checkedpayCheckBox)
+        val verifiedButton: ImageButton = itemView.findViewById(R.id.verifiedButton)
+
+        init {
+            verifiedButton.visibility = View.GONE
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -164,6 +170,12 @@ class PaymentAdapter(
                         sharedPreferencesHelper.saveCheckBoxState(true)
                         // Show a toast message to indicate that data is saved
                         Toast.makeText(context, "Payments saved to database", Toast.LENGTH_SHORT).show()
+
+                        // Change the checkbox to the verified button
+                        holder.checkBox.visibility = View.GONE
+                        holder.verifiedButton.visibility = View.VISIBLE
+                        holder.verifiedButton.setBackgroundResource(android.R.color.transparent)
+
                     }
                     alertDialogBuilder.setNegativeButton("No") { dialog, _ ->
                         dialog.dismiss()
@@ -171,6 +183,8 @@ class PaymentAdapter(
                     }
                     val alertDialog = alertDialogBuilder.create()
                     alertDialog.show()
+                } else {
+                    // Handle unchecking the checkbox if needed
                 }
             }
 

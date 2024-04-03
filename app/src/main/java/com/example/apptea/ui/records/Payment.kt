@@ -10,10 +10,13 @@ data class Payment(
 
 
 data class PaymentDetail(
-    val date: String, // Date of the payment
-    val kilos: Double, // Kilos value for the payment
-    val paymentAmount: Double, // Amount of the payment
+    val date: String,
+    val kilos: Double,
+    val paymentAmount: Double,
+    val isPaymentCompleted: Boolean // New property to indicate payment status
 )
+
+
 
 
 

@@ -52,6 +52,16 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"/>
 
+            <ImageButton
+                android:id="@+id/verifiedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+
+                android:src="@drawable/baseline_verified_24"
+                android:layout_alignParentEnd="true"
+                android:visibility="gone" />
+
+
         </RelativeLayout>
 
         <RelativeLayout

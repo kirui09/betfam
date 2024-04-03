@@ -986,19 +986,18 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
     }
 
 
-    fun getPaymentAmountFromDatabase(date: String): Double {
+    fun getPaymentAmountFromDatabase(employeeName: String, date: String): Double {
         val db = readableDatabase
         var paymentAmount = 0.0
 
-        val query = "SELECT pay FROM TeaRecords WHERE date = ?"
+        val query = "SELECT pay FROM TeaRecords WHERE employee_name = ? AND date = ?"
+        val selectionArgs = arrayOf(employeeName, date)
 
         try {
-            val cursor = db.rawQuery(query, arrayOf(date))
+            val cursor = db.rawQuery(query, selectionArgs)
 
             if (cursor.moveToFirst()) {
-                paymentAmount = cursor.getDouble(cursor.getColumnIndexOrThrow("payment_amount"))
-            } else {
-                Log.d("DBHelper", "No payment record found for date: $date")
+                paymentAmount = cursor.getDouble(cursor.getColumnIndexOrThrow("pay"))
             }
 
             cursor.close()
@@ -1010,6 +1009,8 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
         return paymentAmount
     }
+
+
 
 
 

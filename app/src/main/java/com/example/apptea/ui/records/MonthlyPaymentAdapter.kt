@@ -207,6 +207,37 @@ class MonthlyPaymentAdapter(
         dateTextView.textSize = 16f
         dateRow.addView(dateTextView)
 
+        // Calculate the total payment amount from the database
+        val totalPaymentInDatabase = paymentList.sumByDouble { payment ->
+            try {
+                dbHelper.getPaymentAmountFromDatabase(payment.employeeName, payment.date)
+            } catch (e: Exception) {
+                Log.e("MonthlyPaymentAdapter", "Error calculating total payment from database: ${e.message}")
+                0.0
+            }
+        }
+
+        // Calculate the total calculated payment amount for the month
+//        val totalCalculatedPayment = paymentList.sumByDouble { paymentDetails ->
+//            calculatePay(paymentDetails.kilos, dbHelper.getEmployeeType(payment.employeeName))
+//        }
+
+        val progressBar = ProgressBar(context, null, android.R.attr.progressBarStyleHorizontal)
+        progressBar.layoutParams =
+            TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT, 1f)
+        progressBar.progressDrawable = context.resources.getDrawable(R.drawable.progress_bar_white, null) // Set custom drawable
+
+        // Calculate the progress percentage
+//        val progressPercentage = if (totalCalculatedPayment != 0.0) {
+//            ((totalPaymentInDatabase / totalCalculatedPayment) * 100).toInt()
+//        } else {
+//            0
+//        }
+//        progressBar.progress = progressPercentage
+
+        // Add the progress bar to the row
+        dateRow.addView(progressBar)
+
         // Add an empty cell for the employee name column
         val emptyCell = TextView(context)
         emptyCell.text = ""
@@ -226,7 +257,8 @@ class MonthlyPaymentAdapter(
 
         val employeePaymentMap = paymentList.groupBy { it.employeeName }
 
-        employeePaymentMap.forEach { (employeeName, payments) ->
+
+    employeePaymentMap.forEach { (employeeName, payments) ->
             val tableRow = TableRow(context)
             tableRow.layoutParams = TableLayout.LayoutParams(
                 TableLayout.LayoutParams.MATCH_PARENT,
@@ -251,11 +283,7 @@ class MonthlyPaymentAdapter(
             tableRow.addView(paymentAmountTextView)
 
 
-            val progressBar = ProgressBar(context, null, android.R.attr.progressBarStyleHorizontal)
-            progressBar.layoutParams = TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT, 1f)
-            progressBar.progressDrawable = context.resources.getDrawable(R.drawable.progress_bar_white, null) // Set custom drawable
-            progressBar.progress = 50 // Set the initial progress value
-            tableRow.addView(progressBar)
+
 
 
             val imageButton = ImageButton(context)
@@ -291,29 +319,21 @@ class MonthlyPaymentAdapter(
                 dateTextView.layoutParams = dateLayoutParams
                 detailsRow.addView(dateTextView)
 
-                // Fetch the payment amount from the database
-                val paymentAmountFromDB = dbHelper.getPaymentAmountFromDatabase(paymentDetail.date)
-
                 // Create a TextView for the payment amount
-
                 val paymentAmountTextView = TextView(context)
-                    paymentAmountTextView.text = "Ksh ${NumberFormat.getInstance().format(paymentDetail.paymentAmount)}"
+                paymentAmountTextView.text = "Ksh ${NumberFormat.getInstance().format(paymentDetail.paymentAmount)}"
                 paymentAmountTextView.setPadding(5, 5, 5, 5)
                 paymentAmountTextView.setTypeface(null, Typeface.BOLD)
                 val paymentLayoutParams = TableRow.LayoutParams(
                     TableRow.LayoutParams.WRAP_CONTENT,
-                    TableRow.LayoutParams.WRAP_CONTENT)
+                    TableRow.LayoutParams.WRAP_CONTENT
+                )
                 paymentLayoutParams.setMargins(20, 0, 0, 0) // Add a left margin of 20px
                 paymentAmountTextView.layoutParams = paymentLayoutParams
                 detailsRow.addView(paymentAmountTextView)
 
-// Create a check ImageButton or "Pending"
+                // Create a check ImageButton or "Pending"
                 val checkImageButton = ImageButton(context)
-                if (paymentDetail.paymentAmount > 0) {
-                    checkImageButton.setImageResource(R.drawable.baseline_check_24)
-                } else {
-                    checkImageButton.setImageResource(R.drawable.baseline_pending_24) // Assuming you have a "Pending" icon
-                }
                 checkImageButton.setBackgroundColor(Color.TRANSPARENT)
                 val checkLayoutParams = TableRow.LayoutParams(
                     TableRow.LayoutParams.WRAP_CONTENT,
@@ -321,12 +341,21 @@ class MonthlyPaymentAdapter(
                 )
                 checkLayoutParams.setMargins(20, 0, 0, 0) // Add a left margin of 20px
                 checkImageButton.layoutParams = checkLayoutParams
+
+                if (paymentDetail.isPaymentCompleted) {
+                    checkImageButton.setImageResource(R.drawable.baseline_check_24)
+                    checkImageButton.setOnClickListener {
+                        Toast.makeText(context, "Paid", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    checkImageButton.setImageResource(R.drawable.baseline_pending_24)
+                    checkImageButton.setOnClickListener {
+                        Toast.makeText(context, "Payment pending", Toast.LENGTH_SHORT).show()
+                    }
+                }
+
                 detailsRow.addView(checkImageButton)
 
-// Set an OnClickListener for the check ImageButton
-                checkImageButton.setOnClickListener {
-                    Toast.makeText(context, "Paid", Toast.LENGTH_SHORT).show()
-                }
                 // Add a separator line
                 val separator = View(context)
                 separator.layoutParams = TableLayout.LayoutParams(
@@ -338,6 +367,7 @@ class MonthlyPaymentAdapter(
 
                 detailsTable.addView(detailsRow)
             }
+
 
             imageButton.setOnClickListener {
                 if (detailsTable.visibility == View.VISIBLE) {
@@ -368,18 +398,33 @@ class MonthlyPaymentAdapter(
         // Fetch the payment details for the employee and month from the database
         val payments = dbHelper.getPaymentDetailsForEmployeeAndMonth(employeeName, monthValue, yearValue)
 
+
+
+
         // Fetch the employee type from the database
         val employeeType = dbHelper.getEmployeeType(employeeName)
 
         Log.d("PaymentDetails", "Number of payment records: ${payments.size}")
 
         // Build the payment details list
+
         payments.forEach { (date, kilos) ->
             val dateFormat = SimpleDateFormat("EEE, d MMMM ", Locale.ENGLISH)
             val formattedDate = dateFormat.format(SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH).parse(date))
             val paymentAmount = calculatePay(kilos, employeeType) // Calculate payment amount
-            paymentDetailsList.add(PaymentDetail(formattedDate, kilos, paymentAmount))
+
+            try {
+                val actualPaymentAmount = dbHelper.getPaymentAmountFromDatabase(employeeName, date)
+                Log.d("ActPaymentDetails", "Fetched payment amount for $employeeName on $date: $actualPaymentAmount")
+                val isPaymentCompleted = actualPaymentAmount > 0
+                paymentDetailsList.add(PaymentDetail(formattedDate, kilos, paymentAmount, isPaymentCompleted))
+            } catch (e: Exception) {
+                Log.e("ActPaymentDetails", "Error fetching payment amount for $employeeName on $date: ${e.message}")
+                // Handle the error or skip adding the payment detail to the list
+            }
         }
+
+
 
         return paymentDetailsList
     }
