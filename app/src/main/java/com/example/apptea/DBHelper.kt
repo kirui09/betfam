@@ -920,11 +920,11 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         return monthlyPayments
     }
 
-    fun getPaymentDetailsForEmployeeAndMonth(employeeName: String, month: Int, year: Int): List<Payment> {
+    fun getPaymentDetailsForEmployeeAndMonth(employeeName: String, month: Int, year: Int): List<Pair<String, Double>> {
         val db = readableDatabase
-        val payments = mutableListOf<Payment>()
+        val payments = mutableListOf<Pair<String, Double>>()
 
-        val query = "SELECT date, pay FROM TeaRecords WHERE employee_name = ? AND strftime('%m', date) = ? AND strftime('%Y', date) = ? ORDER BY date ASC"
+        val query = "SELECT date, kilos FROM TeaRecords WHERE employee_name = ? AND strftime('%m', date) = ? AND strftime('%Y', date) = ? ORDER BY date ASC"
 
         Log.d("DBHelper", "Executing query for employee: $employeeName, month: $month, year: $year")
 
@@ -936,20 +936,11 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
                 do {
                     val date = cursor.getString(cursor.getColumnIndexOrThrow("date"))
-                    val pay = cursor.getDouble(cursor.getColumnIndexOrThrow("pay"))
+                    val kilos = cursor.getDouble(cursor.getColumnIndexOrThrow("kilos"))
 
-                    Log.d("DBHelper", "Date: $date, Pay: $pay")
+                    Log.d("DBHelper", "Date: $date, Kilos: $kilos")
 
-                    // Create a Payment object with the retrieved data
-                    val payment = Payment(
-                        id = 0, // Assuming you don't need the id for display purposes
-                        date = date,
-                        employeeName = employeeName,
-                        kilos = 0.0, // Assuming you don't need the kilos for display purposes
-                        paymentAmount = pay
-                    )
-
-                    payments.add(payment)
+                    payments.add(Pair(date, kilos))
                 } while (cursor.moveToNext())
             } else {
                 Log.d("DBHelper", "No payment records found for $employeeName, $month/$year")
@@ -964,6 +955,8 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
         return payments
     }
+
+
 
     fun markRecordsAsSynced(recordIds: List<Int>) {
         val ids = recordIds.joinToString(",")
@@ -990,6 +983,32 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         }
         cursor.close()
         return records
+    }
+
+
+    fun getPaymentAmountFromDatabase(date: String): Double {
+        val db = readableDatabase
+        var paymentAmount = 0.0
+
+        val query = "SELECT pay FROM TeaRecords WHERE date = ?"
+
+        try {
+            val cursor = db.rawQuery(query, arrayOf(date))
+
+            if (cursor.moveToFirst()) {
+                paymentAmount = cursor.getDouble(cursor.getColumnIndexOrThrow("payment_amount"))
+            } else {
+                Log.d("DBHelper", "No payment record found for date: $date")
+            }
+
+            cursor.close()
+        } catch (e: Exception) {
+            Log.e("DBHelper", "Error executing query: ${e.message}")
+        } finally {
+            db.close()
+        }
+
+        return paymentAmount
     }
 
 

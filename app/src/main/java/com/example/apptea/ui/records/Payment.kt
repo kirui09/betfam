@@ -10,9 +10,12 @@ data class Payment(
 
 
 data class PaymentDetail(
-    val date: String,
-    val paymentAmount: Double
+    val date: String, // Date of the payment
+    val kilos: Double, // Kilos value for the payment
+    val paymentAmount: Double, // Amount of the payment
 )
+
+
 
 
 

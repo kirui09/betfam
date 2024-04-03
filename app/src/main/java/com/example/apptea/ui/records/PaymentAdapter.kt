@@ -101,14 +101,17 @@ class PaymentAdapter(
                 val row = TableRow(holder.itemView.context)
                 val employeeNameTextView = TextView(holder.itemView.context)
                 employeeNameTextView.setTypeface(null, Typeface.BOLD)
+
                 val kilosTextView = TextView(holder.itemView.context)
                 kilosTextView.setTypeface(null, Typeface.BOLD)
+
                 val paymentTextView = TextView(holder.itemView.context)
                 paymentTextView.setTypeface(null, Typeface.BOLD)
 
                 employeeNameTextView.text = payment.employeeName
                 kilosTextView.text = "${NumberFormat.getInstance().format(payment.kilos)} Kilos"
                 val employeeType = dbHelper.getEmployeeType(payment.employeeName)
+
                 val paymentAmount = calculatePay(payment, employeeType)
                 paymentTextView.text = "Ksh ${NumberFormat.getInstance().format(paymentAmount)}"
 

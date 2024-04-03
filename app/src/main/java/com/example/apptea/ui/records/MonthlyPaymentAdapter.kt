@@ -291,14 +291,13 @@ class MonthlyPaymentAdapter(
                 dateTextView.layoutParams = dateLayoutParams
                 detailsRow.addView(dateTextView)
 
-// Create a TextView for the payment amount
-                // Create a TextView for the payment amount or "Pending"
+                // Fetch the payment amount from the database
+                val paymentAmountFromDB = dbHelper.getPaymentAmountFromDatabase(paymentDetail.date)
+
+                // Create a TextView for the payment amount
+
                 val paymentAmountTextView = TextView(context)
-                if (paymentDetail.paymentAmount > 0) {
                     paymentAmountTextView.text = "Ksh ${NumberFormat.getInstance().format(paymentDetail.paymentAmount)}"
-                } else {
-                    paymentAmountTextView.text = "Pending"
-                }
                 paymentAmountTextView.setPadding(5, 5, 5, 5)
                 paymentAmountTextView.setTypeface(null, Typeface.BOLD)
                 val paymentLayoutParams = TableRow.LayoutParams(
@@ -324,12 +323,10 @@ class MonthlyPaymentAdapter(
                 checkImageButton.layoutParams = checkLayoutParams
                 detailsRow.addView(checkImageButton)
 
-
 // Set an OnClickListener for the check ImageButton
                 checkImageButton.setOnClickListener {
                     Toast.makeText(context, "Paid", Toast.LENGTH_SHORT).show()
                 }
-
                 // Add a separator line
                 val separator = View(context)
                 separator.layoutParams = TableLayout.LayoutParams(
@@ -359,7 +356,6 @@ class MonthlyPaymentAdapter(
 
     private fun buildPaymentDetailsList(employeeName: String, month: String): List<PaymentDetail> {
         val paymentDetailsList = mutableListOf<PaymentDetail>()
-
         // Parse the month string to extract the month and year values
         val monthYear = SimpleDateFormat("yyyy-MM", Locale.getDefault()).parse(month)
         val calendar = Calendar.getInstance()
@@ -372,24 +368,29 @@ class MonthlyPaymentAdapter(
         // Fetch the payment details for the employee and month from the database
         val payments = dbHelper.getPaymentDetailsForEmployeeAndMonth(employeeName, monthValue, yearValue)
 
+        // Fetch the employee type from the database
+        val employeeType = dbHelper.getEmployeeType(employeeName)
+
         Log.d("PaymentDetails", "Number of payment records: ${payments.size}")
 
         // Build the payment details list
-        payments.forEach { payment ->
+        payments.forEach { (date, kilos) ->
             val dateFormat = SimpleDateFormat("EEE, d MMMM ", Locale.ENGLISH)
-            val formattedDate = dateFormat.format(SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH).parse(payment.date))
-            paymentDetailsList.add(PaymentDetail(formattedDate, payment.paymentAmount))
+            val formattedDate = dateFormat.format(SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH).parse(date))
+            val paymentAmount = calculatePay(kilos, employeeType) // Calculate payment amount
+            paymentDetailsList.add(PaymentDetail(formattedDate, kilos, paymentAmount))
         }
 
         return paymentDetailsList
     }
 
-    private fun calculatePay(payment: Payment, employeeType: String): Double {
-        val kilos = payment.kilos
+    private fun calculatePay(kilos: Double, employeeType: String): Double {
         val payRate = dbHelper.getPaymentTypes()[employeeType] ?: return 0.0 // Use 0.0 if pay rate not found
-        Log.d("PaymentAdapter", "Calculating pay for $employeeType: $kilos * $payRate")
+        Log.d("MonthlyPaymentAdapter", "Calculating pay for $employeeType: $kilos * $payRate")
         return kilos * payRate
     }
+
+
 
 
 }
