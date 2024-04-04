@@ -8,6 +8,11 @@
 
 
 
+
+
+
+
+
     <RelativeLayout
         android:id="@+id/fragment_container"
         android:layout_width="match_parent"
@@ -52,6 +57,20 @@
             android:layout_gravity="bottom|end"
             app:elevation="10dp" />
     </RelativeLayout>
+
+
+        <RelativeLayout
+            android:id="@+id/teaRecordsFragmentProgressBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="visible">
+
+            <ProgressBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true" />
+
+        </RelativeLayout>
 
 
 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

@@ -22,6 +22,9 @@ interface AddButtonClickListener {
     fun onAllRecordAdded(record: DailyTeaRecord)
 }
 
+
+
+
 class TeaRecordsFragment : Fragment(), EditButtonClickListener, AddButtonClickListener, DeleteButtonClickListener {
 
     private lateinit var recordsAdapter: TeaRecordsAdapter
@@ -31,6 +34,11 @@ class TeaRecordsFragment : Fragment(), EditButtonClickListener, AddButtonClickLi
     private lateinit var employeeAdapter: EmployeeAdapter
     private var supervisorPay: Double = 0.0
     private var basicPay: Double = 0.0
+
+
+
+
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -80,7 +88,10 @@ class TeaRecordsFragment : Fragment(), EditButtonClickListener, AddButtonClickLi
     }
 
     private fun fetchRecords() {
+        showProgressBar() // Show progress bar when fetching data
         recordsViewModel.fetchTeaRecords()
+
+
     }
 
     override fun onAddButtonClick() {
@@ -117,10 +128,12 @@ class TeaRecordsFragment : Fragment(), EditButtonClickListener, AddButtonClickLi
         alertDialog.show()
     }
 
+
     override fun onAllRecordAdded(record: DailyTeaRecord) {
-        // Refresh RecyclerView to show new record immediately
-        fetchRecords()
+        showProgressBar() // Show progress bar when adding record
+        fetchRecords() // Refresh the records
         updateRecordsList()
+        hideProgressBar() // Hide progress bar after record is added
     }
 
     private fun updateRecordsList() {
@@ -133,7 +146,19 @@ class TeaRecordsFragment : Fragment(), EditButtonClickListener, AddButtonClickLi
     private fun fetchPaymentTypes() {
         supervisorPay = dbHelper.getSupervisorPay()
         basicPay = dbHelper.getBasicPay()
+
+
     }
+
+
+    private fun showProgressBar() {
+        binding.teaRecordsFragmentProgressBar.visibility = View.VISIBLE
+    }
+
+    private fun hideProgressBar() {
+        binding.teaRecordsFragmentProgressBar.visibility = View.GONE
+    }
+
 
 
 //    private fun isInternetAvailable(context: Context): Boolean {

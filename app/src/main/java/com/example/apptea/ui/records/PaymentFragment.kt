@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.RelativeLayout
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -39,10 +40,18 @@ class PaymentFragment : Fragment() {
 
         recyclerView.adapter = paymentAdapter
 
+        // Show the progress bar
+        showProgressBar(view)
+
         fetchPaymentTypes()
         fetchData()
 
         return view
+    }
+
+    override fun onResume() {
+        super.onResume()
+        refreshData()
     }
 
     private fun fetchData() {
@@ -60,6 +69,10 @@ class PaymentFragment : Fragment() {
                 }
             }
             paymentAdapter.updateData(groupedPayments)
+
+            // Hide the progress bar after data is updated
+            hideProgressBar(requireView())
+
         }
     }
 
@@ -68,6 +81,23 @@ class PaymentFragment : Fragment() {
         basicPay = dbHelper.getBasicPay()
     }
 
+
+    private fun showProgressBar(view: View) {
+        val progressBar = view.findViewById<RelativeLayout>(R.id.paymentFragmentProgressBar)
+        progressBar.visibility = View.VISIBLE
+    }
+
+    private fun hideProgressBar(view: View) {
+        val progressBar = view.findViewById<RelativeLayout>(R.id.paymentFragmentProgressBar)
+        progressBar.visibility = View.GONE
+    }
+
+    fun PaymentFragment.refreshData() {
+        // Show the progress bar
+        showProgressBar(requireView())
+
+        fetchData()
+    }
 
 
 }

@@ -70,10 +70,11 @@ class PaymentAdapter(
             else -> throw IllegalArgumentException("Invalid view type")
         }
     }
-
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val day = groupedData.keys.elementAt(position)
         val payments = groupedData[day]
+        val isVerified = sharedPreferencesHelper.getCheckBoxState(day)
+
 
         if (holder is PaymentViewHolder) {
             val formattedDate = formatDate(day)
@@ -133,9 +134,12 @@ class PaymentAdapter(
                 notifyDataSetChanged()
             }
         }
-        else if (holder is GeneralPayViewHolder) {
-            val formattedDate = formatDate(day)
-            holder.generalPayDateTextView.text = formattedDate // Set the formatted date for the general pay
+
+
+
+
+        if (holder is GeneralPayViewHolder) {
+            holder.generalPayDateTextView.text = formatDate(day) // Set the formatted date for the general pay
 
             // Calculate and display the sum of all payments for the day
             val totalPayment = payments?.sumByDouble { payment ->
@@ -145,14 +149,20 @@ class PaymentAdapter(
             holder.totalPayForDayTextView.text =
                 "Total Payment: Ksh ${NumberFormat.getInstance().format(totalPayment)}"
 
+            // Set the checkbox state based on SharedPreferences
+            holder.checkBox.isChecked = isVerified
 
-            val isChecked = sharedPreferencesHelper.getCheckBoxState()
-            holder.checkBox.isChecked = isChecked
+            holder.verifiedButton.setBackgroundResource(android.R.color.transparent)
 
-            holder.checkBox.setOnCheckedChangeListener(null) // Remove previous listener
 
-            holder.checkBox.setOnClickListener {
-                if (holder.checkBox.isChecked) {
+
+            // Hide or show the checkbox and verified button based on the saved state
+            holder.checkBox.visibility = if (isVerified) View.GONE else View.VISIBLE
+            holder.verifiedButton.visibility = if (isVerified) View.VISIBLE else View.GONE
+
+            // Set onCheckedChangeListener for the checkbox
+            holder.checkBox.setOnCheckedChangeListener { _, isChecked ->
+                if (isChecked) {
                     val alertDialogBuilder = AlertDialog.Builder(context)
                     alertDialogBuilder.setTitle("Confirm")
                     alertDialogBuilder.setMessage("Are you sure you want to save these payments?")
@@ -167,7 +177,7 @@ class PaymentAdapter(
                             savePaymentToTeaRecords(updatedPayment)
                         }
                         // Update the shared preferences to reflect the checkbox state
-                        sharedPreferencesHelper.saveCheckBoxState(true)
+                        sharedPreferencesHelper.saveCheckBoxState(day, true)
                         // Show a toast message to indicate that data is saved
                         Toast.makeText(context, "Payments saved to database", Toast.LENGTH_SHORT).show()
 
@@ -175,7 +185,6 @@ class PaymentAdapter(
                         holder.checkBox.visibility = View.GONE
                         holder.verifiedButton.visibility = View.VISIBLE
                         holder.verifiedButton.setBackgroundResource(android.R.color.transparent)
-
                     }
                     alertDialogBuilder.setNegativeButton("No") { dialog, _ ->
                         dialog.dismiss()
@@ -184,15 +193,21 @@ class PaymentAdapter(
                     val alertDialog = alertDialogBuilder.create()
                     alertDialog.show()
                 } else {
-                    // Handle unchecking the checkbox if needed
+                    // Optionally handle unchecking if needed
+                    // ...
                 }
             }
 
+            // ... (rest of your existing code)
 
             holder.seeMorePayButton.setOnClickListener {
                 // Handle expanding here
                 expandedPosition = position
                 notifyDataSetChanged()
+            }
+
+            holder.verifiedButton.setOnClickListener {
+
             }
         }
     }

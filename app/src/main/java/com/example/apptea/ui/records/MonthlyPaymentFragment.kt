@@ -59,4 +59,8 @@ class MonthlyPaymentFragment : Fragment() {
         return monthlyPaymentsMap
     }
 
+    fun MonthlyPaymentFragment.refreshData() {
+        // Refresh the data displayed in MonthlyPaymentFragment
+    }
+
 }

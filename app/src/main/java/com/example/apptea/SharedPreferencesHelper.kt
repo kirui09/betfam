@@ -22,13 +22,13 @@ class SharedPreferencesHelper(context: Context) {
     }
 
 
-    fun getCheckBoxState(): Boolean {
-        return sharedPreferences.getBoolean("VERIFIED_STATE", true)
+    fun getCheckBoxState(day: String): Boolean {
+        return sharedPreferences.getBoolean("CheckBox_$day", false)
     }
 
-    fun saveCheckBoxState(state: Boolean) {
+    fun saveCheckBoxState(day: String, isChecked: Boolean) {
         val editor = sharedPreferences.edit()
-        editor.putBoolean("CHECKBOX_STATE", true) // Always save as true
+        editor.putBoolean("CheckBox_$day", isChecked)
         editor.apply()
     }
 

@@ -38,4 +38,7 @@ class RecordsFragment : Fragment() {
 
         return root
     }
+
+
+
 }
