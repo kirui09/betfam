@@ -42,7 +42,6 @@ class PaymentFragment : Fragment() {
 
         // Show the progress bar
         showProgressBar(view)
-
         fetchPaymentTypes()
         fetchData()
 

@@ -9,10 +9,6 @@
 
 
 
-
-
-
-
     <RelativeLayout
         android:id="@+id/fragment_container"
         android:layout_width="match_parent"
@@ -23,22 +19,47 @@
         tools:context=".ui.records.TeaRecordsFragment">
 
         <!-- Your existing UI components -->
-        <TextView
-            android:id="@+id/totalsTextView"
+        <RelativeLayout
+            android:id="@+id/totalsTextViewContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="10dp"
             android:background="#3E3737"
-            android:text="Total"
-            android:textColor="@color/white"
             android:layout_alignParentStart="true"
-            android:layout_alignParentEnd="true"/>
+            android:layout_alignParentEnd="true">
+
+            <TextView
+                android:id="@+id/totalsTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="TOTAL"
+                android:textColor="@color/white"/>
+
+            <ImageButton
+                android:id="@+id/searchButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toStartOf="@id/filterButton"
+                android:src="@drawable/baseline_search_24"
+                android:background="@android:color/transparent" />
+
+            <ImageButton
+                android:id="@+id/filterButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:src="@drawable/baseline_filter_list_24"
+                android:background="@android:color/transparent" />
+
+
+        </RelativeLayout>
+
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/dailytearecordsrecyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/totalsTextView"
+            android:layout_below="@id/totalsTextViewContainer"
             android:padding="5dp"
             android:visibility="visible"
             android:divider="@drawable/divider_horizontal"
@@ -71,6 +92,20 @@
                 android:layout_centerInParent="true" />
 
         </RelativeLayout>
+
+
+    <RelativeLayout
+        android:id="@+id/noRecordsTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="visible">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="No Records" />
+    </RelativeLayout>
+
 
 
 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

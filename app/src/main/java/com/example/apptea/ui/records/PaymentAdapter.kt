@@ -90,18 +90,31 @@ class PaymentAdapter(
             dateRow.addView(dateTextView)
             tableLayout.addView(dateRow)
 
-            // Create a header row
+// Create a header row
             val headerRow = TableRow(holder.itemView.context)
             val headerEmployeeNameTextView = TextView(holder.itemView.context)
             val headerKilosTextView = TextView(holder.itemView.context)
             val headerPaymentTextView = TextView(holder.itemView.context)
-//            headerEmployeeNameTextView.text = "Employee Name"
-//            headerKilosTextView.text = "Kilos"
-//            headerPaymentTextView.text = "Payment"
+            val headerPayAllTextView = TextView(holder.itemView.context)
+
+            headerEmployeeNameTextView.text = "Employee Name"
+            headerEmployeeNameTextView.setTypeface(null, Typeface.BOLD)
+
+            headerKilosTextView.text = "Kilos"
+            headerKilosTextView.setTypeface(null, Typeface.BOLD)
+
+            headerPaymentTextView.text = "Payment"
+            headerPaymentTextView.setTypeface(null, Typeface.BOLD)
+
+            headerPayAllTextView.text = "Pay Now"
+            headerPayAllTextView.setTypeface(null, Typeface.BOLD)
+
             headerRow.addView(headerEmployeeNameTextView)
             headerRow.addView(headerKilosTextView)
             headerRow.addView(headerPaymentTextView)
+            headerRow.addView(headerPayAllTextView)
             tableLayout.addView(headerRow)
+
 
             // Add rows for each payment
             payments?.forEach { payment ->
@@ -125,7 +138,45 @@ class PaymentAdapter(
                 row.addView(employeeNameTextView)
                 row.addView(kilosTextView)
                 row.addView(paymentTextView)
+
+                // Add checkbox
+                val paycheckBox = CheckBox(holder.itemView.context)
+                row.addView(paycheckBox)
+
+                paycheckBox.setOnCheckedChangeListener { _, isChecked ->
+                    if (isChecked) {
+                        // Checkbox is checked, save the payment to the database
+
+//                        dbHelper.savePayment(payment)
+
+                    } else {
+                        // Checkbox is unchecked, remove the payment from the database
+
+                    }
+                }
+
+                headerPayAllTextView.setOnClickListener {
+                    tableLayout.children.forEach { view ->
+                        if (view is TableRow) {
+                            val checkBox = view.getChildAt(3) as CheckBox
+                            if (checkBox.isChecked) {
+                                val employeeName = (view.getChildAt(0) as TextView).text.toString()
+                                val kilos = (view.getChildAt(1) as TextView).text.toString()
+                                val paymentAmount = (view.getChildAt(2) as TextView).text.toString()
+                                val payment = Payment(employeeName, kilos.toDouble(), paymentAmount.toDouble())
+                                dbHelper.savePayment(payment)
+                            }
+                        }
+                    }
+                    Toast.makeText(context, "Payments saved successfully", Toast.LENGTH_SHORT).show()
+                }
+
+
+
                 tableLayout.addView(row)
+
+
+
             }
 
             holder.seeLessButton.setOnClickListener {

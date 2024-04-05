@@ -43,6 +43,8 @@ class TeaRecordsAdapter(
     private val VIEW_TYPE_EXPANDED = 2
     private var expandedPosition = RecyclerView.NO_POSITION
 
+    private var records: Map<String, List<DailyTeaRecord>> = recordsByDay
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         return if (viewType == VIEW_TYPE_COLLAPSED) {
@@ -233,6 +235,7 @@ class TeaRecordsAdapter(
 
     fun updateRecords(newRecordsByDay: Map<String, List<DailyTeaRecord>>) {
         recordsByDay = newRecordsByDay
+        records = recordsByDay
         notifyDataSetChanged()
     }
 
@@ -241,6 +244,10 @@ class TeaRecordsAdapter(
             expandedPosition = RecyclerView.NO_POSITION
             notifyDataSetChanged()
         }
+    }
+
+    fun getRecords(): Map<String, List<DailyTeaRecord>> {
+        return records
     }
 
     private fun formatDate(dateString: String): String {
@@ -258,6 +265,13 @@ class TeaRecordsAdapter(
         }
     }
 
-
+    fun filterRecordsByDate(date: String) {
+        val filteredRecords = recordsByDay.filter { (dateKey, recordsList) ->
+            // Compare the dateKey with the provided date
+            dateKey == date
+        }
+        updateRecords(filteredRecords)
+        notifyDataSetChanged()
+    }
 
 }

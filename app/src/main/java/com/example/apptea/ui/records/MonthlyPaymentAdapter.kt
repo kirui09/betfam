@@ -79,7 +79,8 @@ class MonthlyPaymentAdapter(
             monthTextView.text = formattedMonth
 
             val totalPayment = payments?.sumByDouble { it.paymentAmount } ?: 0.0
-            totalPaymentTextView.text = NumberFormat.getCurrencyInstance().format(totalPayment)
+            totalPaymentTextView.text = NumberFormat.getCurrencyInstance(Locale("sw", "KE")).format(totalPayment)
+
 
             showdetailsButton.setOnClickListener {
                 expandedPosition = if (expandedPosition == adapterPosition) {
@@ -433,6 +434,12 @@ class MonthlyPaymentAdapter(
         val payRate = dbHelper.getPaymentTypes()[employeeType] ?: return 0.0 // Use 0.0 if pay rate not found
         Log.d("MonthlyPaymentAdapter", "Calculating pay for $employeeType: $kilos * $payRate")
         return kilos * payRate
+    }
+
+    fun updateData(newData: LinkedHashMap<String, ArrayList<MonthlyPayment>>) {
+        groupedData.clear()
+        groupedData.putAll(newData)
+        notifyDataSetChanged()
     }
 
 

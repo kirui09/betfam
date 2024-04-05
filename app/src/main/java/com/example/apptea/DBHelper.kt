@@ -6,6 +6,7 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import com.example.apptea.ui.companies.Company
 import com.example.apptea.ui.employees.Employee
@@ -826,6 +827,37 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
     }
 
 
+
+//    fun savePayment(payment: Payment) {
+//        val db = this.writableDatabase
+//        val values = ContentValues().apply {
+//            put("pay", payment.paymentAmount) // Replace "your_column_name_here" with the actual column name
+//            // Add other columns as needed
+//        }
+//        // Insert the new row, returning the primary key value of the new row
+//        val newRowId = db.insert("TeaRecords", null, values)
+//        db.close()
+//
+//        if (newRowId != -1L) {
+//            // Payment successfully saved, show toast or perform any other actions
+//             Toast.makeText(this, "Payment saved successfully", Toast.LENGTH_SHORT).show()
+//        } else {
+//            // Payment not saved, show error toast or handle the error
+//            // Toast.makeText(context, "Failed to save payment", Toast.LENGTH_SHORT).show()
+//        }
+//    }
+
+
+//    fun deletePayment(paymentId: Long) {
+//        val db = this.writableDatabase
+//        // Define 'where' part of query
+//        val selection = "$COLUMN_ID = ?"
+//        // Specify arguments in placeholder order
+//        val selectionArgs = arrayOf(paymentId.toString())
+//        // Issue SQL statement
+//        db.delete(TABLE_PAYMENTS, selection, selectionArgs)
+//        db.close()
+//    }
 
 
     fun getAllPayments(): MutableLiveData<List<Payment>> {
