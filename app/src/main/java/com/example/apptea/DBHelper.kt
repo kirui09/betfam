@@ -6,7 +6,6 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.MutableLiveData
 import com.example.apptea.ui.companies.Company
 import com.example.apptea.ui.employees.Employee
@@ -17,7 +16,6 @@ import com.example.apptea.ui.records.MonthlyPayment
 import com.example.apptea.ui.records.Payment
 import com.example.apptea.ui.records.Record
 import com.example.apptea.ui.records.SyncedRecord
-import com.example.apptea.ui.records.TeaRecord
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -828,24 +826,26 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
 
 
-//    fun savePayment(payment: Payment) {
-//        val db = this.writableDatabase
-//        val values = ContentValues().apply {
-//            put("pay", payment.paymentAmount) // Replace "your_column_name_here" with the actual column name
-//            // Add other columns as needed
-//        }
-//        // Insert the new row, returning the primary key value of the new row
-//        val newRowId = db.insert("TeaRecords", null, values)
-//        db.close()
-//
-//        if (newRowId != -1L) {
-//            // Payment successfully saved, show toast or perform any other actions
-//             Toast.makeText(this, "Payment saved successfully", Toast.LENGTH_SHORT).show()
-//        } else {
-//            // Payment not saved, show error toast or handle the error
-//            // Toast.makeText(context, "Failed to save payment", Toast.LENGTH_SHORT).show()
-//        }
-//    }
+    fun savePayments(payments: List<Payment>) {
+        val db = this.writableDatabase
+        db.beginTransaction()
+        try {
+            for (payment in payments) {
+                val contentValues = ContentValues()
+                contentValues.put("pay", payment.paymentAmount)
+
+                val where = "date = ? AND employee_name = ?"
+                val whereArgs = arrayOf(payment.date, payment.employeeName)
+                db.update("TeaRecords", contentValues, where, whereArgs)
+            }
+            db.setTransactionSuccessful()
+        } catch (e: Exception) {
+            // Handle exceptions
+        } finally {
+            db.endTransaction()
+            db.close()
+        }
+    }
 
 
 //    fun deletePayment(paymentId: Long) {
@@ -862,45 +862,41 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
     fun getAllPayments(): MutableLiveData<List<Payment>> {
         val paymentsLiveData = MutableLiveData<List<Payment>>()
-        val db = readableDatabase.use { db ->
-            val payments = mutableListOf<Payment>()
-            val queryBuilder = StringBuilder("SELECT id, date, employee_name, kilos ,pay FROM TeaRecords")
-            queryBuilder.append(" ORDER BY date ASC") // Modify order if needed
-            val query = queryBuilder.toString()
+        val db = readableDatabase
+        val payments = mutableListOf<Payment>()
+        val queryBuilder = StringBuilder("SELECT id, date, employee_name, kilos ,pay FROM TeaRecords")
+        queryBuilder.append(" ORDER BY date ASC")
+        val query = queryBuilder.toString()
 
-            db.rawQuery(query, null).use { cursor ->
-                while (cursor.moveToNext()) {
-                    val id = cursor.getInt(cursor.getColumnIndex("id"))
-                    val date = cursor.getString(cursor.getColumnIndex("date"))
-                    val employeeName = cursor.getString(cursor.getColumnIndex("employee_name"))
-                    val kilos = cursor.getDouble(cursor.getColumnIndex("kilos"))
-                    val paymentAmount = cursor.getDouble(cursor.getColumnIndex("pay"))
-                    payments.add(Payment(id, date, employeeName, kilos,paymentAmount))
-                }
+        db.rawQuery(query, null).use { cursor ->
+            while (cursor.moveToNext()) {
+                val id = cursor.getInt(cursor.getColumnIndex("id"))
+                val date = cursor.getString(cursor.getColumnIndex("date"))
+                val employeeName = cursor.getString(cursor.getColumnIndex("employee_name"))
+                val kilos = cursor.getDouble(cursor.getColumnIndex("kilos"))
+                val paymentAmount = cursor.getDouble(cursor.getColumnIndex("pay"))
+                payments.add(Payment(id, date, employeeName, kilos,paymentAmount))
             }
-            paymentsLiveData.postValue(payments)
         }
+        paymentsLiveData.postValue(payments)
+        db.close()
         return paymentsLiveData
     }
-
 
     fun insertPaymentToTeaRecords(payment: Payment) {
         val db = this.writableDatabase
         val values = ContentValues()
 
         try {
-            // Check if the payment already exists in the database
             if (!paymentExists(db, payment.id, payment.date, payment.employeeName, payment.kilos)) {
-                // Payment does not exist, so insert it
                 values.put("id", payment.id)
                 values.put("date", payment.date)
                 values.put("employee_name", payment.employeeName)
                 values.put("kilos", payment.kilos)
-                values.put("pay", payment.paymentAmount) // Ensure "pay" is included for new records
+                values.put("pay", payment.paymentAmount)
                 db.insert("TeaRecords", null, values)
                 Log.d("DBHelper", "Inserted new payment record: Employee ${payment.employeeName}, Date ${payment.date}, Payment Ksh ${payment.paymentAmount}")
             } else {
-                // Payment already exists, so update it
                 val whereClause = "id = ? AND date = ? AND employee_name = ? AND kilos = ?"
                 val whereArgs = arrayOf(payment.id.toString(), payment.date, payment.employeeName, payment.kilos.toString())
                 values.put("pay", payment.paymentAmount)
@@ -918,10 +914,8 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         }
     }
 
-    // Check if a payment with the given id, date, and name already exists in the database
     private fun paymentExists(db: SQLiteDatabase, id: Int, date: String, name: String, kilos: Double): Boolean {
         val query = "SELECT * FROM TeaRecords WHERE id = ? AND date = ? AND employee_name = ? AND kilos = ?"
-        // Explicitly create an array of strings for the query parameters
         val cursor = db.rawQuery(query, arrayOf(id.toString(), date, name, kilos.toString()))
         val exists = cursor.count > 0
         cursor.close()
@@ -930,25 +924,25 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
 
 
+
     // Method to fetch the sum of kilos for each employee
 
     fun getSumOfKilosForEachEmployee(): ArrayList<MonthlyPayment> {
         val monthlyPayments = ArrayList<MonthlyPayment>()
         val db = this.readableDatabase
-        val query = "SELECT date, employee_name, SUM(pay) AS totalpay FROM TeaRecords GROUP BY   date , employee_name"
+        val query = "SELECT date, employee_name, SUM(pay) AS totalpay FROM TeaRecords GROUP BY date, employee_name"
         val cursor: Cursor? = db.rawQuery(query, null)
         cursor?.use {
-            if (it.moveToFirst()) {
-                do {
-                    val date = it.getString(0)
-                    val employeeName = it.getString(1)
-                    val paymentAmount = it.getDouble(2)
-                    val monthlyPayment = MonthlyPayment(date, employeeName, paymentAmount)
-                    monthlyPayments.add(monthlyPayment)
-                } while (it.moveToNext())
+            while (it.moveToNext()) {
+                val date = it.getString(0)
+                val employeeName = it.getString(1)
+                val paymentAmount = it.getDouble(2)
+                val monthlyPayment = MonthlyPayment(date, employeeName, paymentAmount)
+                monthlyPayments.add(monthlyPayment)
             }
         }
         cursor?.close()
+        db.close()
         return monthlyPayments
     }
 
@@ -990,11 +984,13 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
 
 
+
     fun markRecordsAsSynced(recordIds: List<Int>) {
         val ids = recordIds.joinToString(",")
         val query = "UPDATE TeaRecords SET synced = 1 WHERE id IN ($ids)"
         val db = writableDatabase
         db.execSQL(query)
+        db.close()
     }
 
     fun getUnsyncedRecords(): List<SyncedRecord> {
@@ -1014,9 +1010,9 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
             records.add(record)
         }
         cursor.close()
+        db.close()
         return records
     }
-
 
     fun getPaymentAmountFromDatabase(employeeName: String, date: String): Double {
         val db = readableDatabase

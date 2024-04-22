@@ -22,6 +22,7 @@ class PaymentFragment : Fragment() {
     private var basicPay: Double = 0.00
     private lateinit var sharedPreferencesHelper: SharedPreferencesHelper // Added sharedPreferencesHelper property
 
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?

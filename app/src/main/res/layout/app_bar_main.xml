@@ -9,7 +9,9 @@
         android:id="@+id/appBarLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/Theme.AppTea.AppBarOverlay"> <!-- Set visibility to GONE to hide the app bar -->
+        android:theme="@style/Theme.AppTea.AppBarOverlay">
+
+        <!-- Set visibility to GONE to hide the app bar -->
 
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
@@ -18,8 +20,17 @@
             app:popupTheme="@style/Theme.AppTea.PopupOverlay"
             android:visibility="visible">
 
-
             <!-- Your other toolbar components go here -->
+
+            <ImageButton
+                android:id="@+id/googleSignUpButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/icons8_google_cloud"
+                 />
+
 
 
 

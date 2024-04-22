@@ -2,12 +2,18 @@ package com.example.apptea.ui.records
 
 import android.content.ContentValues
 import android.content.Context
+import android.content.res.ColorStateList
 import android.database.sqlite.SQLiteDatabase
+import android.graphics.Color
 import android.graphics.Typeface
+import android.graphics.drawable.AnimationDrawable
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AlphaAnimation
+import android.view.animation.Animation
+import android.view.animation.LinearInterpolator
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.ImageButton
@@ -16,6 +22,7 @@ import android.widget.TableRow
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.children
 import androidx.recyclerview.widget.RecyclerView
 import com.example.apptea.DBHelper
 import com.example.apptea.R
@@ -36,10 +43,6 @@ class PaymentAdapter(
     private var expandedPosition = RecyclerView.NO_POSITION
 
     inner class PaymentViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val paymentDateTextView: TextView = itemView.findViewById(R.id.paymentdateTextView)
-        val paymentEmployeeNameTextView: TextView = itemView.findViewById(R.id.paymentemployeeNameTextView)
-        val paymentKilosTextView: TextView = itemView.findViewById(R.id.paymentkilosTextView)
-        val paymentTextView: TextView = itemView.findViewById(R.id.paymentTextView)
         val seeLessButton: Button = itemView.findViewById(R.id.seelessPayButton)
     }
 
@@ -106,8 +109,31 @@ class PaymentAdapter(
             headerPaymentTextView.text = "Payment"
             headerPaymentTextView.setTypeface(null, Typeface.BOLD)
 
+
+            // Define colors for different states
+            val colorStateList = ColorStateList(
+                arrayOf(intArrayOf(android.R.attr.state_enabled), intArrayOf(-android.R.attr.state_enabled)),
+                intArrayOf(Color.WHITE, Color.RED) // Default color is white, color when blinking is red
+            )
+
+
+            // Set the text and make it bold
             headerPayAllTextView.text = "Pay Now"
             headerPayAllTextView.setTypeface(null, Typeface.BOLD)
+            // Apply the color state list to the text view
+            headerPayAllTextView.setTextColor(colorStateList)
+
+
+// Define the blinking animation
+            val animation = AlphaAnimation(0.0f, 1.0f)
+            animation.duration = 500 // Blinking duration
+            animation.interpolator = LinearInterpolator()
+            animation.repeatCount = Animation.INFINITE // Repeat animation infinitely
+            animation.repeatMode = Animation.REVERSE // Reverse animation at the end
+
+// Start the animation
+            headerPayAllTextView.startAnimation(animation)
+
 
             headerRow.addView(headerEmployeeNameTextView)
             headerRow.addView(headerKilosTextView)
@@ -156,20 +182,35 @@ class PaymentAdapter(
                 }
 
                 headerPayAllTextView.setOnClickListener {
+                    val paymentsToSave = arrayListOf<Payment>()
                     tableLayout.children.forEach { view ->
-                        if (view is TableRow) {
+                        if (view is TableRow && view.getChildAt(3) is CheckBox) {
                             val checkBox = view.getChildAt(3) as CheckBox
                             if (checkBox.isChecked) {
-                                val employeeName = (view.getChildAt(0) as TextView).text.toString()
-                                val kilos = (view.getChildAt(1) as TextView).text.toString()
-                                val paymentAmount = (view.getChildAt(2) as TextView).text.toString()
-                                val payment = Payment(employeeName, kilos.toDouble(), paymentAmount.toDouble())
-                                dbHelper.savePayment(payment)
+                                val dateTextView = view.getChildAt(0) as? TextView
+                                val employeeNameTextView = view.getChildAt(1) as? TextView
+                                val kilosTextView = view.getChildAt(2) as? TextView
+                                val paymentAmountTextView = view.getChildAt(4) as? TextView
+
+                                val date = dateTextView?.text.toString()
+                                val employeeName = employeeNameTextView?.text.toString()
+                                val kilos = kilosTextView?.text.toString().toDoubleOrNull() ?: 0.0
+                                val paymentAmount = paymentAmountTextView?.text.toString().toDoubleOrNull() ?: 0.0
+
+                                val payment = Payment(-1, date, employeeName, kilos, paymentAmount)
+                                paymentsToSave.add(payment)
                             }
                         }
                     }
-                    Toast.makeText(context, "Payments saved successfully", Toast.LENGTH_SHORT).show()
+
+                    if (paymentsToSave.isNotEmpty()) {
+                        dbHelper.savePayments(paymentsToSave)
+                        Toast.makeText(context, "Payments saved successfully", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(context, "No payments to save", Toast.LENGTH_SHORT).show()
+                    }
                 }
+
 
 
 

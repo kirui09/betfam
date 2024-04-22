@@ -10,7 +10,6 @@ import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import com.example.apptea.DBHelper
 import com.example.apptea.databinding.FragmentEditRecordDialogBinding
-import com.example.apptea.ui.records.DailyTeaRecord
 
 interface RecordUpdateListener {
     fun onRecordUpdated()
@@ -167,7 +166,7 @@ class EditRecordDialogFragment : DialogFragment() {
                     employees = binding.spinnerEmployeeName.selectedItem.toString(),
                     kilos = binding.updateTextEmployeeKilos.text.toString().toDouble(),
 
-                )
+                    )
 
                 // Log the update operation details
                 Log.d("EditRecordDialog", "Updating record:")

@@ -83,7 +83,7 @@ class AddRecordDialogFragment : DialogFragment() {
         // Step 1: Initialize MyDBHelper and retrieve employee names
         val dbHelper = DBHelper(requireContext())
         var employeeNames = dbHelper.getAllEmployeeNames()
-      // Prepend "Select Employee" to the list of employee names
+        // Prepend "Select Employee" to the list of employee names
         val employeeNamesWithSelectOption = listOf("Select Employee") + employeeNames
         // Step 2: Create an adapter for the employee spinner and set it
         val employeeAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, employeeNamesWithSelectOption)

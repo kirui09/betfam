@@ -3,12 +3,15 @@
 package com.example.apptea.ui.records
 import android.os.Parcel
 import android.os.Parcelable
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
 data class MonthlyPayment(
     val date: String,
     val employeeName: String,
     val paymentAmount: Double
 )
+
 
 data class EditableTeaRecord(
     val id: Int,
@@ -52,9 +55,9 @@ data class EditableTeaRecord(
 
 
 
-
+@Entity
 data class DailyTeaRecord(
-    val id: Long,
+    @PrimaryKey val id: Long,
     val date: String,
     val companies: String,
     val employees: String,

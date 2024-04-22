@@ -26,7 +26,6 @@ import java.util.Calendar
 import java.util.Locale
 
 interface AddButtonClickListener {
-    fun onAddButtonClick()
     fun onAllRecordAdded(record: DailyTeaRecord)
 }
 
@@ -45,6 +44,7 @@ class TeaRecordsFragment : Fragment(), EditButtonClickListener, AddButtonClickLi
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        Log.d("AddRecordDialogFragment", "onCreateView called")
         binding = FragmentTeaRecordsBinding.inflate(inflater, container, false)
 
 
@@ -63,10 +63,7 @@ class TeaRecordsFragment : Fragment(), EditButtonClickListener, AddButtonClickLi
         employeeAdapter = EmployeeAdapter(emptyList())
         fetchPaymentTypes() // Fetch supervisor and basic pay from the database
         setupRecyclerView()
-        // Set click listener for add button
-        binding.fabAddRecord.setOnClickListener {
-            onAddButtonClick()
-        }
+
         observeRecords()
         fetchRecords()
         val swipeRefreshLayout = view.findViewById<SwipeRefreshLayout>(R.id.swipe_refresh_layout)
@@ -117,12 +114,7 @@ class TeaRecordsFragment : Fragment(), EditButtonClickListener, AddButtonClickLi
 
     }
 
-    override fun onAddButtonClick() {
-        val fragmentManager = requireActivity().supportFragmentManager
-        val addDialogFragment = AddRecordDialogFragment()
-        addDialogFragment.employeeAdapter = employeeAdapter
-        addDialogFragment.show(fragmentManager, "AddRecordDialogFragment")
-    }
+
 
     override fun onEditButtonClick(record: DailyTeaRecord) {
         val fragmentManager = requireActivity().supportFragmentManager
@@ -267,25 +259,12 @@ class TeaRecordsFragment : Fragment(), EditButtonClickListener, AddButtonClickLi
 
         datePickerDialog.show()
     }
-//    private fun isInternetAvailable(context: Context): Boolean {
-//        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-//        val activeNetwork = connectivityManager.activeNetworkInfo
-//        return activeNetwork != null && activeNetwork.isConnected
-//    }
-//
-//
-//    fun syncUnsyncedRecords(context: Context) {
-//        val dbHelper = DBHelper(context)
-//        val unsyncedRecords = dbHelper.getUnsyncedRecords() // Implement this method in DBHelper
-//        if (unsyncedRecords.isNotEmpty()) {
-//            // Use the existing sendRecordsToGoogleSheet method to sync
-//            sendRecordsToGoogleSheet(unsyncedRecords)
-//            // After successful sync, mark these records as 'synced' in your local database
-//        }
-//    }
+
+
+
+
 
 
 
 
 }
-

@@ -1,12 +1,19 @@
 package com.example.apptea
 
 
+import android.app.Activity
+import android.content.ContentValues.TAG
 import android.content.Context
+import android.content.Intent
 import android.os.AsyncTask
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.View
+import android.view.animation.Animation
+import android.widget.ImageButton
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.findNavController
@@ -16,10 +23,40 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.example.apptea.databinding.ActivityMainBinding
 import com.example.apptea.ui.home.HomeFragment
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.common.api.Scope
 import com.google.android.material.navigation.NavigationView
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
+import com.google.api.client.http.javanet.NetHttpTransport
+import com.google.api.client.json.gson.GsonFactory
+import com.google.api.client.json.jackson2.JacksonFactory
+import com.google.api.services.drive.Drive
+import com.google.api.services.drive.DriveScopes
+import com.google.api.services.drive.model.File
+import com.google.api.services.sheets.v4.Sheets
+import com.google.api.services.sheets.v4.SheetsScopes
+import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetRequest
+import com.google.api.services.sheets.v4.model.CellData
+import com.google.api.services.sheets.v4.model.CellFormat
+import com.google.api.services.sheets.v4.model.Color
+import com.google.api.services.sheets.v4.model.GridRange
+import com.google.api.services.sheets.v4.model.RepeatCellRequest
+import com.google.api.services.sheets.v4.model.Request
+import com.google.api.services.sheets.v4.model.Spreadsheet
+import com.google.api.services.sheets.v4.model.SpreadsheetProperties
+import com.google.api.services.sheets.v4.model.ValueRange
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.net.URL
 import java.util.*
+import android.view.animation.AnimationUtils
+import android.widget.Toast
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 
 class MainActivity : AppCompatActivity() {
 
@@ -28,14 +65,43 @@ class MainActivity : AppCompatActivity() {
     private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
     private lateinit var dbh: DBHelper
     private lateinit var headerView: View
+    private var blinkingAnimation: Animation? = null
+    private var isUserSignedIn: Boolean = false
+
+    private lateinit var googleCloudSignUp: ImageButton
 
     val CITY: String = "Litein, KE"
     val API: String = "1a105b90f41489e05ece19d6f6c326b9" // Use API key
 
+
+    private lateinit var googleSignInClient: GoogleSignInClient
+    private val googleSignInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            try {
+                val account = task.getResult(ApiException::class.java)
+                if (account != null) {
+                    val userId = account.email
+                    val idToken = account.idToken
+                    if (userId != null) {
+                        if (idToken != null) {
+                            saveUserDetailsToSharedPreferences(userId, idToken)
+                            createSheetAndAddHeader(userId)
+                        }
+                    }
+                    val intent = Intent(this, MainActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                }
+            } catch (e: ApiException) {
+                Log.e(TAG, "Google sign-in failed", e)
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Initialize DBHelper
         DBHelper.init(this)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -57,18 +123,80 @@ class MainActivity : AppCompatActivity() {
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
-        // Initialize SharedPreferencesHelper and DBHelper
         sharedPreferencesHelper = SharedPreferencesHelper(this)
         dbh = DBHelper(this)
 
-        // Initialize headerView
         headerView = navView.getHeaderView(0)
-
-        // Call the function to update navigation header
         updateNavigationHeader()
 
-        // Fetch weather data
         fetchWeatherData()
+
+        googleCloudSignUp = findViewById(R.id.googleSignUpButton)
+        blinkingAnimation = AnimationUtils.loadAnimation(this, R.anim.blink_animation)
+
+        isUserSignedIn = isUserSignedIn()
+
+        if (!isUserSignedIn) {
+            googleCloudSignUp.startAnimation(blinkingAnimation)
+        }
+
+        googleCloudSignUp.setOnClickListener {
+            if (isUserSignedIn) {
+                Toast.makeText(this, "User is already signed in", Toast.LENGTH_SHORT).show()
+            } else {
+                // Perform actions when the ImageButton is clicked
+                signIn()
+                googleCloudSignUp.clearAnimation()
+            }
+        }
+
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestScopes(Scope(SheetsScopes.SPREADSHEETS), Scope(DriveScopes.DRIVE_FILE))
+            .requestIdToken(getString(R.string.web_client_id))
+            .requestEmail()
+            .build()
+
+        googleSignInClient = GoogleSignIn.getClient(this, gso)
+
+        val sharedPreferences = getSharedPreferences("user_details", Context.MODE_PRIVATE)
+        val userId = sharedPreferences.getString("user_id", null)
+        val idToken = sharedPreferences.getString("id_token", null)
+    }
+
+    private fun isUserSignedIn(): Boolean {
+        val account = GoogleSignIn.getLastSignedInAccount(this)
+        return account != null
+    }
+
+    private fun stopBlinkingAnimation() {
+        googleCloudSignUp.clearAnimation()
+    }
+
+
+    private fun signIn() {
+        val signInIntent = googleSignInClient.signInIntent
+        googleSignInLauncher.launch(signInIntent)
+    }
+
+
+    private fun updateUI(account: GoogleSignInAccount?) {
+        if (account != null) {
+            // User signed in successfully
+            // Update UI as needed
+            // Save user details if required
+            account.id?.let { account.idToken?.let { it1 ->
+                saveUserDetailsToSharedPreferences(it,
+                    it1
+                )
+            } }
+            // Update the signed-in status flag
+            isUserSignedIn = true
+
+            // Display a toast message with the user ID
+            Toast.makeText(this, "User ID: ${account.id}", Toast.LENGTH_SHORT).show()
+        } else {
+            // Handle sign-in failure
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -148,9 +276,197 @@ class MainActivity : AppCompatActivity() {
 //        }
 //    }
 
+
+    private fun saveUserDetailsToSharedPreferences(userId: String, idToken: String) {
+        val sharedPreferences = getSharedPreferences("user_details", Context.MODE_PRIVATE)
+        val editor = sharedPreferences.edit()
+        editor.putString("user_id", userId)
+        editor.putString("id_token", idToken)
+        editor.apply()
+
+
+    }
+
+    private fun saveSpreadsheetIdToDrive(credentials: GoogleAccountCredential, sheetId: String) {
+        val drive = Drive.Builder(
+            NetHttpTransport(),
+            JacksonFactory.getDefaultInstance(),
+            credentials
+        ).setApplicationName("AppChai(DoNotDelete)").build()
+
+        val folderName = "AppChai(DoNotDelete)"
+        val spreadsheetFileName = "AppChaiSpreadSheet(DoNotDelete)"
+
+        // Function to check if the folder with the specified name already exists
+        fun getFolderId(drive: Drive, folderName: String): String? {
+            val query = "name = '$folderName' and mimeType = 'application/vnd.google-apps.folder'"
+            val result = drive.files().list().setQ(query).execute()
+            return if (result.files.isNotEmpty()) {
+                result.files[0].id
+            } else {
+                null
+            }
+        }
+
+        // Function to create a new folder if it does not exist
+        fun createFolder(drive: Drive, folderName: String): String {
+            val folderMetadata = File()
+            folderMetadata.name = folderName
+            folderMetadata.mimeType = "application/vnd.google-apps.folder"
+            return drive.files().create(folderMetadata).execute().id
+        }
+
+        // Get the folder ID or create a new folder
+        val folderId = getFolderId(drive, folderName) ?: createFolder(drive, folderName)
+
+        // Function to check if the file (Google Sheet) exists inside the folder
+        fun getFileId(drive: Drive, folderId: String, fileName: String): String? {
+            val query = "name = '$fileName' and '$folderId' in parents"
+            val result = drive.files().list().setQ(query).execute()
+            return if (result.files.isNotEmpty()) {
+                result.files[0].id
+            } else {
+                null
+            }
+        }
+
+        // Check if the file exists inside the folder
+        val fileId = getFileId(drive, folderId, spreadsheetFileName)
+
+        if (fileId != null) {
+            // Update the properties of the existing file (Google Sheet) instead of creating a new one
+            val fileMetadata = File()
+            fileMetadata.properties = mapOf("spreadsheet_id" to sheetId)
+            drive.files().update(fileId, fileMetadata).execute()
+        } else {
+            // Create a new file inside the folder
+            val fileMetadata = File()
+            fileMetadata.name = spreadsheetFileName
+            fileMetadata.parents = listOf(folderId)
+            fileMetadata.properties = mapOf("spreadsheet_id" to sheetId)
+
+            try {
+                val file = drive.files().create(fileMetadata).execute()
+                Log.d(TAG, "Spreadsheet saved to Drive in folder: $folderId")
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to save spreadsheet to Drive", e)
+                // Handle the error here (e.g., inform user or retry)
+            }
+        }
+    }
+
+    private fun createSheetAndAddHeader(userId: String) {
+        GlobalScope.launch(Dispatchers.IO) {
+            try {
+                val credential = GoogleAccountCredential.usingOAuth2(
+                    applicationContext, listOf(SheetsScopes.SPREADSHEETS)
+                )
+                credential.setSelectedAccountName(userId)
+                val sheetsService = Sheets.Builder(
+                    NetHttpTransport(),
+                    GsonFactory.getDefaultInstance(),
+                    credential
+                )
+                    .setApplicationName(getString(R.string.app_name))
+                    .build()
+
+                val drive = Drive.Builder(
+                    NetHttpTransport(),
+                    JacksonFactory.getDefaultInstance(),
+                    credential
+                ).setApplicationName("AppChai").build()
+
+                val folderName = "AppChai(DoNotDelete)"
+                val spreadsheetFileName = "AppChaiSpreadSheet(DoNotDelete)"
+
+                // Function to check if the folder with the specified name already exists
+                fun getFolderId(drive: Drive, folderName: String): String? {
+                    val query = "name = '$folderName' and mimeType = 'application/vnd.google-apps.folder'"
+                    val result = drive.files().list().setQ(query).execute()
+                    return if (result.files.isNotEmpty()) {
+                        result.files[0].id
+                    } else {
+                        null
+                    }
+                }
+
+                // Function to create a new folder if it does not exist
+                fun createFolder(drive: Drive, folderName: String): String {
+                    val folderMetadata = File()
+                    folderMetadata.name = folderName
+                    folderMetadata.mimeType = "application/vnd.google-apps.folder"
+                    return drive.files().create(folderMetadata).execute().id
+                }
+
+                // Function to check if the file (Google Sheet) exists inside the folder
+                fun getFileId(drive: Drive, folderId: String, fileName: String): String? {
+                    val query = "name = '$fileName' and '$folderId' in parents"
+                    val result = drive.files().list().setQ(query).execute()
+                    return if (result.files.isNotEmpty()) {
+                        result.files[0].id
+                    } else {
+                        null
+                    }
+                }
+
+                // Get the folder ID or create a new folder
+                val folderId = getFolderId(drive, folderName) ?: createFolder(drive, folderName)
+
+                // Check if the file exists inside the folder
+                val fileId = getFileId(drive, folderId, spreadsheetFileName)
+
+                if (fileId == null) {
+                    val spreadsheet = sheetsService.spreadsheets().create(
+                        Spreadsheet().setProperties(
+                            SpreadsheetProperties().setTitle("Tea Records")
+                        )
+                    ).execute()
+
+                    // Add header row and set green background in a single BatchUpdate
+                    val headerValues = listOf("Date", "Company","EmployeeName" ,"Kilos")
+                    val valueRange = ValueRange() // Create a ValueRange object
+                        .setValues(listOf(headerValues)) // Set the values
+
+                    val updateValuesRequest = sheetsService.spreadsheets().values()
+                        .update(spreadsheet.spreadsheetId, "A1:D1", valueRange)
+                    updateValuesRequest.setValueInputOption("RAW") // Set the value input option here
+                    updateValuesRequest.execute()
+
+                    val headerRequest = Request()
+                        .setRepeatCell( // Using Request again
+                            RepeatCellRequest().setRange(
+                                GridRange().setSheetId(0).setStartRowIndex(0).setEndRowIndex(1)
+                                    .setStartColumnIndex(0).setEndColumnIndex(3)
+                            ).setCell(
+                                CellData().setUserEnteredFormat(
+                                    CellFormat().setBackgroundColor(
+                                        Color().setRed(0.0f).setGreen(1.0f).setBlue(0.0f)
+                                    )
+                                )
+                            ).setFields("userEnteredFormat.backgroundColor")
+                        )
+
+                    val headerRangeRequest = BatchUpdateSpreadsheetRequest()
+                        .setRequests(listOf(headerRequest))
+
+                    sheetsService.spreadsheets().batchUpdate(
+                        spreadsheet.spreadsheetId,
+                        headerRangeRequest
+                    ).execute()
+
+                    saveSpreadsheetIdToDrive(credential, spreadsheet.spreadsheetId)
+                } else {
+                    Log.d(TAG, "Sheet already exists for user: $fileId")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to create sheet for user", e)
+            }
+        }
+    }
+
     data class WeatherInfo(
         val temperature: String,
         val description: String,
         val city: String
     )
-}
+} 

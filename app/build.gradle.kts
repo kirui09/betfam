@@ -47,6 +47,10 @@ android {
         }
     }
 
+    packaging {
+        resources.excludes.add("META-INF/*")
+    }
+
 
 
 }
@@ -91,7 +95,42 @@ dependencies {
     implementation ("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
     implementation ("androidx.navigation:navigation-fragment-ktx")
 
+    implementation ("androidx.multidex:multidex:2.0.1")
 
+// Room components
+    val room_version = "2.6.1"
+    implementation("androidx.room:room-runtime:$room_version")
+    kapt("androidx.room:room-compiler:$room_version")
+    implementation("androidx.room:room-ktx:$room_version")
+
+    // Lifecycle components (compatible with Room 2.7.4)
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.6.1")
+    implementation("androidx.lifecycle:lifecycle-common-java8:2.6.1")
+    kapt("androidx.lifecycle:lifecycle-compiler:2.6.1")
+
+
+    implementation("com.google.api-client:google-api-client:1.25.0")
+    implementation("com.google.api-client:google-api-client-android:1.25.0")
+    implementation("com.google.apis:google-api-services-sheets:v4-rev614-1.18.0-rc")
+    implementation("com.google.http-client:google-http-client:1.44.1")
+    implementation("com.google.code.gson:gson:2.10.1")
+    implementation("com.google.oauth-client:google-oauth-client:1.35.0")
+    implementation("com.google.android.gms:play-services-auth:21.0.0")
+    // https://mvnrepository.com/artifact/com.google.apis/google-api-services-drive
+    // https://mvnrepository.com/artifact/com.google.apis/google-api-services-drive
+implementation("com.google.apis:google-api-services-drive:v3-rev197-1.25.0")
+    implementation ("com.google.apis:google-api-services-sheets:v4.11.0")
+
+    // https://mvnrepository.com/artifact/com.google.guava/guava
+    implementation("com.google.guava:guava:33.1.0-jre")
+
+
+    // https://mvnrepository.com/artifact/com.jakewharton.timber/timber
+    implementation("com.jakewharton.timber:timber:5.0.1")
+
+    // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
+    implementation("com.squareup.okhttp3:okhttp:5.0.0-alpha.12")
 
 
 }
