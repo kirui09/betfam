@@ -1,6 +1,5 @@
 package com.example.apptea
 
-
 import android.app.Activity
 import android.content.ContentValues.TAG
 import android.content.Context
@@ -161,11 +160,16 @@ class MainActivity : AppCompatActivity() {
         val sharedPreferences = getSharedPreferences("user_details", Context.MODE_PRIVATE)
         val userId = sharedPreferences.getString("user_id", null)
         val idToken = sharedPreferences.getString("id_token", null)
+
+
+        // Trigger synchronization process
+        SyncService.startSync(this)
     }
 
     private fun isUserSignedIn(): Boolean {
         val account = GoogleSignIn.getLastSignedInAccount(this)
         return account != null
+
     }
 
     private fun stopBlinkingAnimation() {
@@ -184,7 +188,7 @@ class MainActivity : AppCompatActivity() {
             // User signed in successfully
             // Update UI as needed
             // Save user details if required
-            account.id?.let { account.idToken?.let { it1 ->
+            account.email?.let { account.idToken?.let { it1 ->
                 saveUserDetailsToSharedPreferences(it,
                     it1
                 )
@@ -283,8 +287,6 @@ class MainActivity : AppCompatActivity() {
         editor.putString("user_id", userId)
         editor.putString("id_token", idToken)
         editor.apply()
-
-
     }
 
     private fun saveSpreadsheetIdToDrive(credentials: GoogleAccountCredential, sheetId: String) {

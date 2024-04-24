@@ -1,0 +1,204 @@
+package com.example.apptea
+
+import android.app.Service
+import android.app.job.JobParameters
+import android.app.job.JobService
+import android.content.ContentValues
+import android.content.Context
+import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
+import android.util.Log
+import com.example.apptea.ui.records.Record
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
+import com.google.api.client.http.javanet.NetHttpTransport
+import com.google.api.client.json.JsonFactory
+import com.google.api.client.json.gson.GsonFactory
+import com.google.api.client.json.jackson2.JacksonFactory
+import com.google.api.services.drive.Drive
+import com.google.api.services.sheets.v4.Sheets
+import com.google.api.services.sheets.v4.SheetsScopes
+import com.google.api.services.sheets.v4.model.ValueRange
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
+
+class SyncService : JobService() {
+
+    private lateinit var pendingSyncDataDao: PendingSyncDataDao
+
+    override fun onCreate() {
+        super.onCreate()
+        pendingSyncDataDao = App.database.pendingSyncDataDao()
+    }
+
+    override fun onStartJob(params: JobParameters?): Boolean {
+        if (isConnectedToInternet()) {
+            Log.d(TAG, "Internet is connected, starting data sync")
+            GlobalScope.launch(Dispatchers.IO) {
+                syncPendingData()
+            }
+        } else {
+            Log.d(TAG, "Internet is not connected, skipping data sync")
+        }
+        // Return false as the job is completed synchronously
+        return false
+    }
+
+    override fun onStopJob(params: JobParameters?): Boolean {
+        // Optionally handle job cancellation here
+        return true
+    }
+
+    private suspend fun syncPendingData() {
+        val pendingData = pendingSyncDataDao.getAllPendingData()
+
+        if (pendingData.isNotEmpty()) {
+            Log.d(TAG, "Syncing ${pendingData.size} pending data records")
+            for (data in pendingData) {
+                val record = Record(
+                    id = 0,
+                    date = data.date,
+                    company = data.company,
+                    employee = data.employeeName,
+                    kilos = data.kilos.toDouble()
+                )
+
+                sendDataToGoogleSheet(record)
+                pendingSyncDataDao.delete(data)
+            }
+            Log.d(TAG, "Pending data sync completed successfully")
+        } else {
+            Log.d(TAG, "No pending data to sync")
+        }
+    }
+
+    private fun sendDataToGoogleSheet(record: Record) {
+        GlobalScope.launch(Dispatchers.IO) {
+            try {
+                val credential = getGoogleAccountCredential()
+                val sheetsService = setupSheetsService(credential)
+
+                // Get the spreadsheet ID from Google Drive
+                val spreadsheetId = getSpreadsheetIdFromDrive(credential)
+                if (spreadsheetId != null) {
+                    val range = "Sheet1!A:D" // Adjust the range based on your needs.
+                    val valueRange = ValueRange().setValues(
+                        listOf(listOf(record.date, record.company, record.employee, record.kilos))
+                    )
+                    val append = sheetsService.spreadsheets().values().append(spreadsheetId, range, valueRange)
+                        .setValueInputOption("USER_ENTERED")
+                    val response = append.execute()
+                    withContext(Dispatchers.Main) {
+                        Log.d(ContentValues.TAG, "Data sent to Google Sheets")
+
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        Log.e(ContentValues.TAG, "Google Sheet file not found in Google Drive")
+
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Log.e(ContentValues.TAG, "Failed to send data to Google Sheet", e)
+
+                }
+            }
+        }
+    }
+
+    private suspend fun getSpreadsheetIdFromDrive(credential: GoogleAccountCredential): String? = suspendCoroutine { cont ->
+        GlobalScope.launch {
+            try {
+                val drive = Drive.Builder(
+                    NetHttpTransport(),
+                    JacksonFactory.getDefaultInstance(),
+                    credential
+                ).setApplicationName("AppChai(DoNotDelete)").build()
+
+                // Query the file to fetch the Google Sheet ID
+                val query = "mimeType='application/vnd.google-apps.spreadsheet'"
+                val result = drive.files().list().setQ(query).execute()
+
+                if (result.files.isNotEmpty()) {
+                    val file = result.files[0] // Get the first file (assuming there is only one)
+                    cont.resume(file.id)
+                } else {
+                    cont.resumeWithException(Exception("Google Sheet file not found in Google Drive"))
+                }
+            } catch (e: Exception) {
+                cont.resumeWithException(e)
+            }
+        }
+    }
+
+    // This function retrieves a GoogleAccountCredential using the OAuth token
+    private suspend fun getGoogleAccountCredential(): GoogleAccountCredential = suspendCoroutine { cont ->
+        val sharedPreferences = applicationContext.getSharedPreferences("user_details", Context.MODE_PRIVATE)
+        val email = sharedPreferences.getString("user_id", null)
+        val token = sharedPreferences.getString("id_token", null)
+
+        if (email != null && token != null) {
+            val credential = GoogleAccountCredential.usingOAuth2(
+                applicationContext, listOf(SheetsScopes.SPREADSHEETS)
+            )
+            credential.setSelectedAccountName(email)
+            cont.resume(credential)
+        } else {
+            cont.resumeWithException(Exception("User details not found"))
+        }
+    }
+
+    // This function sets up the Sheets service
+    private fun setupSheetsService(credential: GoogleAccountCredential): Sheets {
+        val transport = NetHttpTransport()
+        val jsonFactory: JsonFactory = GsonFactory.getDefaultInstance()
+        return Sheets.Builder(transport, jsonFactory, credential)
+            .setApplicationName(getString(R.string.app_name))
+            .build()
+    }
+
+    private fun isConnectedToInternet(): Boolean {
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val networkCapabilities = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
+            val isConnected = networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+            Log.d("InternetConnection", "Connected: $isConnected")
+            return isConnected
+        } else {
+            val networkInfo = connectivityManager.activeNetworkInfo
+            val isConnected = networkInfo != null && networkInfo.isConnected
+            Log.d("InternetConnection", "Connected: $isConnected")
+            return isConnected
+        }
+    }
+
+
+    companion object {
+
+        private const val TAG = "SyncService"
+
+        fun startSync(context: Context) {
+            val pendingSyncIntent = Intent(context, SyncService::class.java)
+            context.startService(pendingSyncIntent)
+        }
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (isConnectedToInternet()) {
+            Log.d(TAG, "Internet is connected, starting data sync")
+            GlobalScope.launch(Dispatchers.IO) {
+                syncPendingData()
+            }
+        } else {
+            Log.d(TAG, "Internet is not connected, skipping data sync")
+        }
+        return Service.START_NOT_STICKY
+    }
+}
