@@ -1,7 +1,6 @@
 package com.example.apptea.ui.records
 
 import android.app.DatePickerDialog
-import android.content.ContentValues
 import android.content.ContentValues.TAG
 import android.content.Context
 import android.net.ConnectivityManager
@@ -15,7 +14,13 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.DatePicker
+import android.widget.EditText
+import android.widget.RelativeLayout
+import android.widget.Spinner
+import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import com.example.apptea.App
 import com.example.apptea.DBHelper
@@ -36,7 +41,8 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Calendar
+import java.util.Locale
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -50,10 +56,13 @@ class AddRecordDialogFragment : DialogFragment() {
 
     private var addRecordsProgressLayout: RelativeLayout? = null
 
+    private var lastGeneratedId = 0 // Declare and initialize lastGeneratedId at the class level
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         pendingSyncDataDao = App.database.pendingSyncDataDao() // Initialize pendingSyncDataDao
+
     }
 
     override fun onCreateView(
@@ -63,7 +72,7 @@ class AddRecordDialogFragment : DialogFragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_add_record_dialog, container, false)
 
-//        pendingSyncDataDao = App.database.pendingSyncDataDao()
+
         val addRecordsProgressLayout = view.findViewById<RelativeLayout>(R.id.addRecordsProgress)
         dbh = DBHelper(requireContext())
 
@@ -115,7 +124,6 @@ class AddRecordDialogFragment : DialogFragment() {
     }
 
 
-
     private fun saveTempRecord() {
         val dateEditText = view?.findViewById<EditText>(R.id.recordEntryTime)
         val companySpinner = view?.findViewById<Spinner>(R.id.spinnerCompanyName)
@@ -131,6 +139,7 @@ class AddRecordDialogFragment : DialogFragment() {
             val kilos = kilosString.toDouble()
 
             // Assuming that 'id' is initialized with a default value where 'Record' class is defined
+            val id = generateUniqueId() // Generate a unique ID
             val record = Record(id, date, company, employee, kilos)
             tempRecords.add(record)
             recordSavedListener?.onRecordAdded()
@@ -158,6 +167,7 @@ class AddRecordDialogFragment : DialogFragment() {
 
         if (date.isNotEmpty() && company.isNotEmpty() && employee.isNotEmpty() && kilosString.isNotEmpty()) {
             val kilos = kilosString.toDouble()
+            val id = generateUniqueId() // Generate a unique ID
             val record = Record(id, date, company, employee, kilos)
             tempRecords.add(record)
         }
@@ -175,26 +185,29 @@ class AddRecordDialogFragment : DialogFragment() {
         if (isConnectedToInternet()) {
             GlobalScope.launch(Dispatchers.IO) {
                 tempRecords.forEach { record ->
-                    sendDataToGoogleSheet(record)
+                    sendDataToGoogleSheet(record, requireContext())
                 }
             }
         } else {
             GlobalScope.launch(Dispatchers.IO) {
                 tempRecords.forEach { record ->
                     val pendingData = PendingSyncData(
+                        id = record.id,
                         date = record.date,
                         company = record.company,
                         employeeName = record.employee,
                         kilos = record.kilos.toInt()
                     )
-                    pendingSyncDataDao.insert(pendingData)
+                    pendingSyncDataDao.insert(pendingData) // Save data with generated ID when no internet
                 }
                 tempRecords.clear()
             }
         }
     }
 
-
+    private fun generateUniqueId(): Int {
+        return System.currentTimeMillis().toInt()
+    }
 
     private fun validateInput(date: String, company: String, employee: String, kilos: String): Boolean {
         return date.isNotEmpty() && company.isNotEmpty() && employee.isNotEmpty() && kilos.isNotEmpty() &&
@@ -242,7 +255,7 @@ class AddRecordDialogFragment : DialogFragment() {
         }
     }
 
-    private fun sendDataToGoogleSheet(record: Record) {
+    private fun sendDataToGoogleSheet(record: Record, context: Context) {
         GlobalScope.launch(Dispatchers.Main) {
             addRecordsProgressLayout?.visibility = View.VISIBLE
         }
@@ -255,9 +268,9 @@ class AddRecordDialogFragment : DialogFragment() {
                 // Get the spreadsheet ID from Google Drive
                 val spreadsheetId = getSpreadsheetIdFromDrive(credential)
                 if (spreadsheetId != null) {
-                    val range = "Sheet1!A:D" // Adjust the range based on your needs.
+                    val range = "Sheet1!A:E" // Adjust the range based on your needs.
                     val valueRange = ValueRange().setValues(
-                        listOf(listOf(record.date, record.company, record.employee, record.kilos))
+                        listOf(listOf(record.id, record.date, record.company, record.employee, record.kilos))
                     )
                     val append = sheetsService.spreadsheets().values().append(spreadsheetId, range, valueRange)
                         .setValueInputOption("USER_ENTERED")

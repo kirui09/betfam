@@ -1,15 +1,17 @@
 package com.example.apptea
 
-import android.app.Service
+import android.app.job.JobInfo
 import android.app.job.JobParameters
+import android.app.job.JobScheduler
 import android.app.job.JobService
+import android.content.ComponentName
 import android.content.ContentValues
 import android.content.Context
-import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
 import android.util.Log
+import android.widget.Toast
 import com.example.apptea.ui.records.Record
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.http.javanet.NetHttpTransport
@@ -41,13 +43,14 @@ class SyncService : JobService() {
         if (isConnectedToInternet()) {
             Log.d(TAG, "Internet is connected, starting data sync")
             GlobalScope.launch(Dispatchers.IO) {
-                syncPendingData()
+                syncPendingData(params)
             }
         } else {
             Log.d(TAG, "Internet is not connected, skipping data sync")
+            jobFinished(params, false)
         }
-        // Return false as the job is completed synchronously
-        return false
+        // Return true to keep the job scheduled
+        return true
     }
 
     override fun onStopJob(params: JobParameters?): Boolean {
@@ -55,63 +58,70 @@ class SyncService : JobService() {
         return true
     }
 
-    private suspend fun syncPendingData() {
+    private suspend fun syncPendingData(params: JobParameters?) {
         val pendingData = pendingSyncDataDao.getAllPendingData()
 
         if (pendingData.isNotEmpty()) {
             Log.d(TAG, "Syncing ${pendingData.size} pending data records")
             for (data in pendingData) {
                 val record = Record(
-                    id = 0,
+                    id = data.id,
                     date = data.date,
                     company = data.company,
                     employee = data.employeeName,
                     kilos = data.kilos.toDouble()
                 )
 
-                sendDataToGoogleSheet(record)
+                sendDataToGoogleSheet(record, applicationContext) // Use applicationContext here
                 pendingSyncDataDao.delete(data)
             }
             Log.d(TAG, "Pending data sync completed successfully")
+            jobFinished(params, false)
         } else {
             Log.d(TAG, "No pending data to sync")
+            jobFinished(params, false)
         }
     }
 
-    private fun sendDataToGoogleSheet(record: Record) {
+    private fun sendDataToGoogleSheet(record: Record, context: Context) {
+        GlobalScope.launch(Dispatchers.Main) {
+
+        }
+
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 val credential = getGoogleAccountCredential()
                 val sheetsService = setupSheetsService(credential)
-
                 // Get the spreadsheet ID from Google Drive
                 val spreadsheetId = getSpreadsheetIdFromDrive(credential)
                 if (spreadsheetId != null) {
-                    val range = "Sheet1!A:D" // Adjust the range based on your needs.
+                    val range = "Sheet1!A:E" // Adjust the range based on your needs.
                     val valueRange = ValueRange().setValues(
-                        listOf(listOf(record.date, record.company, record.employee, record.kilos))
+                        listOf(listOf(record.id, record.date, record.company, record.employee, record.kilos))
                     )
                     val append = sheetsService.spreadsheets().values().append(spreadsheetId, range, valueRange)
                         .setValueInputOption("USER_ENTERED")
                     val response = append.execute()
                     withContext(Dispatchers.Main) {
                         Log.d(ContentValues.TAG, "Data sent to Google Sheets")
-
+                        Toast.makeText(context, "Data sent to Google Sheets", Toast.LENGTH_SHORT).show()
                     }
                 } else {
                     withContext(Dispatchers.Main) {
                         Log.e(ContentValues.TAG, "Google Sheet file not found in Google Drive")
-
+                        Toast.makeText(context, "Google Sheet file not found in Google Drive", Toast.LENGTH_SHORT).show()
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     Log.e(ContentValues.TAG, "Failed to send data to Google Sheet", e)
-
+                    Toast.makeText(context, "Failed to send data to Google Sheet: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
         }
     }
+
+
 
     private suspend fun getSpreadsheetIdFromDrive(credential: GoogleAccountCredential): String? = suspendCoroutine { cont ->
         GlobalScope.launch {
@@ -143,7 +153,6 @@ class SyncService : JobService() {
         val sharedPreferences = applicationContext.getSharedPreferences("user_details", Context.MODE_PRIVATE)
         val email = sharedPreferences.getString("user_id", null)
         val token = sharedPreferences.getString("id_token", null)
-
         if (email != null && token != null) {
             val credential = GoogleAccountCredential.usingOAuth2(
                 applicationContext, listOf(SheetsScopes.SPREADSHEETS)
@@ -181,24 +190,16 @@ class SyncService : JobService() {
 
 
     companion object {
-
         private const val TAG = "SyncService"
-
-        fun startSync(context: Context) {
-            val pendingSyncIntent = Intent(context, SyncService::class.java)
-            context.startService(pendingSyncIntent)
+        fun scheduleSync(context: Context) {
+            // Schedule the job using JobScheduler
+            val jobScheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+            val jobInfo = JobInfo.Builder(1, ComponentName(context, SyncService::class.java))
+                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                .setPersisted(true)
+                .build()
+            jobScheduler.schedule(jobInfo)
         }
-    }
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (isConnectedToInternet()) {
-            Log.d(TAG, "Internet is connected, starting data sync")
-            GlobalScope.launch(Dispatchers.IO) {
-                syncPendingData()
-            }
-        } else {
-            Log.d(TAG, "Internet is not connected, skipping data sync")
-        }
-        return Service.START_NOT_STICKY
     }
 }
+

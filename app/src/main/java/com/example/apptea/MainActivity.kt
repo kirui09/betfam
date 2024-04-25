@@ -10,8 +10,10 @@ import android.util.Log
 import android.view.Menu
 import android.view.View
 import android.view.animation.Animation
+import android.view.animation.AnimationUtils
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
@@ -23,6 +25,7 @@ import androidx.navigation.ui.setupWithNavController
 import com.example.apptea.databinding.ActivityMainBinding
 import com.example.apptea.ui.home.HomeFragment
 import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
@@ -52,10 +55,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.net.URL
-import java.util.*
-import android.view.animation.AnimationUtils
-import android.widget.Toast
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
@@ -163,7 +163,7 @@ class MainActivity : AppCompatActivity() {
 
 
         // Trigger synchronization process
-        SyncService.startSync(this)
+        SyncService.scheduleSync(this)
     }
 
     private fun isUserSignedIn(): Boolean {
@@ -425,12 +425,12 @@ class MainActivity : AppCompatActivity() {
                     ).execute()
 
                     // Add header row and set green background in a single BatchUpdate
-                    val headerValues = listOf("Date", "Company","EmployeeName" ,"Kilos")
+                    val headerValues = listOf("ID", "Date", "Company", "EmployeeName", "Kilos")
                     val valueRange = ValueRange() // Create a ValueRange object
                         .setValues(listOf(headerValues)) // Set the values
 
                     val updateValuesRequest = sheetsService.spreadsheets().values()
-                        .update(spreadsheet.spreadsheetId, "A1:D1", valueRange)
+                        .update(spreadsheet.spreadsheetId, "A1:E1", valueRange)
                     updateValuesRequest.setValueInputOption("RAW") // Set the value input option here
                     updateValuesRequest.execute()
 
@@ -438,7 +438,7 @@ class MainActivity : AppCompatActivity() {
                         .setRepeatCell( // Using Request again
                             RepeatCellRequest().setRange(
                                 GridRange().setSheetId(0).setStartRowIndex(0).setEndRowIndex(1)
-                                    .setStartColumnIndex(0).setEndColumnIndex(3)
+                                    .setStartColumnIndex(0).setEndColumnIndex(5)
                             ).setCell(
                                 CellData().setUserEnteredFormat(
                                     CellFormat().setBackgroundColor(

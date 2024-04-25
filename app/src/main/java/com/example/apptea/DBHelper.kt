@@ -355,6 +355,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
         for (record in records) {
             val cv = ContentValues().apply {
+                put("id", record.id) // Include the generated ID in the ContentValues
                 put("date", record.date)
                 put("employee_name", record.employee)
                 put("company", record.company)

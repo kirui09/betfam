@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "tea_records")
 data class TeaRecordEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @PrimaryKey val id: Int = 0,
     val date: String,
     val company: String,        // Ensure that these properties exist
     val employeeName: String,   // in your TeaRecordEntity class
