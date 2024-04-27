@@ -11,6 +11,8 @@ class SharedPreferencesHelper(context: Context) {
 
     private val sharedPreferences: SharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
 
+
+
     fun savePhoneNumber(phoneNumber: String) {
         val editor = sharedPreferences.edit()
         editor.putString(KEY_PHONE_NUMBER, phoneNumber)
@@ -30,6 +32,17 @@ class SharedPreferencesHelper(context: Context) {
         val editor = sharedPreferences.edit()
         editor.putBoolean("CheckBox_$day", isChecked)
         editor.apply()
+    }
+
+    fun getLastPromptTime(): Long {
+        return sharedPreferences.getLong("lastPromptTime", 0)
+    }
+
+    fun saveLastPromptTime(time: Long) {
+        with(sharedPreferences.edit()) {
+            putLong("lastPromptTime", time)
+            apply()
+        }
     }
 
 

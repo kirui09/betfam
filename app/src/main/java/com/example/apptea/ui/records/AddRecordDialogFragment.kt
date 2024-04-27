@@ -1,8 +1,10 @@
 package com.example.apptea.ui.records
 
+import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.ContentValues.TAG
 import android.content.Context
+import android.content.DialogInterface
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
@@ -165,43 +167,69 @@ class AddRecordDialogFragment : DialogFragment() {
         val employee = view?.findViewById<Spinner>(R.id.spinnerEmployeeName)?.selectedItem.toString()
         val kilosString = view?.findViewById<EditText>(R.id.editTextEmployeeKilos)?.text.toString()
 
+        val tempRecordsToSave = mutableListOf<Record>()
+
         if (date.isNotEmpty() && company.isNotEmpty() && employee.isNotEmpty() && kilosString.isNotEmpty()) {
             val kilos = kilosString.toDouble()
             val id = generateUniqueId() // Generate a unique ID
             val record = Record(id, date, company, employee, kilos)
-            tempRecords.add(record)
+            tempRecordsToSave.add(record)
         }
 
-        if (tempRecords.isNotEmpty()) {
-            val success = DBHelper.getInstance().insertTeaRecords(tempRecords)
-            if (success) {
-                showToast("All Records saved successfully")
-                recordSavedListener?.onAllRecordsAdded()
-            } else {
-                showToast("Failed to save all records")
+        if (tempRecordsToSave.isNotEmpty()) {
+            val tempDataStringBuilder = StringBuilder()
+            for (record in tempRecordsToSave) {
+                tempDataStringBuilder.append("${record.employee}, ${record.kilos} kg\n")
             }
-        }
 
-        if (isConnectedToInternet()) {
-            GlobalScope.launch(Dispatchers.IO) {
-                tempRecords.forEach { record ->
-                    sendDataToGoogleSheet(record, requireContext())
+            val alertDialogBuilder = AlertDialog.Builder(requireContext())
+            alertDialogBuilder.setTitle("This Data Will Be Saved")
+            alertDialogBuilder.setMessage("Temporary Data:\n${tempDataStringBuilder.toString()}")
+            alertDialogBuilder.setPositiveButton("Save", DialogInterface.OnClickListener { _, _ ->
+
+                val success = DBHelper.getInstance().insertTeaRecords(tempRecordsToSave)
+                if (success) {
+                    showToast("All Records saved successfully")
+                    recordSavedListener?.onAllRecordsAdded()
+                } else {
+                    showToast("Failed to save all records")
                 }
-            }
+                if (isConnectedToInternet()) {
+
+
+                    GlobalScope.launch(Dispatchers.IO) {
+                        tempRecordsToSave.forEach { record ->
+                            sendDataToGoogleSheet(record, requireContext())
+                        }
+
+                        // Save the records to the local database after successfully sending to Google Sheets
+
+                    }
+                } else {
+                    GlobalScope.launch(Dispatchers.IO) {
+                        tempRecordsToSave.forEach { record ->
+                            val pendingData = PendingSyncData(
+                                id = record.id,
+                                date = record.date,
+                                company = record.company,
+                                employeeName = record.employee,
+                                kilos = record.kilos.toInt()
+                            )
+                            pendingSyncDataDao.insert(pendingData)
+                        }
+                        tempRecordsToSave.clear()
+                    }
+                }
+                dismiss()
+            })
+            alertDialogBuilder.setNegativeButton("Cancel", DialogInterface.OnClickListener { dialog, _ ->
+                dialog.dismiss()
+            })
+
+            val alertDialog = alertDialogBuilder.create()
+            alertDialog.show()
         } else {
-            GlobalScope.launch(Dispatchers.IO) {
-                tempRecords.forEach { record ->
-                    val pendingData = PendingSyncData(
-                        id = record.id,
-                        date = record.date,
-                        company = record.company,
-                        employeeName = record.employee,
-                        kilos = record.kilos.toInt()
-                    )
-                    pendingSyncDataDao.insert(pendingData) // Save data with generated ID when no internet
-                }
-                tempRecords.clear()
-            }
+            dismiss()
         }
     }
 
@@ -352,7 +380,8 @@ class AddRecordDialogFragment : DialogFragment() {
         val connectivityManager = context?.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             val networkCapabilities = connectivityManager?.getNetworkCapabilities(connectivityManager.activeNetwork)
-            val isConnected = networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+            val isConnected = networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true &&
+                    networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
             Log.d("InternetConnection", "Connected: $isConnected")
             return isConnected
         } else {

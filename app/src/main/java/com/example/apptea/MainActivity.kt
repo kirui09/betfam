@@ -1,11 +1,17 @@
 package com.example.apptea
 
 import android.app.Activity
+import android.app.AlertDialog
+import android.app.NotificationManager
 import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.AsyncTask
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.view.Menu
 import android.view.View
@@ -57,7 +63,10 @@ import org.json.JSONObject
 import java.net.URL
 import java.util.Locale
 
+
 class MainActivity : AppCompatActivity() {
+
+    private val NOTIFICATION_PERMISSION_REQUEST_CODE = 123
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
@@ -68,6 +77,8 @@ class MainActivity : AppCompatActivity() {
     private var isUserSignedIn: Boolean = false
 
     private lateinit var googleCloudSignUp: ImageButton
+
+
 
     val CITY: String = "Litein, KE"
     val API: String = "1a105b90f41489e05ece19d6f6c326b9" // Use API key
@@ -100,6 +111,12 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Check if notification permission is granted
+        if (!isNotificationPermissionGranted()) {
+            showNotificationPermissionDialog()
+        }
+
 
         DBHelper.init(this)
 
@@ -164,6 +181,9 @@ class MainActivity : AppCompatActivity() {
 
         // Trigger synchronization process
         SyncService.scheduleSync(this)
+
+
+
     }
 
     private fun isUserSignedIn(): Boolean {
@@ -463,6 +483,63 @@ class MainActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to create sheet for user", e)
             }
+        }
+    }
+
+
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        if (requestCode == NOTIFICATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Notification permission granted, proceed with your app logic
+            } else {
+                // Notification permission denied, handle accordingly
+                // You can show a dialog or a message to the user explaining the importance of notification permission
+            }
+        }
+    }
+
+
+    private fun showNotificationPermissionDialog() {
+        val alertDialog = AlertDialog.Builder(this)
+            .setTitle("Notification Permission Request")
+            .setMessage("Please grant the notification permission to receive important updates")
+            .setPositiveButton("Grant") { dialog, which ->
+                // Request the notification permission
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    val intent = Intent().apply {
+                        action = Settings.ACTION_APPLICATION_DETAILS_SETTINGS
+                        data = Uri.fromParts("package", packageName, null)
+                    }
+                    startActivityForResult(intent, NOTIFICATION_PERMISSION_REQUEST_CODE)
+                } else {
+                    // Handle older versions where direct permission request is needed
+                    // Request for notification permission directly
+                }
+            }
+            .setNegativeButton("Cancel") { dialog, which ->
+                // Handle the case where the user denies the notification permission
+                Toast.makeText(this, "Notification permission denied", Toast.LENGTH_SHORT).show()
+            }
+            .create()
+
+        alertDialog.show()
+    }
+
+
+    private fun isNotificationPermissionGranted(): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            return notificationManager?.areNotificationsEnabled() == true
+        } else {
+            // Handle notification permission for older versions if needed
+            return true
         }
     }
 

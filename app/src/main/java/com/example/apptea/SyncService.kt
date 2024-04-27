@@ -40,7 +40,7 @@ class SyncService : JobService() {
     }
 
     override fun onStartJob(params: JobParameters?): Boolean {
-        if (isConnectedToInternet()) {
+        if (isConnectedToInternet(applicationContext)) {
             Log.d(TAG, "Internet is connected, starting data sync")
             GlobalScope.launch(Dispatchers.IO) {
                 syncPendingData(params)
@@ -173,15 +173,16 @@ class SyncService : JobService() {
             .build()
     }
 
-    private fun isConnectedToInternet(): Boolean {
-        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    fun isConnectedToInternet(context: Context): Boolean {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val networkCapabilities = connectivityManager.getNetworkCapabilities(connectivityManager.activeNetwork)
-            val isConnected = networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+            val networkCapabilities = connectivityManager?.getNetworkCapabilities(connectivityManager.activeNetwork)
+            val isConnected = networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true &&
+                    networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
             Log.d("InternetConnection", "Connected: $isConnected")
             return isConnected
         } else {
-            val networkInfo = connectivityManager.activeNetworkInfo
+            val networkInfo = connectivityManager?.activeNetworkInfo
             val isConnected = networkInfo != null && networkInfo.isConnected
             Log.d("InternetConnection", "Connected: $isConnected")
             return isConnected
