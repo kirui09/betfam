@@ -2,6 +2,7 @@ package com.example.apptea
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.ContentValues.TAG
 import android.content.Context
@@ -22,6 +23,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.NotificationCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -542,6 +544,8 @@ class MainActivity : AppCompatActivity() {
             return true
         }
     }
+
+
 
     data class WeatherInfo(
         val temperature: String,

@@ -168,6 +168,7 @@ class AddRecordDialogFragment : DialogFragment() {
         val kilosString = view?.findViewById<EditText>(R.id.editTextEmployeeKilos)?.text.toString()
 
         val tempRecordsToSave = mutableListOf<Record>()
+        tempRecordsToSave.addAll(tempRecords)
 
         if (date.isNotEmpty() && company.isNotEmpty() && employee.isNotEmpty() && kilosString.isNotEmpty()) {
             val kilos = kilosString.toDouble()
@@ -179,31 +180,27 @@ class AddRecordDialogFragment : DialogFragment() {
         if (tempRecordsToSave.isNotEmpty()) {
             val tempDataStringBuilder = StringBuilder()
             for (record in tempRecordsToSave) {
-                tempDataStringBuilder.append("${record.employee}, ${record.kilos} kg\n")
+                tempDataStringBuilder.append("${record.company},${record.employee} ${record.kilos} kg\n")
             }
 
             val alertDialogBuilder = AlertDialog.Builder(requireContext())
             alertDialogBuilder.setTitle("This Data Will Be Saved")
-            alertDialogBuilder.setMessage("Temporary Data:\n${tempDataStringBuilder.toString()}")
+            alertDialogBuilder.setMessage("Please Confirm:\n${tempDataStringBuilder.toString()}")
             alertDialogBuilder.setPositiveButton("Save", DialogInterface.OnClickListener { _, _ ->
-
-                val success = DBHelper.getInstance().insertTeaRecords(tempRecordsToSave)
+                val success = DBHelper.getInstance().insertTeaRecords(tempRecordsToSave.toList())
                 if (success) {
                     showToast("All Records saved successfully")
                     recordSavedListener?.onAllRecordsAdded()
                 } else {
                     showToast("Failed to save all records")
                 }
+
                 if (isConnectedToInternet()) {
-
-
                     GlobalScope.launch(Dispatchers.IO) {
                         tempRecordsToSave.forEach { record ->
                             sendDataToGoogleSheet(record, requireContext())
                         }
-
                         // Save the records to the local database after successfully sending to Google Sheets
-
                     }
                 } else {
                     GlobalScope.launch(Dispatchers.IO) {

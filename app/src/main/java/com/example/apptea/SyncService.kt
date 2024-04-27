@@ -1,5 +1,7 @@
 package com.example.apptea
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.app.job.JobInfo
 import android.app.job.JobParameters
 import android.app.job.JobScheduler
@@ -12,6 +14,7 @@ import android.net.NetworkCapabilities
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
+import androidx.core.app.NotificationCompat
 import com.example.apptea.ui.records.Record
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.http.javanet.NetHttpTransport
@@ -72,15 +75,37 @@ class SyncService : JobService() {
                     kilos = data.kilos.toDouble()
                 )
 
-                sendDataToGoogleSheet(record, applicationContext) // Use applicationContext here
+                sendDataToGoogleSheet(record, applicationContext)
                 pendingSyncDataDao.delete(data)
             }
             Log.d(TAG, "Pending data sync completed successfully")
             jobFinished(params, false)
+            showSyncSuccessNotification() // Call the notification function here
         } else {
             Log.d(TAG, "No pending data to sync")
             jobFinished(params, false)
         }
+    }
+
+    private fun showSyncSuccessNotification() {
+        Log.d(ContentValues.TAG, "Creating sync success notification")
+
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val channelId = "sync_channel"
+        val channelName = "Sync Channel"
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT)
+            notificationManager.createNotificationChannel(channel)
+        }
+
+        val builder = NotificationCompat.Builder(this, channelId)
+            .setSmallIcon(R.drawable.baseline_notifications_24)
+            .setContentTitle("Tea Records Synced Successful")
+            .setContentText("All unsynchronized data has been sent to the Google Sheet.")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+
+        notificationManager.notify(0, builder.build())
     }
 
     private fun sendDataToGoogleSheet(record: Record, context: Context) {
