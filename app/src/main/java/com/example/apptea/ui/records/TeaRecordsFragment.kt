@@ -2,14 +2,11 @@ package com.example.apptea.ui.records
 
 import android.app.AlertDialog
 import android.app.DatePickerDialog
-import android.content.Context
-import android.net.ConnectivityManager
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -58,8 +55,10 @@ class TeaRecordsFragment : Fragment(), EditButtonClickListener, AddButtonClickLi
         val totalTextView = binding.totalsTextView
 
 
+
+
         dbHelper = DBHelper(requireContext())
-        recordsViewModel = ViewModelProvider(this).get(RecordsViewModel::class.java)
+        recordsViewModel = ViewModelProvider(this, RecordsViewModelFactory(requireContext())).get(RecordsViewModel::class.java)
         employeeAdapter = EmployeeAdapter(emptyList())
         fetchPaymentTypes() // Fetch supervisor and basic pay from the database
         setupRecyclerView()
@@ -261,7 +260,10 @@ class TeaRecordsFragment : Fragment(), EditButtonClickListener, AddButtonClickLi
     }
 
 
-
+    override fun onResume() {
+        super.onResume()
+        recordsViewModel.syncWithGoogleSheet()
+    }
 
 
 

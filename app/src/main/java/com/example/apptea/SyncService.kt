@@ -110,7 +110,6 @@ class SyncService : JobService() {
 
     private fun sendDataToGoogleSheet(record: Record, context: Context) {
         GlobalScope.launch(Dispatchers.Main) {
-
         }
 
         GlobalScope.launch(Dispatchers.IO) {

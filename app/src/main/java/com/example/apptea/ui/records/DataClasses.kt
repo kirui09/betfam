@@ -57,14 +57,14 @@ data class EditableTeaRecord(
 
 @Entity
 data class DailyTeaRecord(
-    @PrimaryKey val id: Long,
+    @PrimaryKey val id: Int,
     val date: String,
     val companies: String,
     val employees: String,
     val kilos: Double
 ): Parcelable {
     constructor(parcel: Parcel) : this(
-        parcel.readLong(),
+        parcel.readInt(),
         parcel.readString() ?: "",
         parcel.readString() ?: "",
         parcel.readString() ?: "",

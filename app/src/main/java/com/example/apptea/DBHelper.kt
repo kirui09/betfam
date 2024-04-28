@@ -349,6 +349,33 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
     }
 
 
+    fun insertOrUpdateTeaRecords(records: List<Record>) {
+        val existingRecords = getAllTeaRecords()
+        val db = this.writableDatabase
+        records.forEach { newRecord ->
+            val values = ContentValues().apply {
+                put("date", newRecord.date)
+                put("employee_name", newRecord.employee)
+                put("company", newRecord.company)
+                put("kilos", newRecord.kilos)
+                put("pay", newRecord.kilos * 8.0) // Calculate pay based on kilos
+            }
+            val existingRecord = existingRecords.find { it.id.toInt() == newRecord.id }
+            if (existingRecord == null) {
+                // Insert a new record if it does not exist
+                val result = db.insert("TeaRecords", null, values)
+                Log.d("InsertionResult", "Inserted new record: $result")
+            } else {
+                // Update the existing record if it already exists
+                val whereClause = "id = ?"
+                val whereArgs = arrayOf(existingRecord.id.toString())
+                val result = db.update("TeaRecords", values, whereClause, whereArgs)
+                Log.d("UpdateResult", "Updated record: $result")
+            }
+        }
+    }
+
+
     fun insertTeaRecords(records: List<Record>): Boolean {
         val db = this.writableDatabase
         val successList = mutableListOf<Boolean>()
@@ -553,7 +580,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
             val cursor = db.rawQuery(query, null)
 
             while (cursor.moveToNext()) {
-                val id = cursor.getLong(cursor.getColumnIndex("id"))
+                val id = cursor.getInt(cursor.getColumnIndex("id"))
                 val date = cursor.getString(cursor.getColumnIndex("date"))
                 val companies = cursor.getString(cursor.getColumnIndex("company"))
                 val employees = cursor.getString(cursor.getColumnIndex("employee_name"))
@@ -652,7 +679,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
         return rowsUpdated > 0
     }
-    fun deleteRecord(id: Long): Boolean {
+    fun deleteRecord(id: Int): Boolean {
         val db = this.writableDatabase
         val result = db.delete("TeaRecords", "id=?", arrayOf(id.toString()))
         db.close()
