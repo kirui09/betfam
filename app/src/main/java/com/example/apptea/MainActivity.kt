@@ -2,7 +2,6 @@ package com.example.apptea
 
 import android.app.Activity
 import android.app.AlertDialog
-import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.ContentValues.TAG
 import android.content.Context
@@ -23,7 +22,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.NotificationCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
@@ -447,12 +445,12 @@ class MainActivity : AppCompatActivity() {
                     ).execute()
 
                     // Add header row and set green background in a single BatchUpdate
-                    val headerValues = listOf("ID", "Date", "Company", "EmployeeName", "Kilos")
+                    val headerValues = listOf("ID", "Date", "Company", "EmployeeName", "Kilos" ,"Pay")
                     val valueRange = ValueRange() // Create a ValueRange object
                         .setValues(listOf(headerValues)) // Set the values
 
                     val updateValuesRequest = sheetsService.spreadsheets().values()
-                        .update(spreadsheet.spreadsheetId, "A1:E1", valueRange)
+                        .update(spreadsheet.spreadsheetId, "A1:F1", valueRange)
                     updateValuesRequest.setValueInputOption("RAW") // Set the value input option here
                     updateValuesRequest.execute()
 
@@ -460,7 +458,7 @@ class MainActivity : AppCompatActivity() {
                         .setRepeatCell( // Using Request again
                             RepeatCellRequest().setRange(
                                 GridRange().setSheetId(0).setStartRowIndex(0).setEndRowIndex(1)
-                                    .setStartColumnIndex(0).setEndColumnIndex(5)
+                                    .setStartColumnIndex(0).setEndColumnIndex(6)
                             ).setCell(
                                 CellData().setUserEnteredFormat(
                                     CellFormat().setBackgroundColor(

@@ -16,6 +16,7 @@ import com.example.apptea.ui.records.MonthlyPayment
 import com.example.apptea.ui.records.Payment
 import com.example.apptea.ui.records.Record
 import com.example.apptea.ui.records.SyncedRecord
+import com.example.apptea.ui.records.TeaPaymentRecord
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -349,16 +350,17 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
     }
 
 
-    fun insertOrUpdateTeaRecords(records: List<Record>) {
+    fun insertOrUpdateTeaRecords(records: List<TeaPaymentRecord>) {
         val existingRecords = getAllTeaRecords()
         val db = this.writableDatabase
         records.forEach { newRecord ->
             val values = ContentValues().apply {
+                put("id", newRecord.id)
                 put("date", newRecord.date)
-                put("employee_name", newRecord.employee)
                 put("company", newRecord.company)
+                put("employee_name", newRecord.employees)
                 put("kilos", newRecord.kilos)
-                put("pay", newRecord.kilos * 8.0) // Calculate pay based on kilos
+                put("pay", newRecord.payment)
             }
             val existingRecord = existingRecords.find { it.id.toInt() == newRecord.id }
             if (existingRecord == null) {
@@ -575,7 +577,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
         try {
             val query =
-                "SELECT id, date,company, employee_name, kilos  FROM TeaRecords  ORDER BY date desc"
+                "SELECT id, date,company, employee_name, kilos, pay  FROM TeaRecords  ORDER BY date desc"
 
             val cursor = db.rawQuery(query, null)
 
@@ -596,6 +598,40 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
             cursor.close()
             teaRecordsLiveData.postValue(teaRecordsList)
+        } catch (e: Exception) {
+            Log.e("DB_ERROR", "Error while retrieving tea records: ${e.message}")
+        } finally {
+            db.close()
+        }
+
+        return teaRecordsList
+    }
+
+
+    fun getPaymentRecords(): List<TeaPaymentRecord> {
+        val teaRecordsList = mutableListOf<TeaPaymentRecord>()
+        val db = this.readableDatabase
+
+        try {
+            val query = "SELECT id, date, company, employee_name, kilos, pay FROM TeaRecords ORDER BY date DESC"
+            val cursor = db.rawQuery(query, null)
+
+            while (cursor.moveToNext()) {
+                val id = cursor.getInt(cursor.getColumnIndex("id"))
+                val date = cursor.getString(cursor.getColumnIndex("date"))
+                val company = cursor.getString(cursor.getColumnIndex("company"))
+                val employees = cursor.getString(cursor.getColumnIndex("employee_name"))
+                val kilos = cursor.getDouble(cursor.getColumnIndex("kilos"))
+                val payment = cursor.getDouble(cursor.getColumnIndex("pay"))
+
+                // Log the selected data
+                Log.d("DB_SELECTION", "Date: $date, Employee: $employees, Company: $company, Kilos: $kilos, Payment: $payment")
+
+                val record = TeaPaymentRecord(id, date, company, employees, kilos, payment)
+                teaRecordsList.add(record)
+            }
+
+            cursor.close()
         } catch (e: Exception) {
             Log.e("DB_ERROR", "Error while retrieving tea records: ${e.message}")
         } finally {

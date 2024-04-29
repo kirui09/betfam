@@ -262,7 +262,7 @@ class TeaRecordsFragment : Fragment(), EditButtonClickListener, AddButtonClickLi
 
     override fun onResume() {
         super.onResume()
-        recordsViewModel.syncWithGoogleSheet()
+        recordsViewModel.syncAndCompareDataWithGoogleSheet()
     }
 
 

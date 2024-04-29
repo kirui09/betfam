@@ -1,17 +1,15 @@
 // TeaRecordsAdapter.kt
 package com.example.apptea.ui.records
 
-import android.content.Context
 import android.graphics.Color
 import android.graphics.Typeface
-import android.net.ConnectivityManager
 import android.view.Gravity
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TableLayout
 import android.widget.TableRow
-import android.view.View
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.apptea.DBHelper
@@ -84,6 +82,18 @@ class TeaRecordsAdapter(
             binding.totalKilofForDay.text = "Total Kilos: $totalKilos"
             binding.seeMoreButton.visibility =
                 if (expandedPosition == absoluteAdapterPosition) View.GONE else View.VISIBLE
+
+            // Set the click listener for the entire item view
+            binding.root.setOnClickListener {
+                // Update the expandedPosition when the CollapsedViewHolder is clicked
+                expandedPosition = if (expandedPosition == absoluteAdapterPosition) {
+                    RecyclerView.NO_POSITION
+                } else {
+                    absoluteAdapterPosition
+                }
+                notifyDataSetChanged()
+            }
+
             binding.seeMoreButton.setOnClickListener {
                 expandedPosition = absoluteAdapterPosition
                 updateRecords(recordsByDay)

@@ -200,7 +200,6 @@ class AddRecordDialogFragment : DialogFragment() {
                         tempRecordsToSave.forEach { record ->
                             sendDataToGoogleSheet(record, requireContext())
                         }
-                        // Save the records to the local database after successfully sending to Google Sheets
                     }
                 } else {
                     GlobalScope.launch(Dispatchers.IO) {

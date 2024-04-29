@@ -21,11 +21,9 @@ import com.example.apptea.DBHelper
 import com.example.apptea.R
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
-import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.LinkedHashMap
-
-
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 
 class MonthlyPaymentAdapter(
@@ -80,6 +78,9 @@ class MonthlyPaymentAdapter(
 
             val totalPayment = payments?.sumByDouble { it.paymentAmount } ?: 0.0
             totalPaymentTextView.text = NumberFormat.getCurrencyInstance(Locale("sw", "KE")).format(totalPayment)
+
+
+
 
 
             showdetailsButton.setOnClickListener {

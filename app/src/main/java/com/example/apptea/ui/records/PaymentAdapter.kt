@@ -22,6 +22,7 @@ import android.widget.TableRow
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import androidx.recyclerview.widget.RecyclerView
 import com.example.apptea.DBHelper
@@ -113,15 +114,21 @@ class PaymentAdapter(
             // Define colors for different states
             val colorStateList = ColorStateList(
                 arrayOf(intArrayOf(android.R.attr.state_enabled), intArrayOf(-android.R.attr.state_enabled)),
-                intArrayOf(Color.WHITE, Color.RED) // Default color is white, color when blinking is red
+                intArrayOf(Color.GREEN, Color.RED) // Default color is green, color when blinking is red
             )
 
+// Define the custom drawable for the border
+            val borderDrawable = ContextCompat.getDrawable(holder.itemView.context, R.drawable.border_textview)
 
-            // Set the text and make it bold
+// Set the text and make it bold
+
             headerPayAllTextView.text = "Pay Now"
             headerPayAllTextView.setTypeface(null, Typeface.BOLD)
-            // Apply the color state list to the text view
+// Apply the color state list to the text view
             headerPayAllTextView.setTextColor(colorStateList)
+
+// Set the custom drawable as the background for the TextView to create a border
+            headerPayAllTextView.background = borderDrawable
 
 
 // Define the blinking animation

@@ -158,6 +158,44 @@ data class Employee(
 }
 
 
+data class TeaPaymentRecord(
+    val id: Int,
+    val date: String,
+    val company: String,
+    val employees: String,
+    val kilos: Double,
+    val payment: Double
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as TeaPaymentRecord
+
+        if (id != other.id) return false
+        if (date != other.date) return false
+        if (company != other.company) return false
+        if (employees != other.employees) return false
+        if (kilos != other.kilos) return false
+        if (payment != other.payment) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = id
+        result = 31 * result + date.hashCode()
+        result = 31 * result + company.hashCode()
+        result = 31 * result + employees.hashCode()
+        result = 31 * result + kilos.hashCode()
+        result = 31 * result + payment.hashCode()
+        return result
+    }
+}
+
+
+
+
 
 
 
