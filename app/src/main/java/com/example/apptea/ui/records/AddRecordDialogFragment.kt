@@ -16,6 +16,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.DatePicker
@@ -29,6 +30,8 @@ import com.example.apptea.DBHelper
 import com.example.apptea.PendingSyncData
 import com.example.apptea.PendingSyncDataDao
 import com.example.apptea.R
+import com.example.apptea.ui.companies.AddCompanyDialogFragment
+import com.example.apptea.ui.employees.AddEmployeeDialogFragment
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.JsonFactory
@@ -49,22 +52,18 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 
-class AddRecordDialogFragment : DialogFragment() {
+class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCompanyDialogListener, AddEmployeeDialogFragment.OnEmployeeSavedListener {
 
     private lateinit var dbh: DBHelper
     private var tempRecords: MutableList<Record> = mutableListOf()
     var recordSavedListener: AddRecordDialogFragmentListener? = null
     private lateinit var pendingSyncDataDao: PendingSyncDataDao
-
     private var addRecordsProgressLayout: RelativeLayout? = null
-
-    private var lastGeneratedId = 0 // Declare and initialize lastGeneratedId at the class level
-
+    private var lastGeneratedId = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        pendingSyncDataDao = App.database.pendingSyncDataDao() // Initialize pendingSyncDataDao
-
+        pendingSyncDataDao = App.database.pendingSyncDataDao()
     }
 
     override fun onCreateView(
@@ -74,8 +73,7 @@ class AddRecordDialogFragment : DialogFragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_add_record_dialog, container, false)
 
-
-        val addRecordsProgressLayout = view.findViewById<RelativeLayout>(R.id.addRecordsProgress)
+        addRecordsProgressLayout = view.findViewById(R.id.addRecordsProgress)
         dbh = DBHelper(requireContext())
 
         val editTextDate = view.findViewById<EditText>(R.id.recordEntryTime)
@@ -107,22 +105,75 @@ class AddRecordDialogFragment : DialogFragment() {
             saveAllRecords()
         }
 
-        val dbHelper = DBHelper(requireContext())
-        val employeeNames = dbHelper.getAllEmployeeNames()
-        val employeeNamesWithSelectOption = listOf("Select Employee") + employeeNames
+        val employeeNames = dbh.getAllEmployeeNames()
+        val employeeNamesWithSelectOption = listOf("Select Employee") + employeeNames + "Add Employee"
         val employeeAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, employeeNamesWithSelectOption)
         employeeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerEmployeeName.adapter = employeeAdapter
         spinnerEmployeeName.setSelection(0, false)
 
+        spinnerEmployeeName.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val selectedItem = parent?.getItemAtPosition(position).toString()
+                if (selectedItem == "Add Employee") {
+                    showAddEmployeeDialog()
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
         val companyNames = dbh.getAllCompanyNames()
-        val companyNamesWithSelectOption = listOf("Select Company") + companyNames
+        val companyNamesWithSelectOption = listOf("Select Company") + companyNames + "Add Company"
         val companyAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, companyNamesWithSelectOption)
         companyAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerCompanyName.adapter = companyAdapter
         spinnerCompanyName.setSelection(0, false)
 
+        spinnerCompanyName.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val selectedItem = parent?.getItemAtPosition(position).toString()
+                if (selectedItem == "Add Company") {
+                    showAddCompanyDialog()
+                }
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
         return view
+    }
+
+    private fun showAddCompanyDialog() {
+        val dialogFragment = AddCompanyDialogFragment()
+        dialogFragment.setAddCompanyDialogListener(this)
+        dialogFragment.show(parentFragmentManager, "AddCompanyDialog")
+    }
+
+    private fun showAddEmployeeDialog() {
+        val dialogFragment = AddEmployeeDialogFragment()
+        dialogFragment.employeeSavedListener = this
+        dialogFragment.show(parentFragmentManager, "AddEmployeeDialog")
+    }
+
+    override fun onSaveCompanyClicked(name: String, location: String) {
+        val companySpinner = view?.findViewById<Spinner>(R.id.spinnerCompanyName)
+        val companyNames = dbh.getAllCompanyNames()
+        val companyNamesWithSelectOption = listOf("Select Company") + companyNames + "Add Company"
+        val companyAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, companyNamesWithSelectOption)
+        companyAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        companySpinner?.adapter = companyAdapter
+        companySpinner?.setSelection(companyNames.size + 1)
+    }
+
+    override fun onEmployeeSaved() {
+        val spinnerEmployeeName = view?.findViewById<Spinner>(R.id.spinnerEmployeeName)
+        val employeeNames = dbh.getAllEmployeeNames()
+        val employeeNamesWithSelectOption = listOf("Select Employee") + employeeNames + "Add Employee"
+        val employeeAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, employeeNamesWithSelectOption)
+        employeeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerEmployeeName?.adapter = employeeAdapter
+        spinnerEmployeeName?.setSelection(employeeNames.size + 1)
     }
 
 
@@ -320,6 +371,7 @@ class AddRecordDialogFragment : DialogFragment() {
             }
         }
     }
+
 
 
     private suspend fun getSpreadsheetIdFromDrive(credential: GoogleAccountCredential): String? = suspendCoroutine { cont ->

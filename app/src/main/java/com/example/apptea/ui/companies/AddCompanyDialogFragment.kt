@@ -8,8 +8,8 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
-import com.example.apptea.R
 import com.example.apptea.DBHelper
+import com.example.apptea.R
 
 class AddCompanyDialogFragment : DialogFragment() {
 
@@ -79,4 +79,6 @@ class AddCompanyDialogFragment : DialogFragment() {
         // Display a toast message
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
+
+
 }

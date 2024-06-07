@@ -12,7 +12,6 @@ import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import com.example.apptea.DBHelper
 import com.example.apptea.R
-import com.example.apptea.ui.employees.Employee
 
 class AddEmployeeDialogFragment : DialogFragment() {
 
@@ -20,8 +19,7 @@ class AddEmployeeDialogFragment : DialogFragment() {
     var employeeSavedListener: OnEmployeeSavedListener? = null
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
+        inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_add_employee_form_dialog, container, false)
@@ -35,47 +33,31 @@ class AddEmployeeDialogFragment : DialogFragment() {
         val buttonSaveEmployee = view.findViewById<Button>(R.id.buttonSaveEmployee)
         val spinnerEmpType = view.findViewById<Spinner>(R.id.spinnerEmpType)
 
-        // Define the options for the spinner including "Select Employee" as the default option
         val empTypes = arrayOf("Select Employee Type", "Basic", "Supervisor")
-
-        // Create an adapter for the spinner
         val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, empTypes)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-
-        // Set the adapter to the spinner
         spinnerEmpType.adapter = adapter
 
         buttonSaveEmployee.setOnClickListener {
-            // Handle the "Save" button click
-
             val name = editTextEmployeeName.text.toString().trim()
             val age = editTextEmployeeAge.text.toString().trim()
             val phoneNumber = editTextEmployeePhoneNumber.text.toString().trim()
             val id = editTextEmployeeID.text.toString().trim()
             val empType = spinnerEmpType.selectedItem.toString()
 
-            // Check if the user has selected an employee type
             if (empType == "Select Employee Type") {
                 showToast("Please select an employee type")
                 return@setOnClickListener
             }
 
-            // Check for empty values
             if (name.isEmpty()) {
                 showToast("Add Employee Name")
                 return@setOnClickListener
             }
 
-            // Create an Employee object
             val employee = Employee(id = null, empType = empType, name = name, age = age, phoneNumber = phoneNumber, employeeId = id)
-
-            // Save employee to the database
             saveEmployeeToDatabase(employee)
-
-            // Notify the listener about the saved employee
             employeeSavedListener?.onEmployeeSaved()
-
-            // Close the dialog
             dismiss()
         }
 
@@ -83,9 +65,7 @@ class AddEmployeeDialogFragment : DialogFragment() {
     }
 
     private fun saveEmployeeToDatabase(employee: Employee) {
-        // Insert the employee into the database
         val success = DBHelper.getInstance().insertEmployee(employee)
-
         if (success) {
             showToast("Employee saved successfully")
         } else {
@@ -94,7 +74,6 @@ class AddEmployeeDialogFragment : DialogFragment() {
     }
 
     private fun showToast(message: String) {
-        // Display a toast message
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 
