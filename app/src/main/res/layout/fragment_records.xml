@@ -1,5 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -9,9 +9,8 @@
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabLayout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
-        
-        
+        android:layout_height="wrap_content">
+
         <com.google.android.material.tabs.TabItem
             android:text="Tea Records"
             android:layout_width="wrap_content"
@@ -20,20 +19,21 @@
         <com.google.android.material.tabs.TabItem
             android:text="PAYMENTS"
             android:layout_width="wrap_content"
-            android:layout_height="20dp"
-            />
+            android:layout_height="20dp" />
+
         <com.google.android.material.tabs.TabItem
             android:text="Monthly/Yearly"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
-        
+
     </com.google.android.material.tabs.TabLayout>
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/tabLayout"/>
+        android:layout_below="@id/tabLayout"
+        android:layout_marginTop="0dp" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fabAddRecord"
@@ -44,12 +44,17 @@
         android:layout_margin="16dp"
         android:src="@drawable/ic_baseline_add_24"
         app:backgroundTint="#185CE3"
-        android:layout_gravity="bottom|end"
         app:elevation="10dp" />
 
-
-
-
-
-
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabSyncRecord"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/fabAddRecord"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:src="@drawable/baseline_cloud_sync_24"
+        app:backgroundTint="#4CAF50"
+        app:elevation="10dp" />
 </RelativeLayout>

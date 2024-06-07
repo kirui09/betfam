@@ -81,17 +81,17 @@ class RecordsViewModel(private val appContext: Context) : ViewModel() {
                     }
 
                     // Update records in the Google Sheet
-                    val updateValues = recordsToUpdate.map { record ->
+                    val updateValues = recordsToUpdate.mapIndexed { index, record ->
                         listOf(record.id, record.date, record.company, record.employees, record.kilos, record.payment)
                     }
-                    for (updateValue in updateValues) {
-                        val updateRange = "Sheet1!A${updateValue[0]}:F${updateValue[0]}"
+                    for ((index, updateValue) in updateValues.withIndex()) {
+                        val rowIndex = index + 2 // Assuming the first row is the header
+                        val updateRange = "Sheet1!A$rowIndex:F$rowIndex"
                         val updateBody = ValueRange().setValues(listOf(updateValue))
                         sheetsService.spreadsheets().values().update(spreadsheetId, updateRange, updateBody)
                             .setValueInputOption("RAW")
                             .execute()
                     }
-
                     // Insert or update records in the local database
                     dbHelper.insertOrUpdateTeaRecords(sheetRecords)
                 }
@@ -128,9 +128,6 @@ class RecordsViewModel(private val appContext: Context) : ViewModel() {
     }
 
 
-
-
-
     private suspend fun getSpreadsheetIdFromDrive(credential: GoogleAccountCredential): String? = suspendCoroutine { cont ->
         GlobalScope.launch {
             try {
@@ -155,8 +152,6 @@ class RecordsViewModel(private val appContext: Context) : ViewModel() {
             }
         }
     }
-
-
     private suspend fun getGoogleAccountCredential(): GoogleAccountCredential = suspendCoroutine { cont ->
         val sharedPreferences = appContext.getSharedPreferences("user_details", Context.MODE_PRIVATE)
         val email = sharedPreferences.getString("user_id", null)
@@ -178,5 +173,10 @@ class RecordsViewModel(private val appContext: Context) : ViewModel() {
         return Sheets.Builder(transport, jsonFactory, credential)
             .setApplicationName(appContext.getString(R.string.app_name))
             .build()
+    }
+
+
+    companion object {
+        fun create(appContext: Context) = RecordsViewModel(appContext)
     }
 }

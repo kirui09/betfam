@@ -28,8 +28,8 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:src="@drawable/icons8_google_cloud"
-                 />
+                android:src="@drawable/icons8_google_cloud" />
+
 
 
 

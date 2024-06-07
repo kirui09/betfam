@@ -2,19 +2,18 @@ package com.example.apptea.ui.records
 
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.FragmentTransaction
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager2.widget.ViewPager2
 import com.example.apptea.R
-import com.example.apptea.databinding.FragmentRecordsBinding
-import com.example.apptea.databinding.FragmentTeaRecordsBinding
 import com.example.apptea.ui.employees.EmployeeAdapter
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
+
 interface AddRecordButtonClickListener {
     fun onAddButtonClick()
 }
@@ -24,6 +23,9 @@ class RecordsFragment : Fragment(), AddRecordButtonClickListener {
     private lateinit var tabLayout: TabLayout
     private lateinit var employeeAdapter: EmployeeAdapter
     private lateinit var fabAddButton: FloatingActionButton
+    private lateinit var fabSyncButton: FloatingActionButton
+
+    private lateinit var viewModel: RecordsViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -34,10 +36,25 @@ class RecordsFragment : Fragment(), AddRecordButtonClickListener {
         viewPager = root.findViewById(R.id.viewPager)
         tabLayout = root.findViewById(R.id.tabLayout)
 
+        fabSyncButton = root.findViewById(R.id.fabSyncRecord)  // Initialize fabSyncButton
+
         val pagerAdapter = RecordsPagerAdapter(requireActivity())
         viewPager.adapter = pagerAdapter
 
         employeeAdapter = EmployeeAdapter(emptyList())  // Initialize employeeAdapter
+
+
+        val context = requireContext()
+        val factory = RecordsViewModelFactory(context)
+        viewModel = ViewModelProvider(this, factory).get(RecordsViewModel::class.java)
+
+
+
+
+        fabSyncButton.setOnClickListener {
+            syncDataWithGoogleSheet()
+        }
+
 
         // Set click listener for add button
         val fabAddRecord: FloatingActionButton = root.findViewById(R.id.fabAddRecord)
@@ -62,4 +79,9 @@ class RecordsFragment : Fragment(), AddRecordButtonClickListener {
         val addDialogFragment = AddRecordDialogFragment()
         addDialogFragment.show(childFragmentManager, "AddRecordDialogFragment")
     }
+
+    private fun syncDataWithGoogleSheet() {
+        viewModel.syncAndCompareDataWithGoogleSheet()
+    }
+
 }

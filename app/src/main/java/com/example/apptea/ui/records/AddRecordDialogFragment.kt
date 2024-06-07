@@ -322,7 +322,6 @@ class AddRecordDialogFragment : DialogFragment() {
     }
 
 
-
     private suspend fun getSpreadsheetIdFromDrive(credential: GoogleAccountCredential): String? = suspendCoroutine { cont ->
         GlobalScope.launch {
             try {

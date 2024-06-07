@@ -175,19 +175,14 @@ class PaymentAdapter(
                 // Add checkbox
                 val paycheckBox = CheckBox(holder.itemView.context)
                 row.addView(paycheckBox)
-
                 paycheckBox.setOnCheckedChangeListener { _, isChecked ->
                     if (isChecked) {
                         // Checkbox is checked, save the payment to the database
-
 //                        dbHelper.savePayment(payment)
-
                     } else {
                         // Checkbox is unchecked, remove the payment from the database
-
                     }
                 }
-
                 headerPayAllTextView.setOnClickListener {
                     val paymentsToSave = arrayListOf<Payment>()
                     tableLayout.children.forEach { view ->
