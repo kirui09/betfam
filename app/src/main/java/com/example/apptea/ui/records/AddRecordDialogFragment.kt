@@ -4,7 +4,6 @@ import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.ContentValues.TAG
 import android.content.Context
-import android.content.DialogInterface
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
@@ -23,6 +22,7 @@ import android.widget.DatePicker
 import android.widget.EditText
 import android.widget.RelativeLayout
 import android.widget.Spinner
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import com.example.apptea.App
@@ -223,21 +223,36 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
 
         if (date.isNotEmpty() && company.isNotEmpty() && employee.isNotEmpty() && kilosString.isNotEmpty()) {
             val kilos = kilosString.toDouble()
-            val id = generateUniqueId() // Generate a unique ID
+            val id = generateUniqueId()
             val record = Record(id, date, company, employee, kilos)
             tempRecordsToSave.add(record)
         }
 
         if (tempRecordsToSave.isNotEmpty()) {
-            val tempDataStringBuilder = StringBuilder()
+            val builder = AlertDialog.Builder(requireContext(), R.style.CustomAlertDialog)
+            val inflater = requireActivity().layoutInflater
+            val dialogView = inflater.inflate(R.layout.dialog_confirm_records, null)
+            builder.setView(dialogView)
+
+            val dialogTitle = dialogView.findViewById<TextView>(R.id.dialogTitle)
+            val dialogMessage = dialogView.findViewById<TextView>(R.id.dialogMessage)
+            val buttonCancel = dialogView.findViewById<Button>(R.id.buttonCancel)
+            val buttonSave = dialogView.findViewById<Button>(R.id.buttonSave)
+
+            dialogTitle.text = "Confirm Records"
+            val messageBuilder = StringBuilder()
             for (record in tempRecordsToSave) {
-                tempDataStringBuilder.append("${record.company},${record.employee} ${record.kilos} kg\n")
+                messageBuilder.append("${record.company} - ${record.employee}: ${record.kilos} kg\n")
+            }
+            dialogMessage.text = messageBuilder.toString()
+
+            val alertDialog = builder.create()
+
+            buttonCancel.setOnClickListener {
+                alertDialog.dismiss()
             }
 
-            val alertDialogBuilder = AlertDialog.Builder(requireContext())
-            alertDialogBuilder.setTitle("This Data Will Be Saved")
-            alertDialogBuilder.setMessage("Please Confirm:\n${tempDataStringBuilder.toString()}")
-            alertDialogBuilder.setPositiveButton("Save", DialogInterface.OnClickListener { _, _ ->
+            buttonSave.setOnClickListener {
                 val success = DBHelper.getInstance().insertTeaRecords(tempRecordsToSave.toList())
                 if (success) {
                     showToast("All Records saved successfully")
@@ -267,13 +282,10 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
                         tempRecordsToSave.clear()
                     }
                 }
+                alertDialog.dismiss()
                 dismiss()
-            })
-            alertDialogBuilder.setNegativeButton("Cancel", DialogInterface.OnClickListener { dialog, _ ->
-                dialog.dismiss()
-            })
+            }
 
-            val alertDialog = alertDialogBuilder.create()
             alertDialog.show()
         } else {
             dismiss()
@@ -334,7 +346,6 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
         GlobalScope.launch(Dispatchers.Main) {
             addRecordsProgressLayout?.visibility = View.VISIBLE
         }
-
         GlobalScope.launch(Dispatchers.IO) {
             try {
                 val credential = getGoogleAccountCredential()
@@ -371,9 +382,6 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
             }
         }
     }
-
-
-
     private suspend fun getSpreadsheetIdFromDrive(credential: GoogleAccountCredential): String? = suspendCoroutine { cont ->
         GlobalScope.launch {
             try {
