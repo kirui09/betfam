@@ -1,6 +1,7 @@
 package com.example.apptea
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.Intent
@@ -153,14 +154,16 @@ class MainActivity : AppCompatActivity() {
         }
 
         googleCloudSignUp.setOnClickListener {
-            if (isUserSignedIn) {
-                Toast.makeText(this, "User is already signed in", Toast.LENGTH_SHORT).show()
+            val sharedPreferences = getSharedPreferences("user_details", Context.MODE_PRIVATE)
+            val userEmail = sharedPreferences.getString("user_id", null)
+            if (userEmail != null) {
+                showUserEmailDialog(userEmail)
             } else {
-                // Perform actions when the ImageButton is clicked
                 signIn()
                 googleCloudSignUp.clearAnimation()
             }
         }
+
 
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestScopes(Scope(SheetsScopes.SPREADSHEETS), Scope(DriveScopes.DRIVE_FILE))
@@ -181,6 +184,9 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+
+
+
     private fun isUserSignedIn(): Boolean {
         val account = GoogleSignIn.getLastSignedInAccount(this)
         return account != null
@@ -189,6 +195,17 @@ class MainActivity : AppCompatActivity() {
 
     private fun stopBlinkingAnimation() {
         googleCloudSignUp.clearAnimation()
+    }
+
+    private fun showUserEmailDialog(email: String) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("User Email")
+        builder.setMessage("Logged in as: $email")
+        builder.setPositiveButton("OK") { dialog, _ ->
+            dialog.dismiss()
+        }
+        val dialog: AlertDialog = builder.create()
+        dialog.show()
     }
 
 

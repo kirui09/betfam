@@ -106,7 +106,6 @@ class RecordsViewModel(private val appContext: Context) : ViewModel() {
         val response = sheetsService.spreadsheets().values().get(spreadsheetId, range).execute()
         val values = response.getValues()
 
-
         val recordsFromSheet = mutableListOf<TeaPaymentRecord>()
         if (values != null) {
             for (rowIndex in values.indices) {
