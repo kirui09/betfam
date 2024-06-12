@@ -1104,7 +1104,16 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
 
 
-
+    fun clearData() {
+        val db = writableDatabase
+        db.execSQL("DELETE FROM FarmersDatabase")
+        db.execSQL("DELETE FROM FarmManagers")
+        db.execSQL("DELETE FROM Employees")
+        db.execSQL("DELETE FROM Companies")
+        db.execSQL("DELETE FROM TeaRecords")
+        db.execSQL("DELETE FROM PaymentTypes")
+        db.close()
+    }
 
 }
 

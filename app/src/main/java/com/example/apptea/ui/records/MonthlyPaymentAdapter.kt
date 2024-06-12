@@ -275,7 +275,6 @@ class MonthlyPaymentAdapter(
             tableRow.addView(nameTextView)
 
 
-
             val totalPaymentAmount = payments.sumByDouble { it.paymentAmount }
             val paymentAmountTextView = TextView(context)
             paymentAmountTextView.text = "TOT: Ksh ${NumberFormat.getInstance().format(totalPaymentAmount)}"
@@ -286,12 +285,11 @@ class MonthlyPaymentAdapter(
 
 
 
-
-
             val imageButton = ImageButton(context)
             imageButton.setImageResource(R.drawable.baseline_keyboard_arrow_down_24)
             imageButton.setBackgroundColor(Color.TRANSPARENT)
             tableRow.addView(imageButton)
+
 
             val detailsTable = TableLayout(context)
             detailsTable.layoutParams = TableLayout.LayoutParams(
@@ -371,6 +369,8 @@ class MonthlyPaymentAdapter(
             }
 
 
+
+
             imageButton.setOnClickListener {
                 if (detailsTable.visibility == View.VISIBLE) {
                     imageButton.setImageResource(R.drawable.baseline_keyboard_arrow_down_24)
@@ -380,6 +380,7 @@ class MonthlyPaymentAdapter(
                     detailsTable.visibility = View.VISIBLE
                 }
             }
+
 
             tableLayout.addView(tableRow)
             tableLayout.addView(detailsTable)
@@ -427,7 +428,6 @@ class MonthlyPaymentAdapter(
         }
 
 
-
         return paymentDetailsList
     }
 
@@ -442,8 +442,6 @@ class MonthlyPaymentAdapter(
         groupedData.putAll(newData)
         notifyDataSetChanged()
     }
-
-
 
 
 }

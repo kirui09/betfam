@@ -133,6 +133,8 @@ class MainActivity : AppCompatActivity() {
             ), drawerLayout
         )
 
+
+
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
@@ -204,9 +206,46 @@ class MainActivity : AppCompatActivity() {
         builder.setPositiveButton("OK") { dialog, _ ->
             dialog.dismiss()
         }
+        builder.setNegativeButton("Logout") { dialog, _ ->
+            // Show a confirmation dialog before logging out
+            val logoutConfirmationDialog = AlertDialog.Builder(this)
+                .setTitle("Confirm Logout")
+                .setMessage("Are you sure you want to log out?")
+                .setPositiveButton("Yes") { _, _ ->
+                    // Handle logout logic here
+                    googleSignInClient.signOut().addOnCompleteListener(this) {
+                        // Clear user details from SharedPreferences
+                        val sharedPreferences = getSharedPreferences("user_details", Context.MODE_PRIVATE)
+                        val editor = sharedPreferences.edit()
+                        editor.clear()
+                        editor.apply()
+
+                        // Clear the data from the SQLite database
+                        dbh.clearData()
+
+                        // Set the signed-in status flag to false
+                        isUserSignedIn = false
+
+                        // Show a success message
+                        Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show()
+
+                        // Optionally, redirect the user to the sign-in screen or main screen
+                        val intent = Intent(this, MainActivity::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        startActivity(intent)
+                        finish()
+                    }
+                }
+                .setNegativeButton("No", null)
+                .create()
+
+            logoutConfirmationDialog.show()
+            dialog.dismiss()
+        }
         val dialog: AlertDialog = builder.create()
         dialog.show()
     }
+
 
 
     private fun signIn() {
