@@ -39,7 +39,7 @@ class SyncService : JobService() {
 
     override fun onCreate() {
         super.onCreate()
-        pendingSyncDataDao = App.database.pendingSyncDataDao()
+        pendingSyncDataDao = App.getDatabase(this).pendingSyncDataDao()
     }
 
     override fun onStartJob(params: JobParameters?): Boolean {

@@ -1,6 +1,7 @@
 package com.example.apptea
 
 import android.app.Application
+import android.content.Context
 import androidx.room.Room
 import timber.log.Timber
 
@@ -9,19 +10,17 @@ class App : Application() {
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
-        fun getDatabase(context: Application): AppDatabase {
+        fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
-                val instance = Room.databaseBuilder(context, AppDatabase::class.java, "app-db")
-                    .fallbackToDestructiveMigration() // Handle migrations properly in a real app
-                    .build()
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    AppDatabase::class.java,
+                    "app-db"
+                ).build()
                 INSTANCE = instance
-                // return instance
                 instance
             }
         }
-
-        val database: AppDatabase
-            get() = INSTANCE ?: throw IllegalStateException("Database has not been created. Did you forget to call getDatabase?")
     }
 
     override fun onCreate() {

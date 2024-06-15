@@ -230,8 +230,6 @@ class PaymentAdapter(
         }
 
 
-
-
         if (holder is GeneralPayViewHolder) {
             holder.generalPayDateTextView.text = formatDate(day) // Set the formatted date for the general pay
 
@@ -333,7 +331,6 @@ class PaymentAdapter(
         Log.d("PaymentAdapter", "Calculating pay for $employeeType: $kilos * $payRate")
         return kilos * payRate
     }
-
 
     private fun savePaymentToTeaRecords(payment: Payment) {
         val db = dbHelper.writableDatabase

@@ -17,6 +17,7 @@ import com.example.apptea.ui.records.Payment
 import com.example.apptea.ui.records.Record
 import com.example.apptea.ui.records.SyncedRecord
 import com.example.apptea.ui.records.TeaPaymentRecord
+import com.example.apptea.ui.records.TeaRecord
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -133,6 +134,8 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         }
     }
 
+
+
     private fun insertDefaultPaymentTypes(db: SQLiteDatabase) {
         val defaultPaymentTypes = arrayOf("Basic", "Supervisor")
         val defaultAmount = 0 // Set the default amount here
@@ -145,6 +148,51 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
             db.insert("PaymentTypes", null, values)
         }
     }
+
+
+    // Function to fetch tea records for an employee in a specific month
+    // Function to fetch distinct employees for a specific month and year
+    fun getEmployeesForMonth(month: Int, year: Int): List<String> {
+        val db = readableDatabase
+        val monthString = if (month < 10) "0$month" else month.toString()
+        val yearString = year.toString()
+
+        val query = "SELECT DISTINCT employee_name FROM TeaRecords WHERE strftime('%m', date) = ? AND strftime('%Y', date) = ?"
+        val cursor = db.rawQuery(query, arrayOf(monthString, yearString))
+
+        val employees = mutableListOf<String>()
+        if (cursor.moveToFirst()) {
+            do {
+                val employeeName = cursor.getString(cursor.getColumnIndexOrThrow("employee_name"))
+                employees.add(employeeName)
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return employees
+    }
+
+    // Function to fetch tea records for an employee in a specific month
+    fun getTeaRecordsForEmployeeInMonth(employeeName: String, month: Int, year: Int): List<PendingTeaRecord> {
+        val db = readableDatabase
+        val monthString = if (month < 10) "0$month" else month.toString()
+        val yearString = year.toString()
+
+        val query = "SELECT * FROM TeaRecords WHERE employee_name = ? AND strftime('%m', date) = ? AND strftime('%Y', date) = ?"
+        val cursor = db.rawQuery(query, arrayOf(employeeName, monthString, yearString))
+
+        val teaRecords = mutableListOf<PendingTeaRecord>()
+        if (cursor.moveToFirst()) {
+            do {
+                val id = cursor.getInt(cursor.getColumnIndexOrThrow("id"))
+                val date = cursor.getString(cursor.getColumnIndexOrThrow("date"))
+                val kilos = cursor.getDouble(cursor.getColumnIndexOrThrow("kilos"))
+                teaRecords.add(PendingTeaRecord(id, date, employeeName, "", kilos, 0.0, 0))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return teaRecords
+    }
+
 
 
 
@@ -1103,6 +1151,27 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
     }
 
 
+    fun getEmployeesAndKilosOfTheMonth(month: Int, year: Int): Map<String, Double> {
+        val db = readableDatabase
+        val calendar = Calendar.getInstance()
+        calendar.set(year, month - 1, 1) // month is 0-based
+        val dateStart = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(calendar.time)
+        calendar.set(year, month - 1, calendar.getActualMaximum(Calendar.DAY_OF_MONTH))
+        val dateEnd = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(calendar.time)
+
+        val query = "SELECT DISTINCT employee_name, SUM(kilos) as total_kilos FROM TeaRecords WHERE date BETWEEN '$dateStart' AND '$dateEnd' GROUP BY employee_name"
+        val cursor = db.rawQuery(query, null)
+        val employees = mutableMapOf<String, Double>()
+        with(cursor) {
+            while (moveToNext()) {
+                val employeeName = cursor.getString(cursor.getColumnIndex("employee_name"))
+                val totalKilos = cursor.getDouble(cursor.getColumnIndex("total_kilos"))
+                employees[employeeName] = totalKilos
+            }
+        }
+        cursor.close()
+        return employees
+    }
 
     fun clearData() {
         val db = writableDatabase
@@ -1114,6 +1183,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         db.execSQL("DELETE FROM PaymentTypes")
         db.close()
     }
+
 
 }
 

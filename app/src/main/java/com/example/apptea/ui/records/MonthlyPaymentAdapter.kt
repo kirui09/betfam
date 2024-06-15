@@ -1,24 +1,35 @@
 
 package com.example.apptea.ui.records
 
+import android.app.AlertDialog
 import android.content.Context
 import android.graphics.Color
 import android.graphics.Typeface
+import android.text.InputType
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.Transformation
+import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TableLayout
 import android.widget.TableRow
 import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
+import com.example.apptea.App
 import com.example.apptea.DBHelper
+import com.example.apptea.PendingPaymentData
 import com.example.apptea.R
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -71,6 +82,7 @@ class MonthlyPaymentAdapter(
         private val totalPaymentTextView: TextView =
             itemView.findViewById(R.id.monthlypaymentTextView)
         private val showdetailsButton: ImageButton = itemView.findViewById(R.id.showmoredetails)
+        val makePayment: ImageButton = itemView.findViewById(R.id.makePayment)
 
         fun bind(month: String, payments: ArrayList<MonthlyPayment>?) {
             val formattedMonth = getFormattedMonth(month)
@@ -78,10 +90,6 @@ class MonthlyPaymentAdapter(
 
             val totalPayment = payments?.sumByDouble { it.paymentAmount } ?: 0.0
             totalPaymentTextView.text = NumberFormat.getCurrencyInstance(Locale("sw", "KE")).format(totalPayment)
-
-
-
-
 
             showdetailsButton.setOnClickListener {
                 expandedPosition = if (expandedPosition == adapterPosition) {
@@ -91,6 +99,42 @@ class MonthlyPaymentAdapter(
                 }
                 notifyDataSetChanged()
             }
+
+            makePayment.setOnClickListener {
+                val dbHelper = DBHelper(context) // Initialize your DBHelper instance
+                val monthValue = parseMonth(month)
+                val employeesOfTheMonth = dbHelper.getEmployeesAndKilosOfTheMonth(monthValue, Calendar.getInstance().get(Calendar.YEAR))
+
+                val alertDialogBuilder = AlertDialog.Builder(context)
+
+                var message = ""
+                for ((employeeName, totalKilos) in employeesOfTheMonth) {
+                    message += "$employeeName: $totalKilos kilos\n"
+                }
+
+                val calendar = Calendar.getInstance()
+                calendar.set(Calendar.MONTH, monthValue - 1) // month is 0-based
+                val monthName = calendar.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.US)
+
+                alertDialogBuilder.setTitle("Employees to Be Paid")
+                alertDialogBuilder.setMessage("Here are the employees of $monthName, ${calendar.get(Calendar.YEAR)}:\n$message")
+
+                // Add the Close button
+                alertDialogBuilder.setNegativeButton("Close") { dialog, _ ->
+                    dialog.dismiss()
+                }
+
+                // Add the Pay button
+                alertDialogBuilder.setPositiveButton("Pay") { dialog, _ ->
+                    // Show another dialog to confirm the pay rate
+                    showPayRateConfirmationDialog(context, employeesOfTheMonth)
+                }
+
+                // Show the AlertDialog
+                alertDialogBuilder.show()
+            }
+
+
         }
     }
 
@@ -260,7 +304,7 @@ class MonthlyPaymentAdapter(
         val employeePaymentMap = paymentList.groupBy { it.employeeName }
 
 
-    employeePaymentMap.forEach { (employeeName, payments) ->
+        employeePaymentMap.forEach { (employeeName, payments) ->
             val tableRow = TableRow(context)
             tableRow.layoutParams = TableLayout.LayoutParams(
                 TableLayout.LayoutParams.MATCH_PARENT,
@@ -441,6 +485,129 @@ class MonthlyPaymentAdapter(
         groupedData.clear()
         groupedData.putAll(newData)
         notifyDataSetChanged()
+    }
+
+    fun parseMonth(monthString: String): Int {
+        val sdf = SimpleDateFormat("yyyy-MM", Locale.getDefault())
+        val parsedMonth = sdf.parse(monthString)
+        val calendar = Calendar.getInstance()
+        calendar.time = parsedMonth ?: Date()
+        return calendar.get(Calendar.MONTH) + 1 // Month is 0-based in Calendar, so add 1
+    }
+
+    fun showPayRateConfirmationDialog(context: Context, employeesOfTheMonth: Map<String, Double>) {
+        val defaultPayRate = 8.0 // Default pay rate
+        val (totalPayMessage, totalAmount) = generateTotalPayMessage(employeesOfTheMonth, defaultPayRate)
+
+        val confirmationDialogBuilder = AlertDialog.Builder(context)
+        confirmationDialogBuilder.setTitle("Confirm Pay Rate")
+
+        // Create a LinearLayout to hold the message and the edit button
+        val layout = LinearLayout(context)
+        layout.orientation = LinearLayout.VERTICAL
+
+        // Add a TextView to show the message
+        val messageTextView = TextView(context)
+        messageTextView.text = "The default pay rate is Ksh $defaultPayRate.\nHere is the payment breakdown:\n$totalPayMessage\nTotal Amount: Ksh $totalAmount"
+        layout.addView(messageTextView)
+
+        // Add an Edit button
+        val editButton = Button(context)
+        editButton.text = "Edit Pay Rate"
+        layout.addView(editButton)
+
+        confirmationDialogBuilder.setView(layout)
+
+        // Set the Edit button click listener to show an EditText dialog
+        editButton.setOnClickListener {
+            showEditPayRateDialog(context, employeesOfTheMonth, messageTextView)
+        }
+
+        // Add the Confirm button
+        confirmationDialogBuilder.setPositiveButton("Confirm") { dialog, _ ->
+            // Handle the payment logic here if confirmed
+            handlePayment(context, employeesOfTheMonth, defaultPayRate)
+            dialog.dismiss()
+        }
+
+        // Add the Cancel button
+        confirmationDialogBuilder.setNegativeButton("Cancel") { dialog, _ ->
+            dialog.dismiss()
+        }
+
+        // Show the confirmation dialog
+        confirmationDialogBuilder.show()
+    }
+
+    fun showEditPayRateDialog(context: Context, employeesOfTheMonth: Map<String, Double>, messageTextView: TextView) {
+        val editDialogBuilder = AlertDialog.Builder(context)
+        editDialogBuilder.setTitle("Edit Pay Rate")
+
+        // Add an EditText to enter the new pay rate
+        val editText = EditText(context)
+        editText.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
+        editText.hint = "Enter new pay rate"
+
+        editDialogBuilder.setView(editText)
+
+        // Add the OK button
+        editDialogBuilder.setPositiveButton("OK") { dialog, _ ->
+            val newPayRate = editText.text.toString().toDoubleOrNull()
+            if (newPayRate != null) {
+                val (updatedPayMessage, totalAmount) = generateTotalPayMessage(employeesOfTheMonth, newPayRate)
+                messageTextView.text = "The pay rate is Ksh $newPayRate.\nHere is the payment breakdown:\n$updatedPayMessage\nTotal Amount: Ksh $totalAmount"
+            }
+            dialog.dismiss()
+        }
+
+        // Add the Cancel button
+        editDialogBuilder.setNegativeButton("Cancel") { dialog, _ ->
+            dialog.dismiss()
+        }
+
+        // Show the edit dialog
+        editDialogBuilder.show()
+    }
+
+    fun generateTotalPayMessage(employeesOfTheMonth: Map<String, Double>, payRate: Double): Pair<String, Double> {
+        var totalPayMessage = ""
+        var totalAmount = 0.0
+        for ((employeeName, totalKilos) in employeesOfTheMonth) {
+            val totalPay = totalKilos * payRate
+            totalPayMessage += "$employeeName: $totalKilos kilos * Ksh $payRate = Ksh $totalPay\n"
+            totalAmount += totalPay
+        }
+        return Pair(totalPayMessage, totalAmount)
+    }
+
+    fun handlePayment(context: Context, employeesOfTheMonth: Map<String, Double>, payRate: Double) {
+        // Start a coroutine to handle Room database operations
+        CoroutineScope(Dispatchers.IO).launch {
+            // Get the database instance
+            val dbHelper = DBHelper(context)
+            val appDatabase = App.getDatabase(context)
+            val pendingPaymentDataDao = appDatabase.pendingPaymentDao()
+
+            // Get the current date
+            val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            val currentDate = dateFormat.format(Date())
+
+            // Save each payment to the database
+            for ((employeeName, totalKilos) in employeesOfTheMonth) {
+                val totalPay = totalKilos * payRate
+                val paymentData = PendingPaymentData(
+                    id = 0, // Auto-generate the ID
+                    date = currentDate,
+                    employeeName = employeeName,
+                    paymentAmount = totalPay
+                )
+                // Use withContext to switch to the IO dispatcher for Room operation
+                withContext(Dispatchers.IO) {
+                    pendingPaymentDataDao.insert(paymentData)
+                }
+                println("Paying $employeeName Ksh $totalPay for $totalKilos kilos")
+            }
+        }
     }
 
 

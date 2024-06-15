@@ -25,7 +25,6 @@ import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
-import com.example.apptea.App
 import com.example.apptea.DBHelper
 import com.example.apptea.PendingSyncData
 import com.example.apptea.PendingSyncDataDao
@@ -61,10 +60,11 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
     private var addRecordsProgressLayout: RelativeLayout? = null
     private var lastGeneratedId = 0
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        pendingSyncDataDao = App.database.pendingSyncDataDao()
-    }
+//    override fun onCreate(savedInstanceState: Bundle?) {
+//        super.onCreate(savedInstanceState)
+//        pendingSyncDataDao = App.getDatabase(appContext).pendingSyncDataDao()
+//    }
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
