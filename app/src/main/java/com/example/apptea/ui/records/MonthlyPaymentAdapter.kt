@@ -1,5 +1,5 @@
 
-package com.example.apptea.ui.records
+package com.betfam.apptea.ui.records
 
 import android.app.AlertDialog
 import android.content.Context
@@ -22,10 +22,10 @@ import android.widget.TableRow
 import android.widget.TextView
 import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
-import com.example.apptea.App
-import com.example.apptea.DBHelper
-import com.example.apptea.PendingPaymentData
-import com.example.apptea.R
+import com.betfam.apptea.App
+import com.betfam.apptea.DBHelper
+import com.betfam.apptea.PendingPaymentData
+import com.betfam.apptea.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

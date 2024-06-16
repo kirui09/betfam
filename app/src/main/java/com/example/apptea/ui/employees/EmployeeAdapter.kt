@@ -1,4 +1,4 @@
-package com.example.apptea.ui.employees
+package com.betfam.apptea.ui.employees
 
 import android.util.Log
 import android.view.LayoutInflater
@@ -8,7 +8,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
-import com.example.apptea.R
+import com.betfam.apptea.R
 
 class EmployeeAdapter(private var employeeList: List<Employee>) :
     RecyclerView.Adapter<EmployeeAdapter.EmployeeViewHolder>() {

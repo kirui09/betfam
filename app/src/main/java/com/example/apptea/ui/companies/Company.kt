@@ -1,4 +1,4 @@
-package com.example.apptea.ui.companies
+package com.betfam.apptea.ui.companies
 
 import android.os.Parcel
 import android.os.Parcelable

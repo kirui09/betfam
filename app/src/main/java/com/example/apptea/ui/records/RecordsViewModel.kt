@@ -1,12 +1,12 @@
-package com.example.apptea.ui.records
+package com.betfam.apptea.ui.records
 
 import android.content.Context
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.apptea.DBHelper
-import com.example.apptea.R
+import com.betfam.apptea.R
+import com.betfam.apptea.DBHelper
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.JsonFactory

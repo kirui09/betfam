@@ -1,5 +1,5 @@
 // CompanyAdapter.kt
-package com.example.apptea.ui.companies
+package com.betfam.apptea.ui.companies
 
 import android.view.LayoutInflater
 import android.view.View
@@ -8,8 +8,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.fragment.app.FragmentActivity
 import androidx.recyclerview.widget.RecyclerView
-import com.example.apptea.R
-//import com.example.apptea.ui.employees.EditEmployeeDialogFragment
+import com.betfam.apptea.R
+//import com.betfam.apptea.ui.employees.EditEmployeeDialogFragment
 
 interface CompanyClickHandler {
     fun onEditClick(company: Company)

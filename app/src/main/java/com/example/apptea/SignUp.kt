@@ -1,4 +1,4 @@
-package com.example.apptea
+package com.betfam.apptea
 
 import android.content.Intent
 import android.os.Bundle

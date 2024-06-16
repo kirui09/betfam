@@ -1,4 +1,4 @@
-package com.example.apptea
+package com.betfam.apptea
 
 import android.graphics.Canvas
 import android.graphics.Color

@@ -1,4 +1,4 @@
-package com.example.apptea
+package com.betfam.apptea
 
 import androidx.room.Database
 import androidx.room.RoomDatabase

@@ -1,11 +1,11 @@
-//package com.example.apptea.ui.managers
+//package com.betfam.apptea.ui.managers
 //
 //import android.view.LayoutInflater
 //import android.view.ViewGroup
 //import androidx.recyclerview.widget.DiffUtil
 //import androidx.recyclerview.widget.ListAdapter
 //import androidx.recyclerview.widget.RecyclerView
-//import com.example.apptea.databinding.ItemManagerBinding
+//import com.betfam.apptea.databinding.ItemManagerBinding
 //
 //class ManagersAdapter : ListAdapter<Manager, ManagersAdapter.ViewHolder>(ManagerDiffCallback()) {
 //

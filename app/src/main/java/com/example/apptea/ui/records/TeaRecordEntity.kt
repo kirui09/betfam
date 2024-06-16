@@ -1,4 +1,4 @@
-package com.example.apptea.ui.records
+package com.betfam.apptea.ui.records
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

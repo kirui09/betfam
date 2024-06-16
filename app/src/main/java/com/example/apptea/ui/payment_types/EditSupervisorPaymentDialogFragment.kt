@@ -1,4 +1,4 @@
-package com.example.apptea.ui.payment_types
+package com.betfam.apptea.ui.payment_types
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -8,8 +8,8 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
-import com.example.apptea.DBHelper
-import com.example.apptea.R
+import com.betfam.apptea.DBHelper
+import com.betfam.apptea.R
 
 interface EditSupervisorPaymentListener {
     fun onSupervisorPaymentEdited(newValue: String)

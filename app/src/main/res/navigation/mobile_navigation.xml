@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/nav_home"
-        android:name="com.example.apptea.ui.home.HomeFragment"
+        android:name="com.betfam.apptea.ui.home.HomeFragment"
         android:label="@string/menu_home"
         tools:layout="@layout/fragment_home" >
 
@@ -23,43 +23,43 @@
 
 <!--    <fragment-->
 <!--        android:id="@+id/scheduleFragment"-->
-<!--        android:name="com.example.apptea.ui.home.ScheduleFragment"-->
+<!--        android:name="com.betfam.apptea.ui.home.ScheduleFragment"-->
 <!--        android:label="fragment_schedule"-->
 <!--        tools:layout="@layout/fragment_schedule" />-->
 
 <!--    <fragment-->
 <!--        android:id="@+id/chartsFragment"-->
-<!--        android:name="com.example.apptea.ui.home.ChartsFragment"-->
+<!--        android:name="com.betfam.apptea.ui.home.ChartsFragment"-->
 <!--        android:label="fragment_charts"-->
 <!--        tools:layout="@layout/fragment_charts" />-->
 
     <fragment
         android:id="@+id/nav_records"
-        android:name="com.example.apptea.ui.records.RecordsFragment"
+        android:name="com.betfam.apptea.ui.records.RecordsFragment"
         android:label="@string/menu_records"
         tools:layout="@layout/fragment_tea_records" />
 
     <fragment
         android:id="@+id/nav_employees_menu"
-        android:name="com.example.apptea.ui.employees.EmployeesFragment"
+        android:name="com.betfam.apptea.ui.employees.EmployeesFragment"
         android:label="@string/menu_employees"
         tools:layout="@layout/fragment_employees" />
 
     <fragment
         android:id="@+id/nav_managers"
-        android:name="com.example.apptea.ui.managers.ManagersFragment"
+        android:name="com.betfam.apptea.ui.managers.ManagersFragment"
         android:label="@string/menu_managers"
         tools:layout="@layout/fragment_managers" />
 
     <fragment
         android:id="@+id/nav_companies"
-        android:name="com.example.apptea.ui.companies.CompaniesFragment"
+        android:name="com.betfam.apptea.ui.companies.CompaniesFragment"
         android:label="@string/menu_companies"
         tools:layout="@layout/fragment_companies" />
 
     <fragment
         android:id="@+id/nav_payment_types"
-        android:name="com.example.apptea.ui.payment_types.PaymentTypesFragment"
+        android:name="com.betfam.apptea.ui.payment_types.PaymentTypesFragment"
         android:label="@string/menu_payment_types"
         tools:layout="@layout/fragment_payment_types" />
 

@@ -1,4 +1,4 @@
-package com.example.apptea.ui.employees
+package com.betfam.apptea.ui.employees
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -6,8 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.DialogFragment
-import com.example.apptea.DBHelper
-import com.example.apptea.R
+import com.betfam.apptea.DBHelper
+import com.betfam.apptea.R
 
 class EditEmployeeDialogFragment : DialogFragment() {
 

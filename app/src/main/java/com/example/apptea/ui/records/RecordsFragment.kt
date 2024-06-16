@@ -1,4 +1,4 @@
-package com.example.apptea.ui.records
+package com.betfam.apptea.ui.records
 
 import android.os.Bundle
 import android.util.Log
@@ -8,8 +8,8 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager2.widget.ViewPager2
-import com.example.apptea.R
-import com.example.apptea.ui.employees.EmployeeAdapter
+import com.betfam.apptea.R
+import com.betfam.apptea.ui.employees.EmployeeAdapter
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator

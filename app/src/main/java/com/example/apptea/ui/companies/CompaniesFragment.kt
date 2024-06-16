@@ -1,4 +1,4 @@
-package com.example.apptea.ui.companies
+package com.betfam.apptea.ui.companies
 
 import android.os.Bundle
 import android.util.Log
@@ -9,9 +9,9 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.apptea.DBHelper
-import com.example.apptea.R
-import com.example.apptea.ui.employees.Employee
+import com.betfam.apptea.DBHelper
+import com.betfam.apptea.R
+import com.betfam.apptea.ui.employees.Employee
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class CompaniesFragment : Fragment(), CompanyClickHandler {

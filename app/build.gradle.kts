@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.apptea"
+    namespace = "com.betfam.apptea"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.apptea"
+        applicationId = "com.betfam.apptea"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
@@ -51,11 +51,7 @@ android {
         resources.excludes.add("META-INF/*")
     }
 
-
-
 }
-
-
 
 dependencies {
 

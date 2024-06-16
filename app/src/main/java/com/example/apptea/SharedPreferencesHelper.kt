@@ -1,5 +1,5 @@
 // SharedPreferencesHelper.kt
-package com.example.apptea
+package com.betfam.apptea
 
 import android.content.Context
 import android.content.SharedPreferences

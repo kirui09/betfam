@@ -1,4 +1,4 @@
-package com.example.apptea.ui.records
+package com.betfam.apptea.ui.records
 
 import android.os.Bundle
 import android.util.Log
@@ -9,9 +9,9 @@ import android.widget.RelativeLayout
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.apptea.DBHelper
-import com.example.apptea.R
-import com.example.apptea.SharedPreferencesHelper
+import com.betfam.apptea.DBHelper
+import com.betfam.apptea.R
+import com.betfam.apptea.SharedPreferencesHelper
 
 class PaymentFragment : Fragment() {
 

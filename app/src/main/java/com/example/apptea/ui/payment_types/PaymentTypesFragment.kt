@@ -1,4 +1,4 @@
-package com.example.apptea.ui.payment_types
+package com.betfam.apptea.ui.payment_types
 
 import android.os.Bundle
 import android.util.Log
@@ -8,8 +8,8 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import com.example.apptea.DBHelper
-import com.example.apptea.R
+import com.betfam.apptea.DBHelper
+import com.betfam.apptea.R
 import com.google.android.material.textview.MaterialTextView
 
 class PaymentTypesFragment : Fragment(), EditSupervisorPaymentListener, OnBasicPaymentUpdatedListener {

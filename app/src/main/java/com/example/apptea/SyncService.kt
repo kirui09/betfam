@@ -1,4 +1,4 @@
-package com.example.apptea
+package com.betfam.apptea
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -15,7 +15,7 @@ import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
-import com.example.apptea.ui.records.Record
+import com.betfam.apptea.ui.records.Record
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.JsonFactory

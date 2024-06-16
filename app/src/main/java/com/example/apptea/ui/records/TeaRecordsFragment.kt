@@ -1,4 +1,4 @@
-package com.example.apptea.ui.records
+package com.betfam.apptea.ui.records
 
 import android.app.AlertDialog
 import android.app.DatePickerDialog
@@ -12,11 +12,11 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.example.apptea.DBHelper
-import com.example.apptea.R
-import com.example.apptea.databinding.FragmentTeaRecordsBinding
-import com.example.apptea.databinding.ItemExpandedDayBinding
-import com.example.apptea.ui.employees.EmployeeAdapter
+import com.betfam.apptea.DBHelper
+import com.betfam.apptea.R
+import com.betfam.apptea.databinding.FragmentTeaRecordsBinding
+import com.betfam.apptea.databinding.ItemExpandedDayBinding
+import com.betfam.apptea.ui.employees.EmployeeAdapter
 import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Calendar

@@ -1,4 +1,4 @@
-package com.example.apptea.ui.managers
+package com.betfam.apptea.ui.managers
 
 import android.content.Intent
 import android.os.Bundle
@@ -9,8 +9,8 @@ import android.widget.Button
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import com.example.apptea.R
-import com.example.apptea.databinding.FragmentManagersBinding
+import com.betfam.apptea.R
+import com.betfam.apptea.databinding.FragmentManagersBinding
 
 class ManagersFragment : Fragment() {
 

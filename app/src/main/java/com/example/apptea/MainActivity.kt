@@ -1,4 +1,4 @@
-package com.example.apptea
+package com.betfam.apptea
 
 import android.app.Activity
 import android.app.AlertDialog
@@ -24,8 +24,8 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
-import com.example.apptea.databinding.ActivityMainBinding
-import com.example.apptea.ui.home.HomeFragment
+import com.betfam.apptea.databinding.ActivityMainBinding
+import com.betfam.apptea.ui.home.HomeFragment
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient

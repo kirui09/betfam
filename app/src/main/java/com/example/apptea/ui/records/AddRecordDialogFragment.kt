@@ -1,4 +1,4 @@
-package com.example.apptea.ui.records
+package com.betfam.apptea.ui.records
 
 import android.app.AlertDialog
 import android.app.DatePickerDialog
@@ -25,12 +25,13 @@ import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
-import com.example.apptea.DBHelper
-import com.example.apptea.PendingSyncData
-import com.example.apptea.PendingSyncDataDao
-import com.example.apptea.R
-import com.example.apptea.ui.companies.AddCompanyDialogFragment
-import com.example.apptea.ui.employees.AddEmployeeDialogFragment
+import com.betfam.apptea.App
+import com.betfam.apptea.DBHelper
+import com.betfam.apptea.PendingSyncData
+import com.betfam.apptea.PendingSyncDataDao
+import com.betfam.apptea.R
+import com.betfam.apptea.ui.companies.AddCompanyDialogFragment
+import com.betfam.apptea.ui.employees.AddEmployeeDialogFragment
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.JsonFactory
@@ -60,11 +61,10 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
     private var addRecordsProgressLayout: RelativeLayout? = null
     private var lastGeneratedId = 0
 
-//    override fun onCreate(savedInstanceState: Bundle?) {
-//        super.onCreate(savedInstanceState)
-//        pendingSyncDataDao = App.getDatabase(appContext).pendingSyncDataDao()
-//    }
-
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        pendingSyncDataDao = App.getDatabase(requireContext().applicationContext).pendingSyncDataDao()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,

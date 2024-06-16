@@ -1,4 +1,4 @@
-package com.example.apptea.ui.records
+package com.betfam.apptea.ui.records
 
 import android.os.Bundle
 import android.util.Log
@@ -8,8 +8,8 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
-import com.example.apptea.DBHelper
-import com.example.apptea.databinding.FragmentEditRecordDialogBinding
+import com.betfam.apptea.DBHelper
+import com.betfam.apptea.databinding.FragmentEditRecordDialogBinding
 
 interface RecordUpdateListener {
     fun onRecordUpdated()

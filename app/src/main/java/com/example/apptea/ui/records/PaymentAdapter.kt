@@ -1,4 +1,4 @@
-package com.example.apptea.ui.records
+package com.betfam.apptea.ui.records
 
 import android.content.ContentValues
 import android.content.Context
@@ -25,9 +25,9 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import androidx.recyclerview.widget.RecyclerView
-import com.example.apptea.DBHelper
-import com.example.apptea.R
-import com.example.apptea.SharedPreferencesHelper
+import com.betfam.apptea.DBHelper
+import com.betfam.apptea.R
+import com.betfam.apptea.SharedPreferencesHelper
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Locale

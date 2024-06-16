@@ -1,10 +1,10 @@
 // CompaniesViewModel.kt
-package com.example.apptea.ui.companies
+package com.betfam.apptea.ui.companies
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.apptea.DBHelper
+import com.betfam.apptea.DBHelper
 import kotlinx.coroutines.launch
 
 class CompaniesViewModel(private val dbHelper: DBHelper) : ViewModel() {

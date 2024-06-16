@@ -1,4 +1,4 @@
-package com.example.apptea.ui.employees
+package com.betfam.apptea.ui.employees
 
 import android.os.Bundle
 import android.util.Log
@@ -13,10 +13,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-import com.example.apptea.DBHelper
-import com.example.apptea.R
-import com.example.apptea.databinding.FragmentEmployeesBinding
-//import com.example.apptea.ui.records.AddRecordDialogFragment
+import com.betfam.apptea.DBHelper
+import com.betfam.apptea.R
+import com.betfam.apptea.databinding.FragmentEmployeesBinding
+//import com.betfam.apptea.ui.records.AddRecordDialogFragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class EmployeesFragment : Fragment(), AddEmployeeDialogFragment.OnEmployeeSavedListener,

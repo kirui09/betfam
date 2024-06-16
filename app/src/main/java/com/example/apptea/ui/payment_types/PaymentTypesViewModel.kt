@@ -1,4 +1,4 @@
-package com.example.apptea.ui.payment_types
+package com.betfam.apptea.ui.payment_types
 
 import androidx.lifecycle.ViewModel
 

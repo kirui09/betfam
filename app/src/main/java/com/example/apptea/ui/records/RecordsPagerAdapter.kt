@@ -1,4 +1,4 @@
-package com.example.apptea.ui.records
+package com.betfam.apptea.ui.records
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity

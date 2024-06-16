@@ -1,4 +1,4 @@
-package com.example.apptea
+package com.betfam.apptea
 
 import android.content.ContentValues
 import android.content.Context
@@ -7,17 +7,16 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
 import androidx.lifecycle.MutableLiveData
-import com.example.apptea.ui.companies.Company
-import com.example.apptea.ui.employees.Employee
-import com.example.apptea.ui.payment_types.BasicPayment
-import com.example.apptea.ui.records.DailyRecord
-import com.example.apptea.ui.records.DailyTeaRecord
-import com.example.apptea.ui.records.MonthlyPayment
-import com.example.apptea.ui.records.Payment
-import com.example.apptea.ui.records.Record
-import com.example.apptea.ui.records.SyncedRecord
-import com.example.apptea.ui.records.TeaPaymentRecord
-import com.example.apptea.ui.records.TeaRecord
+import com.betfam.apptea.ui.companies.Company
+import com.betfam.apptea.ui.employees.Employee
+import com.betfam.apptea.ui.payment_types.BasicPayment
+import com.betfam.apptea.ui.records.DailyRecord
+import com.betfam.apptea.ui.records.DailyTeaRecord
+import com.betfam.apptea.ui.records.MonthlyPayment
+import com.betfam.apptea.ui.records.Payment
+import com.betfam.apptea.ui.records.Record
+import com.betfam.apptea.ui.records.SyncedRecord
+import com.betfam.apptea.ui.records.TeaPaymentRecord
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -148,51 +147,6 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
             db.insert("PaymentTypes", null, values)
         }
     }
-
-
-    // Function to fetch tea records for an employee in a specific month
-    // Function to fetch distinct employees for a specific month and year
-    fun getEmployeesForMonth(month: Int, year: Int): List<String> {
-        val db = readableDatabase
-        val monthString = if (month < 10) "0$month" else month.toString()
-        val yearString = year.toString()
-
-        val query = "SELECT DISTINCT employee_name FROM TeaRecords WHERE strftime('%m', date) = ? AND strftime('%Y', date) = ?"
-        val cursor = db.rawQuery(query, arrayOf(monthString, yearString))
-
-        val employees = mutableListOf<String>()
-        if (cursor.moveToFirst()) {
-            do {
-                val employeeName = cursor.getString(cursor.getColumnIndexOrThrow("employee_name"))
-                employees.add(employeeName)
-            } while (cursor.moveToNext())
-        }
-        cursor.close()
-        return employees
-    }
-
-    // Function to fetch tea records for an employee in a specific month
-    fun getTeaRecordsForEmployeeInMonth(employeeName: String, month: Int, year: Int): List<PendingTeaRecord> {
-        val db = readableDatabase
-        val monthString = if (month < 10) "0$month" else month.toString()
-        val yearString = year.toString()
-
-        val query = "SELECT * FROM TeaRecords WHERE employee_name = ? AND strftime('%m', date) = ? AND strftime('%Y', date) = ?"
-        val cursor = db.rawQuery(query, arrayOf(employeeName, monthString, yearString))
-
-        val teaRecords = mutableListOf<PendingTeaRecord>()
-        if (cursor.moveToFirst()) {
-            do {
-                val id = cursor.getInt(cursor.getColumnIndexOrThrow("id"))
-                val date = cursor.getString(cursor.getColumnIndexOrThrow("date"))
-                val kilos = cursor.getDouble(cursor.getColumnIndexOrThrow("kilos"))
-                teaRecords.add(PendingTeaRecord(id, date, employeeName, "", kilos, 0.0, 0))
-            } while (cursor.moveToNext())
-        }
-        cursor.close()
-        return teaRecords
-    }
-
 
 
 

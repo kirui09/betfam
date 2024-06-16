@@ -1,6 +1,6 @@
 // DataClasses.kt
 
-package com.example.apptea.ui.records
+package com.betfam.apptea.ui.records
 import android.os.Parcel
 import android.os.Parcelable
 import androidx.room.Entity

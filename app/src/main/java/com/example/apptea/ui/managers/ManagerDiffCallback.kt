@@ -1,4 +1,4 @@
-//package com.example.apptea.ui.managers
+//package com.betfam.apptea.ui.managers
 //
 //import androidx.recyclerview.widget.DiffUtil
 //

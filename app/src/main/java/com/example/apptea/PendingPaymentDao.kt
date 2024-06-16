@@ -1,4 +1,4 @@
-package com.example.apptea
+package com.betfam.apptea
 
 import androidx.room.Dao
 import androidx.room.Insert

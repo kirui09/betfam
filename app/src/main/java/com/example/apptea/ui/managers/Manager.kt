@@ -1,4 +1,4 @@
-//package com.example.apptea.ui.managers
+//package com.betfam.apptea.ui.managers
 //
 //data class Manager(
 //    val firstName: String,

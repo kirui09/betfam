@@ -1,4 +1,4 @@
-package com.example.apptea
+package com.betfam.apptea
 
 import android.os.Bundle
 import android.widget.ArrayAdapter

@@ -1,5 +1,5 @@
 // TeaRecordsAdapter.kt
-package com.example.apptea.ui.records
+package com.betfam.apptea.ui.records
 
 import android.graphics.Color
 import android.graphics.Typeface
@@ -12,10 +12,10 @@ import android.widget.TableLayout
 import android.widget.TableRow
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.example.apptea.DBHelper
-import com.example.apptea.R
-import com.example.apptea.databinding.ItemExpandedDayBinding
-import com.example.apptea.databinding.ItemGeneralDayBinding
+import com.betfam.apptea.DBHelper
+import com.betfam.apptea.R
+import com.betfam.apptea.databinding.ItemExpandedDayBinding
+import com.betfam.apptea.databinding.ItemGeneralDayBinding
 import java.text.SimpleDateFormat
 import java.util.Locale
 
