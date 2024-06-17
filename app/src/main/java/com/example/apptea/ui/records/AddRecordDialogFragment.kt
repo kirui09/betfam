@@ -22,7 +22,6 @@ import android.widget.DatePicker
 import android.widget.EditText
 import android.widget.RelativeLayout
 import android.widget.Spinner
-import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import com.betfam.apptea.App
@@ -164,6 +163,11 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
         companyAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         companySpinner?.adapter = companyAdapter
         companySpinner?.setSelection(companyNames.size + 1)
+
+        // Dismiss the dialog
+        parentFragmentManager.findFragmentByTag("AddCompanyDialog")?.let {
+            (it as DialogFragment).dismiss()
+        }
     }
 
     override fun onEmployeeSaved() {
@@ -174,6 +178,11 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
         employeeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerEmployeeName?.adapter = employeeAdapter
         spinnerEmployeeName?.setSelection(employeeNames.size + 1)
+
+        // Dismiss the dialog
+        parentFragmentManager.findFragmentByTag("AddEmployeeDialog")?.let {
+            (it as DialogFragment).dismiss()
+        }
     }
 
 
@@ -230,29 +239,15 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
 
         if (tempRecordsToSave.isNotEmpty()) {
             val builder = AlertDialog.Builder(requireContext(), R.style.CustomAlertDialog)
-            val inflater = requireActivity().layoutInflater
-            val dialogView = inflater.inflate(R.layout.dialog_confirm_records, null)
-            builder.setView(dialogView)
+            builder.setTitle("Confirm Records")
 
-            val dialogTitle = dialogView.findViewById<TextView>(R.id.dialogTitle)
-            val dialogMessage = dialogView.findViewById<TextView>(R.id.dialogMessage)
-            val buttonCancel = dialogView.findViewById<Button>(R.id.buttonCancel)
-            val buttonSave = dialogView.findViewById<Button>(R.id.buttonSave)
-
-            dialogTitle.text = "Confirm Records"
             val messageBuilder = StringBuilder()
             for (record in tempRecordsToSave) {
                 messageBuilder.append("${record.company} - ${record.employee}: ${record.kilos} kg\n")
             }
-            dialogMessage.text = messageBuilder.toString()
+            builder.setMessage(messageBuilder.toString())
 
-            val alertDialog = builder.create()
-
-            buttonCancel.setOnClickListener {
-                alertDialog.dismiss()
-            }
-
-            buttonSave.setOnClickListener {
+            builder.setPositiveButton("Save") { dialog, _ ->
                 val success = DBHelper.getInstance().insertTeaRecords(tempRecordsToSave.toList())
                 if (success) {
                     showToast("All Records saved successfully")
@@ -282,10 +277,15 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
                         tempRecordsToSave.clear()
                     }
                 }
-                alertDialog.dismiss()
+                dialog.dismiss()
                 dismiss()
             }
 
+            builder.setNegativeButton("Cancel") { dialog, _ ->
+                dialog.dismiss()
+            }
+
+            val alertDialog = builder.create()
             alertDialog.show()
         } else {
             dismiss()
@@ -298,8 +298,10 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
 
     private fun validateInput(date: String, company: String, employee: String, kilos: String): Boolean {
         return date.isNotEmpty() && company.isNotEmpty() && employee.isNotEmpty() && kilos.isNotEmpty() &&
-                employee != "Select Employee" && company != "Select Company"
+                employee != "Select Employee" && company != "Select Company" &&
+                employee != "Add Employee" && company != "Add Company"
     }
+
 
     private fun showToast(message: String) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()

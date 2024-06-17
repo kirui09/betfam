@@ -41,18 +41,21 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
-        android:text="Add Record"
         android:layout_margin="16dp"
+        android:src="@drawable/ic_baseline_add_24"
         app:backgroundTint="#185CE3"
-        app:elevation="10dp"
-        app:maxImageSize="24dp"
-        app:srcCompat="@drawable/ic_baseline_add_24"
-        app:fabCustomSize="72dp"
-        app:layout_anchorGravity="bottom|end">
+        app:elevation="10dp" />
 
-        <include layout="@layout/fab_custom_content" />
-
-    </com.google.android.material.floatingactionbutton.FloatingActionButton>
-
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabSyncRecord"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/fabAddRecord"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        android:src="@drawable/baseline_cloud_sync_24"
+        app:backgroundTint="#4CAF50"
+        app:elevation="10dp" />
 
 </RelativeLayout>
