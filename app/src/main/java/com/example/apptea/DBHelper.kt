@@ -149,6 +149,61 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
     }
 
 
+    // Function to fetch tea records for an employee in a specific month
+    // Function to fetch distinct employees for a specific month and year
+    fun getEmployeesForMonth(month: Int, year: Int): List<String> {
+        val db = readableDatabase
+        val monthString = if (month < 10) "0$month" else month.toString()
+        val yearString = year.toString()
+
+        val query = "SELECT DISTINCT employee_name FROM TeaRecords WHERE strftime('%m', date) = ? AND strftime('%Y', date) = ?"
+        val cursor = db.rawQuery(query, arrayOf(monthString, yearString))
+
+        val employees = mutableListOf<String>()
+        if (cursor.moveToFirst()) {
+            do {
+                val employeeName = cursor.getString(cursor.getColumnIndexOrThrow("employee_name"))
+                employees.add(employeeName)
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return employees
+    }
+
+
+    // Function to fetch tea records for an employee in a specific month
+    fun getTeaRecordsForEmployeeInMonth(employeeName: String, month: Int, year: Int): List<PendingTeaRecord> {
+        val db = readableDatabase
+        val monthString = if (month < 10) "0$month" else month.toString()
+        val yearString = year.toString()
+
+        val query = "SELECT * FROM TeaRecords WHERE employee_name = ? AND strftime('%m', date) = ? AND strftime('%Y', date) = ?"
+        val cursor = db.rawQuery(query, arrayOf(employeeName, monthString, yearString))
+
+        val teaRecords = mutableListOf<PendingTeaRecord>()
+        if (cursor.moveToFirst()) {
+            do {
+                val id = cursor.getInt(cursor.getColumnIndexOrThrow("id"))
+                val date = cursor.getString(cursor.getColumnIndexOrThrow("date"))
+                val kilos = cursor.getDouble(cursor.getColumnIndexOrThrow("kilos"))
+                teaRecords.add(PendingTeaRecord(id, date, employeeName, "", kilos, 0.0, 0))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return teaRecords
+    }
+
+    fun updatePaymentInTeaRecords(recordId: Int, paymentAmount: Double) {
+        val db = writableDatabase
+        val values = ContentValues().apply {
+            put("pay", paymentAmount)
+        }
+        val rowsUpdated = db.update("TeaRecords", values, "id = ?", arrayOf(recordId.toString()))
+        Log.d("DBHelper", "Updated $rowsUpdated rows in TeaRecords table for record ID $recordId with payment amount $paymentAmount")
+    }
+
+
+
 
 
     fun insertFarmer(
@@ -203,6 +258,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
     fun insertEmployee(employee: Employee): Boolean {
         val db = this.writableDatabase
         val cv = ContentValues()
+
 
         cv.put("name", employee.name)
         cv.put("emp_type", employee.empType)

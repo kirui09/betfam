@@ -529,7 +529,6 @@ class MonthlyPaymentAdapter(
             handlePayment(context, employeesOfTheMonth, defaultPayRate)
             dialog.dismiss()
         }
-
         // Add the Cancel button
         confirmationDialogBuilder.setNegativeButton("Cancel") { dialog, _ ->
             dialog.dismiss()
@@ -581,8 +580,12 @@ class MonthlyPaymentAdapter(
     }
 
     fun handlePayment(context: Context, employeesOfTheMonth: Map<String, Double>, payRate: Double) {
+        Log.d("HandlePayment", "Starting payment process...")
+
         // Start a coroutine to handle Room database operations
         CoroutineScope(Dispatchers.IO).launch {
+            Log.d("HandlePayment", "Coroutine launched")
+
             // Get the database instance
             val dbHelper = DBHelper(context)
             val appDatabase = App.getDatabase(context)
@@ -592,21 +595,42 @@ class MonthlyPaymentAdapter(
             val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
             val currentDate = dateFormat.format(Date())
 
+            Log.d("HandlePayment", "Current date: $currentDate")
+
             // Save each payment to the database
             for ((employeeName, totalKilos) in employeesOfTheMonth) {
-                val totalPay = totalKilos * payRate
-                val paymentData = PendingPaymentData(
-                    id = 0, // Auto-generate the ID
-                    date = currentDate,
-                    employeeName = employeeName,
-                    paymentAmount = totalPay
-                )
-                // Use withContext to switch to the IO dispatcher for Room operation
-                withContext(Dispatchers.IO) {
-                    pendingPaymentDataDao.insert(paymentData)
+                Log.d("HandlePayment", "Processing employee: $employeeName, Total Kilos: $totalKilos")
+
+                // Fetch tea records for the employee in the current month
+                val calendar = Calendar.getInstance()
+                val currentMonth = calendar.get(Calendar.MONTH) + 1
+                val currentYear = calendar.get(Calendar.YEAR)
+                val teaRecords = dbHelper.getTeaRecordsForEmployeeInMonth(employeeName, currentMonth, currentYear)
+
+                Log.d("HandlePayment", "Fetched ${teaRecords.size} tea records for $employeeName in $currentMonth/$currentYear")
+
+                // Calculate and save each tea record
+                teaRecords.forEach { record ->
+                    val paymentAmount = record.kilos * payRate
+                    val paymentData = PendingPaymentData(
+                        id = record.id,
+                        date = record.date,
+                        employeeName = employeeName,
+                        paymentAmount = paymentAmount
+                    )
+
+                    Log.d("HandlePayment", "Saving payment for $employeeName on ${record.date}: Ksh $paymentAmount (${record.kilos} kilos) with ID ${record.id}")
+
+                    // Use withContext to switch to the IO dispatcher for Room operation
+                    withContext(Dispatchers.IO) {
+                        pendingPaymentDataDao.insert(paymentData)
+                        dbHelper.updatePaymentInTeaRecords(record.id, paymentAmount)
+                    }
+                    println("Paying $employeeName Ksh $paymentAmount for ${record.kilos} kilos on ${record.date} with ID ${record.id}")
                 }
-                println("Paying $employeeName Ksh $totalPay for $totalKilos kilos")
             }
+
+            Log.d("HandlePayment", "Payment process completed")
         }
     }
 
