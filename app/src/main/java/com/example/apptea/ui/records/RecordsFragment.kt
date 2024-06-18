@@ -43,18 +43,14 @@ class RecordsFragment : Fragment(), AddRecordButtonClickListener {
 
         employeeAdapter = EmployeeAdapter(emptyList())  // Initialize employeeAdapter
 
-
         val context = requireContext()
         val factory = RecordsViewModelFactory(context)
         viewModel = ViewModelProvider(this, factory).get(RecordsViewModel::class.java)
 
 
-
-
         fabSyncButton.setOnClickListener {
             syncDataWithGoogleSheet()
         }
-
 
         // Set click listener for add button
         val fabAddRecord: FloatingActionButton = root.findViewById(R.id.fabAddRecord)

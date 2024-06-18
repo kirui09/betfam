@@ -158,17 +158,6 @@ class TeaRecordsAdapter(
                     kilosTextView.gravity = Gravity.CENTER_VERTICAL
                     row.addView(kilosTextView)
 
-                    // Fetch employee type from the database
-                    val employeeType = dbHelper.getEmployeeType(record.employees)
-
-                    // Calculate pay based on fetched employee type
-                    val payAmount = calculatePay(record.kilos, employeeType)
-                    val payTextView = TextView(tableLayout.context)
-                    payTextView.text = "KSh.$payAmount"
-                    payTextView.setTypeface(null, Typeface.BOLD)
-                    payTextView.setPadding(5, 5, 5, 5)
-                    payTextView.gravity = Gravity.CENTER_VERTICAL
-                    row.addView(payTextView)
 
                     // Add edit button
                     val editButton = ImageButton(tableLayout.context)
@@ -232,13 +221,6 @@ class TeaRecordsAdapter(
             totalKilosTextView.setPadding(5, 5, 5, 5)
             totalsRow.addView(totalKilosTextView)
 
-            val totalPayTextView = TextView(tableLayout.context)
-            totalPayTextView.text = "KSh.${totalPayAmount}"
-            totalPayTextView.setTypeface(null, Typeface.BOLD)
-            totalPayTextView.setPadding(5, 5, 5, 5)
-            totalsRow.addView(totalPayTextView)
-            totalsRow.addView(View(tableLayout.context))
-
             tableLayout.addView(totalsRow)
         }
     }
@@ -266,14 +248,7 @@ class TeaRecordsAdapter(
         val formattedDateFormat = SimpleDateFormat("EEEE, d MMMM, yyyy", Locale.ENGLISH)
         return formattedDateFormat.format(date)
     }
-    private fun calculatePay(kilos: Double, employeeType: String): Double {
-        // Here, you can define your logic to calculate pay based on the employee type
-        return if (employeeType.equals("Supervisor", ignoreCase = true)) {
-            kilos * supervisorPay // Use the appropriate payment rate for supervisors
-        } else {
-            kilos * basicPay // Use the appropriate payment rate for basic employees
-        }
-    }
+
 
     fun filterRecordsByDate(date: String) {
         val filteredRecords = recordsByDay.filter { (dateKey, recordsList) ->

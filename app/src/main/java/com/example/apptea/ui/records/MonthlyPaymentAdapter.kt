@@ -3,6 +3,7 @@ package com.betfam.apptea.ui.records
 
 import android.app.AlertDialog
 import android.content.Context
+import android.content.SharedPreferences
 import android.graphics.Color
 import android.graphics.Typeface
 import android.text.InputType
@@ -496,7 +497,8 @@ class MonthlyPaymentAdapter(
     }
 
     fun showPayRateConfirmationDialog(context: Context, employeesOfTheMonth: Map<String, Double>) {
-        val defaultPayRate = 8.0 // Default pay rate
+        val sharedPreferences = getSharedPreferences()
+        val defaultPayRate = sharedPreferences.getFloat("pay_rate", 8.0f).toDouble() // Retrieve the saved pay rate or use 8.0 as default
         val (totalPayMessage, totalAmount) = generateTotalPayMessage(employeesOfTheMonth, defaultPayRate)
 
         val confirmationDialogBuilder = AlertDialog.Builder(context)
@@ -538,6 +540,7 @@ class MonthlyPaymentAdapter(
         confirmationDialogBuilder.show()
     }
 
+
     fun showEditPayRateDialog(context: Context, employeesOfTheMonth: Map<String, Double>, messageTextView: TextView) {
         val editDialogBuilder = AlertDialog.Builder(context)
         editDialogBuilder.setTitle("Edit Pay Rate")
@@ -551,10 +554,23 @@ class MonthlyPaymentAdapter(
 
         // Add the OK button
         editDialogBuilder.setPositiveButton("OK") { dialog, _ ->
-            val newPayRate = editText.text.toString().toDoubleOrNull()
+            val inputText = editText.text.toString()
+            val newPayRate = inputText.toDoubleOrNull()
             if (newPayRate != null) {
-                val (updatedPayMessage, totalAmount) = generateTotalPayMessage(employeesOfTheMonth, newPayRate)
-                messageTextView.text = "The pay rate is Ksh $newPayRate.\nHere is the payment breakdown:\n$updatedPayMessage\nTotal Amount: Ksh $totalAmount"
+                // Format the pay rate to two decimal places
+                val formattedPayRate = String.format("%.2f", newPayRate).toDouble()
+
+                // Save the new pay rate to SharedPreferences
+                val sharedPreferences = getSharedPreferences()
+                with(sharedPreferences.edit()) {
+                    putFloat("pay_rate", formattedPayRate.toFloat())
+                    apply()
+                }
+
+                val (updatedPayMessage, totalAmount) = generateTotalPayMessage(employeesOfTheMonth, formattedPayRate)
+                messageTextView.text = "The pay rate is Ksh $formattedPayRate.\nHere is the payment breakdown:\n$updatedPayMessage\nTotal Amount: Ksh $totalAmount"
+            } else {
+                Toast.makeText(context, "Please enter a valid number", Toast.LENGTH_SHORT).show()
             }
             dialog.dismiss()
         }
@@ -568,6 +584,11 @@ class MonthlyPaymentAdapter(
         editDialogBuilder.show()
     }
 
+
+
+
+
+
     fun generateTotalPayMessage(employeesOfTheMonth: Map<String, Double>, payRate: Double): Pair<String, Double> {
         var totalPayMessage = ""
         var totalAmount = 0.0
@@ -579,8 +600,12 @@ class MonthlyPaymentAdapter(
         return Pair(totalPayMessage, totalAmount)
     }
 
-    fun handlePayment(context: Context, employeesOfTheMonth: Map<String, Double>, payRate: Double) {
+    fun handlePayment(context: Context, employeesOfTheMonth: Map<String, Double>, defaultPayRate: Double) {
         Log.d("HandlePayment", "Starting payment process...")
+
+        // Retrieve the saved pay rate from SharedPreferences
+        val sharedPreferences = getSharedPreferences()
+        val payRate = sharedPreferences.getFloat("pay_rate", defaultPayRate.toFloat()).toDouble()
 
         // Start a coroutine to handle Room database operations
         CoroutineScope(Dispatchers.IO).launch {
@@ -611,7 +636,8 @@ class MonthlyPaymentAdapter(
 
                 // Calculate and save each tea record
                 teaRecords.forEach { record ->
-                    val paymentAmount = record.kilos * payRate
+                    // Calculate the payment amount and format it to two decimal places
+                    val paymentAmount = String.format("%.2f", record.kilos * payRate).toDouble()
                     val paymentData = PendingPaymentData(
                         id = record.id,
                         date = record.date,
@@ -633,6 +659,12 @@ class MonthlyPaymentAdapter(
             Log.d("HandlePayment", "Payment process completed")
         }
     }
+
+
+    private fun getSharedPreferences(): SharedPreferences {
+        return context.getSharedPreferences("com.betfam.apptea.preferences", Context.MODE_PRIVATE)
+    }
+
 
 
 }
