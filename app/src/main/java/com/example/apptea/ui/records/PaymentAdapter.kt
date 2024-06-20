@@ -312,8 +312,6 @@ class PaymentAdapter(
         editDialogBuilder.show()
     }
 
-
-
     private fun savePayRateToSharedPreferences(payRate: Double) {
         val sharedPreferences = context.getSharedPreferences("com.betfam.apptea.preferences", Context.MODE_PRIVATE)
         val formattedPayRate = String.format("%.2f", payRate).toFloat() // Format the pay rate to two decimal places and convert to float
