@@ -170,15 +170,12 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         return employees
     }
 
-
     // Function to fetch tea records for an employee in a specific month
-    fun getTeaRecordsForEmployeeInMonth(employeeName: String, month: Int, year: Int): List<PendingTeaRecord> {
+    fun getTeaRecordsForEmployee(employeeName: String): List<PendingTeaRecord> {
         val db = readableDatabase
-        val monthString = if (month < 10) "0$month" else month.toString()
-        val yearString = year.toString()
 
-        val query = "SELECT * FROM TeaRecords WHERE employee_name = ? AND strftime('%m', date) = ? AND strftime('%Y', date) = ?"
-        val cursor = db.rawQuery(query, arrayOf(employeeName, monthString, yearString))
+        val query = "SELECT * FROM TeaRecords WHERE employee_name = ?"
+        val cursor = db.rawQuery(query, arrayOf(employeeName))
 
         val teaRecords = mutableListOf<PendingTeaRecord>()
         if (cursor.moveToFirst()) {
@@ -192,6 +189,8 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         cursor.close()
         return teaRecords
     }
+
+
 
     fun updatePaymentInTeaRecords(recordId: Int, paymentAmount: Double) {
         val db = writableDatabase
@@ -259,7 +258,6 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         val db = this.writableDatabase
         val cv = ContentValues()
 
-
         cv.put("name", employee.name)
         cv.put("emp_type", employee.empType)
         cv.put("age", employee.age)
@@ -316,6 +314,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         )
         val selection = "phone = ?"
         val selectionArgs = arrayOf(phoneNumber)
+
 
         val cursor: Cursor? =
             db.query("FarmersDatabase", columns, selection, selectionArgs, null, null, null)
@@ -475,7 +474,8 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
         while (cursor.moveToNext()) {
             val dateString = cursor.getString(cursor.getColumnIndex("date"))
-            val date = formatter.parse(dateString) // Convert String to Date
+            val date = formatter.parse(dateString)
+            // Convert String to Date
 
             val totalKilos = cursor.getDouble(cursor.getColumnIndex("total_kilos"))
 

@@ -45,6 +45,11 @@ class SharedPreferencesHelper(context: Context) {
         }
     }
 
+    fun getPayRate(): Double {
+        val defaultPayRate = 8.0
+        return sharedPreferences.getFloat("pay_rate", defaultPayRate.toFloat()).toDouble()
+    }
+
 
 
 }

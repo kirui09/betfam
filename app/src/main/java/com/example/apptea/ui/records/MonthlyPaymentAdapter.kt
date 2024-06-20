@@ -498,7 +498,7 @@ class MonthlyPaymentAdapter(
 
     fun showPayRateConfirmationDialog(context: Context, employeesOfTheMonth: Map<String, Double>) {
         val sharedPreferences = getSharedPreferences()
-        val defaultPayRate = sharedPreferences.getFloat("pay_rate", 8.0f).toDouble() // Retrieve the saved pay rate or use 8.0 as default
+        val defaultPayRate = String.format("%.2f", sharedPreferences.getFloat("pay_rate", 8.0f).toDouble()).toDouble() // Retrieve and format the saved pay rate
         val (totalPayMessage, totalAmount) = generateTotalPayMessage(employeesOfTheMonth, defaultPayRate)
 
         val confirmationDialogBuilder = AlertDialog.Builder(context)
@@ -510,7 +510,7 @@ class MonthlyPaymentAdapter(
 
         // Add a TextView to show the message
         val messageTextView = TextView(context)
-        messageTextView.text = "The default pay rate is Ksh $defaultPayRate.\nHere is the payment breakdown:\n$totalPayMessage\nTotal Amount: Ksh $totalAmount"
+        messageTextView.text = "The  pay rate is Ksh $defaultPayRate.\nHere is the payment breakdown:\n$totalPayMessage\nTotal Amount: Ksh $totalAmount"
         layout.addView(messageTextView)
 
         // Add an Edit button
@@ -558,16 +558,16 @@ class MonthlyPaymentAdapter(
             val newPayRate = inputText.toDoubleOrNull()
             if (newPayRate != null) {
                 // Format the pay rate to two decimal places
-                val formattedPayRate = String.format("%.2f", newPayRate).toDouble()
+                val formattedPayRate = String.format("%.2f", newPayRate).toFloat() // Ensure it is stored as a float
 
                 // Save the new pay rate to SharedPreferences
                 val sharedPreferences = getSharedPreferences()
                 with(sharedPreferences.edit()) {
-                    putFloat("pay_rate", formattedPayRate.toFloat())
+                    putFloat("pay_rate", formattedPayRate)
                     apply()
                 }
 
-                val (updatedPayMessage, totalAmount) = generateTotalPayMessage(employeesOfTheMonth, formattedPayRate)
+                val (updatedPayMessage, totalAmount) = generateTotalPayMessage(employeesOfTheMonth, formattedPayRate.toDouble())
                 messageTextView.text = "The pay rate is Ksh $formattedPayRate.\nHere is the payment breakdown:\n$updatedPayMessage\nTotal Amount: Ksh $totalAmount"
             } else {
                 Toast.makeText(context, "Please enter a valid number", Toast.LENGTH_SHORT).show()
@@ -584,11 +584,6 @@ class MonthlyPaymentAdapter(
         editDialogBuilder.show()
     }
 
-
-
-
-
-
     fun generateTotalPayMessage(employeesOfTheMonth: Map<String, Double>, payRate: Double): Pair<String, Double> {
         var totalPayMessage = ""
         var totalAmount = 0.0
@@ -600,12 +595,12 @@ class MonthlyPaymentAdapter(
         return Pair(totalPayMessage, totalAmount)
     }
 
-    fun handlePayment(context: Context, employeesOfTheMonth: Map<String, Double>, defaultPayRate: Double) {
+    fun handlePayment(context: Context, employeesOfTheMonth: Map<String, Double>, payRate: Double) {
         Log.d("HandlePayment", "Starting payment process...")
 
-        // Retrieve the saved pay rate from SharedPreferences
-        val sharedPreferences = getSharedPreferences()
-        val payRate = sharedPreferences.getFloat("pay_rate", defaultPayRate.toFloat()).toDouble()
+        // Get the current month and year
+        val currentMonth = SimpleDateFormat("MM", Locale.getDefault()).format(Date())
+        val currentYear = SimpleDateFormat("yyyy", Locale.getDefault()).format(Date())
 
         // Start a coroutine to handle Room database operations
         CoroutineScope(Dispatchers.IO).launch {
@@ -616,23 +611,13 @@ class MonthlyPaymentAdapter(
             val appDatabase = App.getDatabase(context)
             val pendingPaymentDataDao = appDatabase.pendingPaymentDao()
 
-            // Get the current date
-            val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-            val currentDate = dateFormat.format(Date())
-
-            Log.d("HandlePayment", "Current date: $currentDate")
-
             // Save each payment to the database
             for ((employeeName, totalKilos) in employeesOfTheMonth) {
                 Log.d("HandlePayment", "Processing employee: $employeeName, Total Kilos: $totalKilos")
 
-                // Fetch tea records for the employee in the current month
-                val calendar = Calendar.getInstance()
-                val currentMonth = calendar.get(Calendar.MONTH) + 1
-                val currentYear = calendar.get(Calendar.YEAR)
-                val teaRecords = dbHelper.getTeaRecordsForEmployeeInMonth(employeeName, currentMonth, currentYear)
-
-                Log.d("HandlePayment", "Fetched ${teaRecords.size} tea records for $employeeName in $currentMonth/$currentYear")
+                // Fetch tea records for the employee
+                val teaRecords = dbHelper.getTeaRecordsForEmployee(employeeName)
+                Log.d("HandlePayment", "Fetched ${teaRecords.size} tea records for $employeeName")
 
                 // Calculate and save each tea record
                 teaRecords.forEach { record ->
@@ -640,7 +625,7 @@ class MonthlyPaymentAdapter(
                     val paymentAmount = String.format("%.2f", record.kilos * payRate).toDouble()
                     val paymentData = PendingPaymentData(
                         id = record.id,
-                        date = record.date,
+                        date = record.date, // Use the record date
                         employeeName = employeeName,
                         paymentAmount = paymentAmount
                     )
@@ -651,6 +636,7 @@ class MonthlyPaymentAdapter(
                     withContext(Dispatchers.IO) {
                         pendingPaymentDataDao.insert(paymentData)
                         dbHelper.updatePaymentInTeaRecords(record.id, paymentAmount)
+                        Log.d("HandlePayment", "Record saved to pending payments: Employee: $employeeName, Date: ${record.date}, Amount: Ksh $paymentAmount, Record ID: ${record.id}")
                     }
                     println("Paying $employeeName Ksh $paymentAmount for ${record.kilos} kilos on ${record.date} with ID ${record.id}")
                 }
@@ -659,11 +645,10 @@ class MonthlyPaymentAdapter(
             Log.d("HandlePayment", "Payment process completed")
         }
     }
-
-
     private fun getSharedPreferences(): SharedPreferences {
         return context.getSharedPreferences("com.betfam.apptea.preferences", Context.MODE_PRIVATE)
     }
+
 
 
 
