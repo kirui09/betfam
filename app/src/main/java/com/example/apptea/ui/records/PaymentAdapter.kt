@@ -152,10 +152,13 @@ class PaymentAdapter(
             holder.checkBox.setOnCheckedChangeListener { _, isChecked ->
                 if (isChecked) {
                     val sharedPreferences = context.getSharedPreferences("com.betfam.apptea.preferences", Context.MODE_PRIVATE)
-                    val defaultPayRate = String.format("%.2f", sharedPreferences.getFloat("pay_rate", 8.0f).toDouble()).toDouble()
+                    //val defaultPayRate = String.format("%.2f", sharedPreferences.getFloat("pay_rate", 8.0f).toDouble()).toDouble()
+                    val payRate=8
+                    val payRateFromPreferences = sharedPreferences.getFloat("pay_rate", payRate.toFloat()).toDouble() // Assuming payRateKey is the key for stored pay rate
+                    val formattedPayRate = String.format("%.2f", payRateFromPreferences).toDouble() // Format the pay rate to two decimal places and convert to double
 
                     val employeesForDay = payments?.map { it.employeeName to it.kilos }?.toMap() ?: emptyMap()
-                    val (totalPayMessage, totalAmount) = generateTotalPayMessage(employeesForDay, defaultPayRate)
+                    val (totalPayMessage, totalAmount) = generateTotalPayMessage(employeesForDay, formattedPayRate)
 
                     val confirmationDialogBuilder = AlertDialog.Builder(context)
                     confirmationDialogBuilder.setTitle("Confirm Pay Rate")
@@ -164,7 +167,7 @@ class PaymentAdapter(
                     layout.orientation = LinearLayout.VERTICAL
 
                     val messageTextView = TextView(context)
-                    messageTextView.text = "The pay rate is Ksh $defaultPayRate.\nHere is the payment breakdown:\n$totalPayMessage\nTotal Amount: Ksh $totalAmount"
+                    messageTextView.text = "The pay rate is Ksh $formattedPayRate.\nHere is the payment breakdown:\n$totalPayMessage\nTotal Amount: Ksh $totalAmount"
                     layout.addView(messageTextView)
 
                     val editButton = Button(context)
@@ -179,7 +182,7 @@ class PaymentAdapter(
 
                     confirmationDialogBuilder.setPositiveButton("Confirm") { dialog, _ ->
                         payments?.forEach { payment ->
-                            val paymentAmount = calculatePay(payment.copy(paymentAmount = defaultPayRate * payment.kilos))
+                            val paymentAmount = calculatePay(payment.copy(paymentAmount = formattedPayRate * payment.kilos))
                             val updatedPayment = payment.copy(paymentAmount = paymentAmount)
                             savePaymentToTeaRecords(updatedPayment)
                         }
@@ -231,8 +234,11 @@ class PaymentAdapter(
     private fun calculatePay(payment: Payment): Double {
         val kilos = payment.kilos
         val defaultPayRate = 8.0
-        Log.d("PaymentAdapter", "Calculating pay: $kilos * $defaultPayRate")
-        return kilos * defaultPayRate
+        val sharedPreferences = context.getSharedPreferences("com.betfam.apptea.preferences", Context.MODE_PRIVATE)
+        val payRateFromPreferences = sharedPreferences.getFloat("pay_rate", defaultPayRate.toFloat()).toDouble() // Assuming payRateKey is the key for stored pay rate
+        val formattedPayRate = String.format("%.2f", payRateFromPreferences).toDouble() // Format the pay rate to two decimal places and convert to double
+        Log.d("PaymentAdapter", "Calculating pay: $kilos * $formattedPayRate")
+        return kilos * formattedPayRate
     }
 
     private fun savePaymentToTeaRecords(payment: Payment) {
@@ -295,10 +301,12 @@ class PaymentAdapter(
             val inputText = editText.text.toString()
             val newPayRate = inputText.toDoubleOrNull()
             if (newPayRate != null) {
-                savePayRateToSharedPreferences(newPayRate)
-
-                val updatedPayMessage = generateTotalPayMessage(payments, newPayRate).first
-                messageTextView.text = "The pay rate is Ksh $newPayRate.\nHere is the payment breakdown:\n$updatedPayMessage\nTotal Amount: Ksh ${generateTotalPayMessage(payments, newPayRate).second}"
+                val formattedPayRate = String.format("%.2f", newPayRate).toFloat()
+                val sharedPreferences = context.getSharedPreferences("com.betfam.apptea.preferences", Context.MODE_PRIVATE)
+                with(sharedPreferences.edit()) {
+                    putFloat("pay_rate", formattedPayRate)
+                    apply()
+                }
             } else {
                 Toast.makeText(context, "Please enter a valid number", Toast.LENGTH_SHORT).show()
             }
@@ -312,22 +320,25 @@ class PaymentAdapter(
         editDialogBuilder.show()
     }
 
-    private fun savePayRateToSharedPreferences(payRate: Double) {
+    private fun savePayRateToSharedPreferences(PayRate: Double) {
         val sharedPreferences = context.getSharedPreferences("com.betfam.apptea.preferences", Context.MODE_PRIVATE)
-        val formattedPayRate = String.format("%.2f", payRate).toFloat() // Format the pay rate to two decimal places and convert to float
+        //val formattedPayRate = String.format("%.2f", sharedPreferences).toFloat() // Format the pay rate to two decimal places and convert to float
+        val payRateFromPreferences = sharedPreferences.getFloat("pay_rate", PayRate.toFloat()).toDouble() // Assuming payRateKey is the key for stored pay rate
+        val formattedPayRate = String.format("%.2f", payRateFromPreferences).toFloat() // Format the pay rate to two decimal places and convert to double
+
         with(sharedPreferences.edit()) {
             putFloat("pay_rate", formattedPayRate)
             apply()
         }
     }
 
-    private fun generateTotalPayMessage(employeesForDay: Map<String, Double>, defaultPayRate: Double): Pair<String, Double> {
+    private fun generateTotalPayMessage(employeesForDay: Map<String, Double>, formattedPayRate: Double): Pair<String, Double> {
         var totalPayMessage = ""
         var totalAmount = 0.0
 
         for ((employeeName, kilos) in employeesForDay) {
-            val payAmount = kilos * defaultPayRate
-            totalPayMessage += "$employeeName: $kilos Kilos * Ksh $defaultPayRate = Ksh $payAmount\n"
+            val payAmount = kilos * formattedPayRate
+            totalPayMessage += "$employeeName: $kilos Kilos * Ksh $formattedPayRate = Ksh $payAmount\n"
             totalAmount += payAmount
         }
 

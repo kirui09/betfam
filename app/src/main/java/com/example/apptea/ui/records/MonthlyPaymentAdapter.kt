@@ -496,98 +496,84 @@ class MonthlyPaymentAdapter(
         return calendar.get(Calendar.MONTH) + 1 // Month is 0-based in Calendar, so add 1
     }
 
+
+
     fun showPayRateConfirmationDialog(context: Context, employeesOfTheMonth: Map<String, Double>) {
         val sharedPreferences = getSharedPreferences()
-        val defaultPayRate = String.format("%.2f", sharedPreferences.getFloat("pay_rate", 8.0f).toDouble()).toDouble() // Retrieve and format the saved pay rate
-        val (totalPayMessage, totalAmount) = generateTotalPayMessage(employeesOfTheMonth, defaultPayRate)
+        val defaultPayRate = String.format("%.2f", sharedPreferences.getFloat("pay_rate", 8.0f).toDouble()).toDouble()
+
+        // Fetch unpaid records and the total of paid records
+        val (unpaidRecords, totalPaidAmount) = getUnpaidRecordsAndTotalPaid(context, employeesOfTheMonth)
+
+        val (unpaidMessage, unpaidAmount) = generateTotalPayMessage(unpaidRecords, defaultPayRate)
 
         val confirmationDialogBuilder = AlertDialog.Builder(context)
         confirmationDialogBuilder.setTitle("Confirm Pay Rate")
 
-        // Create a LinearLayout to hold the message and the edit button
         val layout = LinearLayout(context)
         layout.orientation = LinearLayout.VERTICAL
 
-        // Add a TextView to show the message
         val messageTextView = TextView(context)
-        messageTextView.text = "The  pay rate is Ksh $defaultPayRate.\nHere is the payment breakdown:\n$totalPayMessage\nTotal Amount: Ksh $totalAmount"
+        messageTextView.text = """
+        The pay rate is Ksh $defaultPayRate.
+        
+        Unpaid Records:
+        $unpaidMessage
+        Total Unpaid Amount: Ksh $unpaidAmount
+        
+        Note: Ksh $totalPaidAmount has already been paid for this period.
+    """.trimIndent()
         layout.addView(messageTextView)
 
-        // Add an Edit button
         val editButton = Button(context)
         editButton.text = "Edit Pay Rate"
         layout.addView(editButton)
 
         confirmationDialogBuilder.setView(layout)
 
-        // Set the Edit button click listener to show an EditText dialog
         editButton.setOnClickListener {
-            showEditPayRateDialog(context, employeesOfTheMonth, messageTextView)
+            showEditPayRateDialog(context, unpaidRecords, totalPaidAmount, messageTextView)
         }
 
-        // Add the Confirm button
         confirmationDialogBuilder.setPositiveButton("Confirm") { dialog, _ ->
-            // Handle the payment logic here if confirmed
-            handlePayment(context, employeesOfTheMonth, defaultPayRate)
+            handlePayment(context, unpaidRecords, defaultPayRate)
             dialog.dismiss()
         }
-        // Add the Cancel button
         confirmationDialogBuilder.setNegativeButton("Cancel") { dialog, _ ->
             dialog.dismiss()
         }
 
-        // Show the confirmation dialog
         confirmationDialogBuilder.show()
     }
 
+    fun getUnpaidRecordsAndTotalPaid(context: Context, employeesOfTheMonth: Map<String, Double>): Pair<Map<String, Double>, Double> {
+        val dbHelper = DBHelper(context)
+        val unpaidRecords = mutableMapOf<String, Double>()
+        var totalPaidAmount = 0.0
 
-    fun showEditPayRateDialog(context: Context, employeesOfTheMonth: Map<String, Double>, messageTextView: TextView) {
-        val editDialogBuilder = AlertDialog.Builder(context)
-        editDialogBuilder.setTitle("Edit Pay Rate")
+        for ((employeeName, _) in employeesOfTheMonth) {
+            val teaRecords = dbHelper.getTeaRecordsForEmployee(employeeName)
+            var unpaidKilos = 0.0
 
-        // Add an EditText to enter the new pay rate
-        val editText = EditText(context)
-        editText.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
-        editText.hint = "Enter new pay rate"
-
-        editDialogBuilder.setView(editText)
-
-        // Add the OK button
-        editDialogBuilder.setPositiveButton("OK") { dialog, _ ->
-            val inputText = editText.text.toString()
-            val newPayRate = inputText.toDoubleOrNull()
-            if (newPayRate != null) {
-                // Format the pay rate to two decimal places
-                val formattedPayRate = String.format("%.2f", newPayRate).toFloat() // Ensure it is stored as a float
-
-                // Save the new pay rate to SharedPreferences
-                val sharedPreferences = getSharedPreferences()
-                with(sharedPreferences.edit()) {
-                    putFloat("pay_rate", formattedPayRate)
-                    apply()
+            teaRecords.forEach { record ->
+                val existingPaymentAmount = dbHelper.getPaymentAmountFromDatabase(employeeName, record.date)
+                if (existingPaymentAmount == 0.0) {
+                    unpaidKilos += record.kilos
+                } else {
+                    totalPaidAmount += existingPaymentAmount
                 }
-
-                val (updatedPayMessage, totalAmount) = generateTotalPayMessage(employeesOfTheMonth, formattedPayRate.toDouble())
-                messageTextView.text = "The pay rate is Ksh $formattedPayRate.\nHere is the payment breakdown:\n$updatedPayMessage\nTotal Amount: Ksh $totalAmount"
-            } else {
-                Toast.makeText(context, "Please enter a valid number", Toast.LENGTH_SHORT).show()
             }
-            dialog.dismiss()
+
+            if (unpaidKilos > 0) unpaidRecords[employeeName] = unpaidKilos
         }
 
-        // Add the Cancel button
-        editDialogBuilder.setNegativeButton("Cancel") { dialog, _ ->
-            dialog.dismiss()
-        }
-
-        // Show the edit dialog
-        editDialogBuilder.show()
+        return Pair(unpaidRecords, totalPaidAmount)
     }
 
-    fun generateTotalPayMessage(employeesOfTheMonth: Map<String, Double>, payRate: Double): Pair<String, Double> {
+    fun generateTotalPayMessage(unpaidRecords: Map<String, Double>, payRate: Double): Pair<String, Double> {
         var totalPayMessage = ""
         var totalAmount = 0.0
-        for ((employeeName, totalKilos) in employeesOfTheMonth) {
+        for ((employeeName, totalKilos) in unpaidRecords) {
             val totalPay = totalKilos * payRate
             totalPayMessage += "$employeeName: $totalKilos kilos * Ksh $payRate = Ksh $totalPay\n"
             totalAmount += totalPay
@@ -595,61 +581,106 @@ class MonthlyPaymentAdapter(
         return Pair(totalPayMessage, totalAmount)
     }
 
-    fun handlePayment(context: Context, employeesOfTheMonth: Map<String, Double>, payRate: Double) {
+    fun showEditPayRateDialog(context: Context, unpaidRecords: Map<String, Double>, totalPaidAmount: Double, messageTextView: TextView) {
+        val editDialogBuilder = AlertDialog.Builder(context)
+        editDialogBuilder.setTitle("Edit Pay Rate")
+
+        val editText = EditText(context)
+        editText.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
+        editText.hint = "Enter new pay rate"
+
+        editDialogBuilder.setView(editText)
+
+        editDialogBuilder.setPositiveButton("OK") { dialog, _ ->
+            val inputText = editText.text.toString()
+            val newPayRate = inputText.toDoubleOrNull()
+            if (newPayRate != null) {
+                val formattedPayRate = String.format("%.2f", newPayRate).toFloat()
+
+                val sharedPreferences = getSharedPreferences()
+                with(sharedPreferences.edit()) {
+                    putFloat("pay_rate", formattedPayRate)
+                    apply()
+                }
+
+                val (updatedUnpaidMessage, updatedUnpaidAmount) = generateTotalPayMessage(unpaidRecords, formattedPayRate.toDouble())
+
+                messageTextView.text = """
+                The pay rate is Ksh $formattedPayRate.
+                
+                Unpaid Records:
+                $updatedUnpaidMessage
+                Total Unpaid Amount: Ksh $updatedUnpaidAmount
+                
+                Note: Ksh $totalPaidAmount has already been paid for this period.
+            """.trimIndent()
+            } else {
+                Toast.makeText(context, "Please enter a valid number", Toast.LENGTH_SHORT).show()
+            }
+            dialog.dismiss()
+        }
+
+        editDialogBuilder.setNegativeButton("Cancel") { dialog, _ ->
+            dialog.dismiss()
+        }
+
+        editDialogBuilder.show()
+    }
+
+// The handlePayment function remains the same as in the previous response
+
+
+
+    fun handlePayment(context: Context, unpaidRecords: Map<String, Double>, payRate: Double) {
         Log.d("HandlePayment", "Starting payment process...")
 
-        // Get the current month and year
-        val currentMonth = SimpleDateFormat("MM", Locale.getDefault()).format(Date())
-        val currentYear = SimpleDateFormat("yyyy", Locale.getDefault()).format(Date())
-
-        // Start a coroutine to handle Room database operations
         CoroutineScope(Dispatchers.IO).launch {
             Log.d("HandlePayment", "Coroutine launched")
 
-            // Get the database instance
             val dbHelper = DBHelper(context)
             val appDatabase = App.getDatabase(context)
             val pendingPaymentDataDao = appDatabase.pendingPaymentDao()
 
-            // Save each payment to the database
-            for ((employeeName, totalKilos) in employeesOfTheMonth) {
-                Log.d("HandlePayment", "Processing employee: $employeeName, Total Kilos: $totalKilos")
+            val sharedPreferences = context.getSharedPreferences("com.betfam.apptea.preferences", Context.MODE_PRIVATE)
+            val payRateFromPreferences = sharedPreferences.getFloat("pay_rate", payRate.toFloat()).toDouble() // Assuming payRateKey is the key for stored pay rate
+            val formattedPayRate = String.format("%.2f", payRateFromPreferences).toDouble() // Format the pay rate to two decimal places and convert to double
 
-                // Fetch tea records for the employee
+            for ((employeeName, totalUnpaidKilos) in unpaidRecords) {
+                Log.d("HandlePayment", "Processing employee: $employeeName, Total Unpaid Kilos: $totalUnpaidKilos")
+
                 val teaRecords = dbHelper.getTeaRecordsForEmployee(employeeName)
                 Log.d("HandlePayment", "Fetched ${teaRecords.size} tea records for $employeeName")
 
-                // Calculate and save each tea record
                 teaRecords.forEach { record ->
-                    // Calculate the payment amount and format it to two decimal places
-                    val paymentAmount = String.format("%.2f", record.kilos * payRate).toDouble()
-                    val paymentData = PendingPaymentData(
-                        id = record.id,
-                        date = record.date, // Use the record date
-                        employeeName = employeeName,
-                        paymentAmount = paymentAmount
-                    )
+                    val existingPaymentAmount = dbHelper.getPaymentAmountFromDatabase(employeeName, record.date)
+                    if (existingPaymentAmount == 0.0) {
+                        val paymentAmount = String.format("%.2f", record.kilos * formattedPayRate).toDouble()
+                        val paymentData = PendingPaymentData(
+                            id = record.id,
+                            date = record.date,
+                            employeeName = employeeName,
+                            paymentAmount = paymentAmount
+                        )
 
-                    Log.d("HandlePayment", "Saving payment for $employeeName on ${record.date}: Ksh $paymentAmount (${record.kilos} kilos) with ID ${record.id}")
+                        Log.d("HandlePayment", "Saving payment for $employeeName on ${record.date}: Ksh $paymentAmount (${record.kilos} kilos) with ID ${record.id}")
 
-                    // Use withContext to switch to the IO dispatcher for Room operation
-                    withContext(Dispatchers.IO) {
-                        pendingPaymentDataDao.insert(paymentData)
-                        dbHelper.updatePaymentInTeaRecords(record.id, paymentAmount)
-                        Log.d("HandlePayment", "Record saved to pending payments: Employee: $employeeName, Date: ${record.date}, Amount: Ksh $paymentAmount, Record ID: ${record.id}")
+                        withContext(Dispatchers.IO) {
+                            pendingPaymentDataDao.insert(paymentData)
+                            dbHelper.updatePaymentInTeaRecords(record.id, paymentAmount)
+                            Log.d("HandlePayment", "Record saved to pending payments: Employee: $employeeName, Date: ${record.date}, Amount: Ksh $paymentAmount, Record ID: ${record.id}")
+                        }
                     }
-                    println("Paying $employeeName Ksh $paymentAmount for ${record.kilos} kilos on ${record.date} with ID ${record.id}")
                 }
             }
 
             Log.d("HandlePayment", "Payment process completed")
         }
     }
+
+
     private fun getSharedPreferences(): SharedPreferences {
         return context.getSharedPreferences("com.betfam.apptea.preferences", Context.MODE_PRIVATE)
     }
-
-
 
 
 }
