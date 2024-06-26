@@ -82,13 +82,20 @@ class MainActivity : AppCompatActivity() {
 
 
     private lateinit var googleSignInClient: GoogleSignInClient
+
+
     private val googleSignInLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+
         if (result.resultCode == Activity.RESULT_OK) {
+            Log.e(TAG, "successful")
             val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
             try {
                 val account = task.getResult(ApiException::class.java)
+
                 if (account != null) {
                     val userId = account.email
+
+
                     val idToken = account.idToken
                     if (userId != null) {
                         if (idToken != null) {
@@ -103,7 +110,12 @@ class MainActivity : AppCompatActivity() {
             } catch (e: ApiException) {
                 Log.e(TAG, "Google sign-in failed", e)
             }
+
         }
+        Log.w(TAG, "Google Sign-In failed with resultCode: ${result.resultCode}")
+      
+
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
