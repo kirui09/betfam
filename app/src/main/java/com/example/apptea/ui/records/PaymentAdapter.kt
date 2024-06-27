@@ -140,9 +140,7 @@ class PaymentAdapter(
 
         if (holder is GeneralPayViewHolder) {
             holder.generalPayDateTextView.text = formatDate(day)
-            val totalPayment = payments?.sumByDouble { payment ->
-                calculatePay(payment)
-            } ?: 0.0
+            val totalPayment = getTotalPaymentForDay(day)
             holder.totalPayForDayTextView.text = "Total Payment: Ksh ${NumberFormat.getInstance().format(totalPayment)}"
 
             holder.checkBox.isChecked = isVerified
@@ -230,7 +228,15 @@ class PaymentAdapter(
         val formattedDateFormat = SimpleDateFormat("EEE, d MMMM, yyyy", Locale.ENGLISH)
         return formattedDateFormat.format(date)
     }
-
+    fun getTotalPaymentForDay(date: String): Double {
+        val db = dbHelper.readableDatabase
+        val cursor = db.rawQuery("SELECT SUM(pay) FROM TeaRecords WHERE date = ?", arrayOf(date))
+        cursor.moveToFirst()
+        val totalPayment = cursor.getDouble(0)
+        cursor.close()
+        db.close()
+        return totalPayment
+    }
     private fun calculatePay(payment: Payment): Double {
         val kilos = payment.kilos
         val defaultPayRate = 8.0
