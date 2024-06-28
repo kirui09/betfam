@@ -56,6 +56,7 @@ class MonthlyPaymentFragment : Fragment() {
     private fun getMonthlyPayments(): LinkedHashMap<String, ArrayList<MonthlyPayment>> {
         val monthlyPaymentsMap = LinkedHashMap<String, ArrayList<MonthlyPayment>>()
         val allMonthlyPayments = dbHelper.getSumOfKilosForEachEmployee()
+
         for (payment in allMonthlyPayments) {
             val month = payment.date.substring(0, 7) // Extract yyyy-MM from the date
             if (!monthlyPaymentsMap.containsKey(month)) {
@@ -63,8 +64,16 @@ class MonthlyPaymentFragment : Fragment() {
             }
             monthlyPaymentsMap[month]?.add(payment)
         }
-        return monthlyPaymentsMap
+
+        // Sort the monthly payments by month in descending order
+        val sortedMonthlyPaymentsMap = monthlyPaymentsMap.entries
+            .sortedByDescending { it.key }
+            .associate { it.toPair() }
+            .let { LinkedHashMap(it) }
+
+        return sortedMonthlyPaymentsMap
     }
+
 
     private fun showProgressBar(view: View) {
         val progressBar = view.findViewById<RelativeLayout>(R.id.monthlypaymentFragmentProgressBar)

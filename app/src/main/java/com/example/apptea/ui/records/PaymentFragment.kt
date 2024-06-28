@@ -59,7 +59,7 @@ class PaymentFragment : Fragment() {
         paymentsLiveData.observe(viewLifecycleOwner) { payments ->
             val groupedPayments = LinkedHashMap<String, ArrayList<Payment>>()
             for (payment in payments) {
-                val date = payment.date //
+                val date = payment.date
                 if (groupedPayments.containsKey(date)) {
                     groupedPayments[date]?.add(payment)
                 } else {
@@ -68,13 +68,21 @@ class PaymentFragment : Fragment() {
                     groupedPayments[date] = newList
                 }
             }
-            paymentAdapter.updateData(groupedPayments)
+
+            // Sort the entries by key (date) in descending order
+            val sortedGroupedPayments = groupedPayments.entries
+                .sortedByDescending { it.key }
+                .associate { it.toPair() }
+                .let { LinkedHashMap(it) }
+
+            paymentAdapter.updateData(sortedGroupedPayments)
 
             // Hide the progress bar after data is updated
             hideProgressBar(requireView())
-
         }
     }
+
+
 
     private fun fetchPaymentTypes() {
         supervisorPay = dbHelper.getSupervisorPay()
