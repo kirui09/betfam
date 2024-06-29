@@ -313,6 +313,12 @@ class PaymentAdapter(
                     putFloat("pay_rate", formattedPayRate)
                     apply()
                 }
+
+                messageTextView.text = """
+                The pay rate is Ksh $formattedPayRate.
+                
+      
+            """.trimIndent()
             } else {
                 Toast.makeText(context, "Please enter a valid number", Toast.LENGTH_SHORT).show()
             }
@@ -336,6 +342,7 @@ class PaymentAdapter(
             putFloat("pay_rate", formattedPayRate)
             apply()
         }
+
     }
 
     private fun generateTotalPayMessage(employeesForDay: Map<String, Double>, formattedPayRate: Double): Pair<String, Double> {
