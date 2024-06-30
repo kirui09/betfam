@@ -119,7 +119,7 @@ class SyncService : JobService() {
                 // Get the spreadsheet ID from Google Drive
                 val spreadsheetId = getSpreadsheetIdFromDrive(credential)
                 if (spreadsheetId != null) {
-                    val range = "Sheet1!A:E" // Adjust the range based on your needs.
+                    val range = "Sheet1!A:F" // Adjust the range based on your needs.
                     val valueRange = ValueRange().setValues(
                         listOf(listOf(record.id, record.date, record.company, record.employee, record.kilos))
                     )

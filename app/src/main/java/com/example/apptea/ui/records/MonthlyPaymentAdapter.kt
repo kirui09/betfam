@@ -456,17 +456,15 @@ class MonthlyPaymentAdapter(
 
         // Build the payment details list
 
-        payments.forEach { (date, kilos) ->
+        payments.forEach { (date, kilos, pay) ->
             val dateFormat = SimpleDateFormat("EEE, d MMMM ", Locale.ENGLISH)
             val formattedDate = dateFormat.format(SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH).parse(date))
-            val paymentAmount = getTotalPaymentForDay(date)
-            val totalKilos = paymentAmount.first
-            val totalPayment = paymentAmount.second
+
             try {
                 val actualPaymentAmount = dbHelper.getPaymentAmountFromDatabase(employeeName, date)
                 Log.d("ActPaymentDetails", "Fetched payment amount for $employeeName on $date: $actualPaymentAmount")
                 val isPaymentCompleted = actualPaymentAmount > 0
-                paymentDetailsList.add(PaymentDetail(formattedDate, kilos, totalPayment, isPaymentCompleted))
+                paymentDetailsList.add(PaymentDetail(formattedDate, kilos, pay, isPaymentCompleted))
             } catch (e: Exception) {
                 Log.e("ActPaymentDetails", "Error fetching payment amount for $employeeName on $date: ${e.message}")
                 // Handle the error or skip adding the payment detail to the list
@@ -546,21 +544,21 @@ class MonthlyPaymentAdapter(
 
         confirmationDialogBuilder.show()
     }
-    fun getTotalPaymentForDay(date: String): Pair<Double, Double> {
-        val db = dbHelper.readableDatabase
-        var totalKilos: Double = 0.0
-        var totalPayment: Double = 0.0
-
-        val cursor = db.rawQuery("SELECT SUM(kilos), SUM(pay) FROM TeaRecords WHERE date = ?", arrayOf(date))
-        if (cursor.moveToFirst()) {
-            totalKilos = cursor.getDouble(0)
-            totalPayment = cursor.getDouble(1)
-        }
-        cursor.close()
-        db.close()
-
-        return Pair(totalKilos, totalPayment)
-    }
+//    fun getTotalPaymentForDay(date: String): Pair<Double, Double> {
+//        val db = dbHelper.readableDatabase
+//        var totalKilos: Double = 0.0
+//        var totalPayment: Double = 0.0
+//
+//        val cursor = db.rawQuery("SELECT SUM(kilos), SUM(pay) FROM TeaRecords WHERE date = ?", arrayOf(date))
+//        if (cursor.moveToFirst()) {
+//            totalKilos = cursor.getDouble(0)
+//            totalPayment = cursor.getDouble(1)
+//        }
+//        cursor.close()
+//        db.close()
+//
+//        return Pair(totalKilos, totalPayment)
+//    }
     fun getUnpaidRecordsAndTotalPaid(context: Context, employeesOfTheMonth: Map<String, Double>): Pair<Map<String, Double>, Double> {
         val dbHelper = DBHelper(context)
         val unpaidRecords = mutableMapOf<String, Double>()
