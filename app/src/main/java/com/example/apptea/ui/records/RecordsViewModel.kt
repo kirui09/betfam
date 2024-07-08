@@ -29,8 +29,8 @@ class RecordsViewModel(private val appContext: Context) : ViewModel() {
 
     private val dbHelper = DBHelper.getInstance()
 
-    private val _teaRecords = MutableLiveData<List<DailyTeaRecord>>()
-    val teaRecords: LiveData<List<DailyTeaRecord>> get() = _teaRecords
+    private val _teaRecords = MutableLiveData<List<TeaPaymentRecord>>()
+    val teaRecords: LiveData<List<TeaPaymentRecord>> get() = _teaRecords
 
     // Method to fetch tea records from the database
     fun fetchTeaRecords() {
@@ -57,43 +57,38 @@ class RecordsViewModel(private val appContext: Context) : ViewModel() {
                     // Fetch records from the Google Sheet
                     val sheetRecords = fetchTeaRecords(sheetsService, spreadsheetId)
 
-                    // Identify missing records in the local database compared to the Google Sheet
-                    val missingRecords = localRecords.filter { localRecord ->
-                        sheetRecords.none { it.id == localRecord.id }
-                    }
-
-                    // Send missing records to the Google Sheet
-                    val missingValues = missingRecords.map { record ->
-                        listOf(record.id, record.date, record.company, record.employees, record.kilos, record.payment)
-                    }
-                    if (missingValues.isNotEmpty()) {
-                        val missingRange = "Sheet1!A:F"
-                        val missingBody = ValueRange().setValues(missingValues)
-                        sheetsService.spreadsheets().values().append(spreadsheetId, missingRange, missingBody)
-                            .setValueInputOption("RAW")
-                            .execute()
-                    }
-
                     // Identify records that need to be updated in the Google Sheet
                     val recordsToUpdate = localRecords.filter { localRecord ->
                         val sheetRecord = sheetRecords.find { it.id == localRecord.id }
-                        sheetRecord != null && sheetRecord != localRecord
+                        sheetRecord != null && (sheetRecord.payment == 0.0 && localRecord.payment > 0.0 || sheetRecord != localRecord)
                     }
 
                     // Update records in the Google Sheet
-                    val updateValues = recordsToUpdate.mapIndexed { index, record ->
+                    val updateValues = recordsToUpdate.map { record ->
                         listOf(record.id, record.date, record.company, record.employees, record.kilos, record.payment)
                     }
                     for ((index, updateValue) in updateValues.withIndex()) {
-                        val rowIndex = index + 2 // Assuming the first row is the header
+                        val rowIndex = sheetRecords.indexOfFirst { it.id == updateValue[0] } + 2 // +2 because sheet is 1-indexed and has a header
                         val updateRange = "Sheet1!A$rowIndex:F$rowIndex"
                         val updateBody = ValueRange().setValues(listOf(updateValue))
                         sheetsService.spreadsheets().values().update(spreadsheetId, updateRange, updateBody)
                             .setValueInputOption("RAW")
                             .execute()
                     }
+
+                    // Fetch updated records from Google Sheet
+                    val updatedSheetRecords = fetchTeaRecords(sheetsService, spreadsheetId)
+
                     // Insert or update records in the local database
-                    dbHelper.insertOrUpdateTeaRecords(sheetRecords)
+                    dbHelper.insertOrUpdateTeaRecords(updatedSheetRecords)
+
+                    // Handle any new records in Google Sheets not present in local DB
+                    val newRecords = updatedSheetRecords.filter { sheetRecord ->
+                        localRecords.none { it.id == sheetRecord.id }
+                    }
+                    if (newRecords.isNotEmpty()) {
+                        dbHelper.insertOrUpdateTeaRecords(newRecords)
+                    }
                 }
             } catch (e: Exception) {
                 Log.e("SyncWithGoogleSheet", "Error syncing with Google Sheet", e)

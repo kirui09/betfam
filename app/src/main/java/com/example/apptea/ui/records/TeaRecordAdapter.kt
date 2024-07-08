@@ -20,15 +20,15 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 
 interface EditButtonClickListener {
-    fun onEditButtonClick(record: DailyTeaRecord)
+    fun onEditButtonClick(record: TeaPaymentRecord)
 }
 
 interface DeleteButtonClickListener {
-    fun onDeleteButtonClick(record: DailyTeaRecord)
+    fun onDeleteButtonClick(record: TeaPaymentRecord)
 }
 
 class TeaRecordsAdapter(
-    private var recordsByDay: Map<String, List<DailyTeaRecord>>,
+    private var recordsByDay: Map<String, List<TeaPaymentRecord>>,
     private val tableLayout: TableLayout,
     private val editButtonClickListener: EditButtonClickListener,
     private val deleteButtonClickListener: DeleteButtonClickListener,
@@ -41,7 +41,7 @@ class TeaRecordsAdapter(
     private val VIEW_TYPE_EXPANDED = 2
     private var expandedPosition = RecyclerView.NO_POSITION
 
-    private var records: Map<String, List<DailyTeaRecord>> = recordsByDay
+    private var records: Map<String, List<TeaPaymentRecord>> = recordsByDay
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -119,7 +119,7 @@ class TeaRecordsAdapter(
             }
         }
 
-        private fun populateTable(recordsForDay: List<DailyTeaRecord>) {
+        private fun populateTable(recordsForDay: List<TeaPaymentRecord>) {
             val sortedRecords = recordsForDay.sortedByDescending { it.date }
             val tableLayout = binding.myTableLayout
             val recordsByDate = sortedRecords.groupBy { it.date }
@@ -145,7 +145,7 @@ class TeaRecordsAdapter(
                     row.addView(employeesTextView)
 
                     val companyTextView = TextView(tableLayout.context)
-                    companyTextView.text = record.companies
+                    companyTextView.text = record.company
                     companyTextView.setTypeface(null, Typeface.BOLD)
                     companyTextView.setPadding(5, 5, 5, 5)
                     companyTextView.gravity = Gravity.CENTER_VERTICAL
@@ -225,7 +225,7 @@ class TeaRecordsAdapter(
         }
     }
 
-    fun updateRecords(newRecordsByDay: Map<String, List<DailyTeaRecord>>) {
+    fun updateRecords(newRecordsByDay: Map<String, List<TeaPaymentRecord>>) {
         recordsByDay = newRecordsByDay
         records = recordsByDay
         notifyDataSetChanged()
@@ -238,7 +238,7 @@ class TeaRecordsAdapter(
         }
     }
 
-    fun getRecords(): Map<String, List<DailyTeaRecord>> {
+    fun getRecords(): Map<String, List<TeaPaymentRecord>> {
         return records
     }
 

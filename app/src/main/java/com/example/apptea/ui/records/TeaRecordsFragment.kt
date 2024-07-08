@@ -23,7 +23,7 @@ import java.util.Calendar
 import java.util.Locale
 
 interface AddButtonClickListener {
-    fun onAllRecordAdded(record: DailyTeaRecord)
+    fun onAllRecordAdded(record: TeaPaymentRecord)
 }
 
 class TeaRecordsFragment : Fragment(), EditButtonClickListener, AddButtonClickListener, DeleteButtonClickListener {
@@ -115,17 +115,17 @@ class TeaRecordsFragment : Fragment(), EditButtonClickListener, AddButtonClickLi
 
 
 
-    override fun onEditButtonClick(record: DailyTeaRecord) {
+    override fun onEditButtonClick(record: TeaPaymentRecord) {
         val fragmentManager = requireActivity().supportFragmentManager
         val editDialogFragment = EditRecordDialogFragment.newInstance(record)
         editDialogFragment.show(fragmentManager, "EditRecordDialogFragment")
     }
 
-    override fun onDeleteButtonClick(record: DailyTeaRecord) {
+    override fun onDeleteButtonClick(record: TeaPaymentRecord) {
         val alertDialogBuilder = AlertDialog.Builder(requireContext())
         alertDialogBuilder.apply {
             setTitle("Delete Record")
-            setMessage("Are you sure you want to delete the record for ${record.companies}?")
+            setMessage("Are you sure you want to delete the record for ${record.company}?")
             setPositiveButton("Delete") { dialog, which ->
                 // Delete the record from the database
                 dbHelper.deleteRecord(record.id)
@@ -143,7 +143,7 @@ class TeaRecordsFragment : Fragment(), EditButtonClickListener, AddButtonClickLi
     }
 
 
-    override fun onAllRecordAdded(record: DailyTeaRecord) {
+    override fun onAllRecordAdded(record: TeaPaymentRecord) {
         showProgressBar() // Show progress bar when adding record
         fetchRecords() // Refresh the records
         updateRecordsList()

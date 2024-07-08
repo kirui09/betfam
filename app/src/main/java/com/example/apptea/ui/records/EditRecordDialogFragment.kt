@@ -32,7 +32,7 @@ class EditRecordDialogFragment : DialogFragment() {
     }
 
     companion object {
-        fun newInstance(record: DailyTeaRecord): EditRecordDialogFragment {
+        fun newInstance(record: TeaPaymentRecord): EditRecordDialogFragment {
             val fragment = EditRecordDialogFragment()
             val args = Bundle().apply {
                 // Pass the record data as arguments

@@ -23,6 +23,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.betfam.apptea.DBHelper
 import com.betfam.apptea.R
 import com.betfam.apptea.SharedPreferencesHelper
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -248,6 +252,7 @@ class PaymentAdapter(
     }
 
     private fun savePaymentToTeaRecords(payment: Payment) {
+        val recordsViewModel = RecordsViewModel.create(context)
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put("id", payment.id)
@@ -275,11 +280,25 @@ class PaymentAdapter(
                 db.update("TeaRecords", values, whereClause, whereArgs)
                 Log.d("DBHelper", "Updated payment record for ${payment.employeeName} on ${payment.date} with payment ${payment.paymentAmount}")
             }
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    recordsViewModel.syncAndCompareDataWithGoogleSheet()
+                    Log.d("HandlePayment", "Successfully synced with Google Sheets")
+                } catch (e: Exception) {
+                    Log.e("HandlePayment", "Error syncing with Google Sheets", e)
+                }
+
+                // Refresh local records
+                withContext(Dispatchers.Main) {
+                    recordsViewModel.refreshRecords()
+                }
+            }
         } catch (e: Exception) {
             Log.e("DBHelper", "Error saving payment record: ${e.localizedMessage}")
         } finally {
             db.close()
         }
+
     }
 
 

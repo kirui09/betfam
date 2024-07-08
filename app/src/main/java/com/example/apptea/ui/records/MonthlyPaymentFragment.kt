@@ -1,6 +1,7 @@
 package com.betfam.apptea.ui.records
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -59,6 +60,8 @@ class MonthlyPaymentFragment : Fragment() {
 
         for (payment in allMonthlyPayments) {
             val month = payment.date.substring(0, 7) // Extract yyyy-MM from the date
+            Log.d("MonthlyPaymentFragment", "Month extracted: $month")
+
             if (!monthlyPaymentsMap.containsKey(month)) {
                 monthlyPaymentsMap[month] = ArrayList()
             }

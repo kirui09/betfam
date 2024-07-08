@@ -165,7 +165,39 @@ data class TeaPaymentRecord(
     val employees: String,
     val kilos: Double,
     val payment: Double
-) {
+) : Parcelable {
+    constructor(parcel: Parcel) : this(
+        parcel.readInt(),
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.readString() ?: "",
+        parcel.readDouble(),
+        parcel.readDouble()
+    )
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeInt(id)
+        parcel.writeString(date)
+        parcel.writeString(company)
+        parcel.writeString(employees)
+        parcel.writeDouble(kilos)
+        parcel.writeDouble(payment)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Parcelable.Creator<TeaPaymentRecord> {
+        override fun createFromParcel(parcel: Parcel): TeaPaymentRecord {
+            return TeaPaymentRecord(parcel)
+        }
+
+        override fun newArray(size: Int): Array<TeaPaymentRecord?> {
+            return arrayOfNulls(size)
+        }
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

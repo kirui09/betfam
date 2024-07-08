@@ -171,19 +171,25 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
     }
 
     // Function to fetch tea records for an employee in a specific month
-    fun getTeaRecordsForEmployee(employeeName: String): List<PendingTeaRecord> {
+    fun getTeaRecordsForEmployee(employeeName: String,month:String): List<TeaPaymentRecord> {
         val db = readableDatabase
+        Log.d("fun getTeaRecordsForEmloyee", "Month extracted: $month")
 
-        val query = "SELECT * FROM TeaRecords WHERE employee_name = ?"
+        val query = "SELECT * FROM TeaRecords WHERE employee_name = ? AND strftime('%Y-%m', date) ='$month'"
         val cursor = db.rawQuery(query, arrayOf(employeeName))
 
-        val teaRecords = mutableListOf<PendingTeaRecord>()
+        val teaRecords = mutableListOf<TeaPaymentRecord>()
         if (cursor.moveToFirst()) {
             do {
                 val id = cursor.getInt(cursor.getColumnIndexOrThrow("id"))
                 val date = cursor.getString(cursor.getColumnIndexOrThrow("date"))
+                val company = cursor.getString(cursor.getColumnIndexOrThrow("company"))
                 val kilos = cursor.getDouble(cursor.getColumnIndexOrThrow("kilos"))
-                teaRecords.add(PendingTeaRecord(id, date, employeeName, "", kilos, 0.0, 0))
+                val payment = cursor.getDouble(cursor.getColumnIndexOrThrow("pay"))
+                val synced = cursor.getInt(cursor.getColumnIndexOrThrow("synced"))
+
+                // Use employee_name for the employees field in TeaPaymentRecord
+                teaRecords.add(TeaPaymentRecord(id, date, company, employeeName, kilos, payment))
             } while (cursor.moveToNext())
         }
         cursor.close()
@@ -410,28 +416,38 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
     fun insertOrUpdateTeaRecords(records: List<TeaPaymentRecord>) {
         val existingRecords = getAllTeaRecords()
         val db = this.writableDatabase
-        records.forEach { newRecord ->
-            val values = ContentValues().apply {
-                put("id", newRecord.id)
-                put("date", newRecord.date)
-                put("company", newRecord.company)
-                put("employee_name", newRecord.employees)
-                put("kilos", newRecord.kilos)
-                put("pay", newRecord.payment)
+        db.beginTransaction()
+        try {
+            records.forEach { newRecord ->
+                val values = ContentValues().apply {
+                    put("id", newRecord.id)
+                    put("date", newRecord.date)
+                    put("company", newRecord.company)
+                    put("employee_name", newRecord.employees)
+                    put("kilos", newRecord.kilos)
+                    put("pay", newRecord.payment)
+                }
+
+                val existingRecord = existingRecords.find { it.id == newRecord.id }
+
+                val result = db.insertWithOnConflict(
+                    "TeaRecords",
+                    null,
+                    values,
+                    SQLiteDatabase.CONFLICT_REPLACE
+                )
+
+                if (existingRecord == null) {
+                    Log.d("InsertionResult", "Inserted new record with ID ${newRecord.id}: $result")
+                } else {
+                    Log.d("UpdateResult", "Updated record with ID ${newRecord.id}: $result")
+                }
             }
-            val existingRecord = existingRecords.find { it.id.toInt() == newRecord.id }
-            if (existingRecord == null) {
-                // Insert a new record if it does not exist
-                val result = db.insert("TeaRecords", null, values)
-                Log.d("InsertionResult", "Inserted new record: $result")
-            } else {
-                // Update the existing record if it already exists
-                val whereClause = "id = ?"
-                val whereArgs = arrayOf(existingRecord.id.toString())
-                val result = db.update("TeaRecords", values, whereClause, whereArgs)
-                Log.d("UpdateResult", "Updated record: $result")
-            }
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
         }
+        db.close()
     }
 
 
@@ -628,9 +644,9 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
 
     // Method to fetch all tea records from the database
-    fun getAllTeaRecords(): List<DailyTeaRecord> {
-        val teaRecordsList = mutableListOf<DailyTeaRecord>()
-        val teaRecordsLiveData = MutableLiveData<List<DailyTeaRecord>>()
+    fun getAllTeaRecords(): List<TeaPaymentRecord> {
+        val teaRecordsList = mutableListOf<TeaPaymentRecord>()
+        val teaRecordsLiveData = MutableLiveData<List<TeaPaymentRecord>>()
         val db = this.readableDatabase
 
         try {
@@ -645,12 +661,13 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
                 val companies = cursor.getString(cursor.getColumnIndex("company"))
                 val employees = cursor.getString(cursor.getColumnIndex("employee_name"))
                 val kilos = cursor.getDouble(cursor.getColumnIndex("kilos"))
+                val payment = cursor.getDouble(cursor.getColumnIndex("pay"))
 
 
                 // Log the selected data
                 Log.d("DB_SELECTION", "Date: $date, Employee: $employees, Company: $companies, Kilos: $kilos")
 
-                val record = DailyTeaRecord(id , date, companies, employees, kilos)
+                val record = TeaPaymentRecord(id , date, companies, employees, kilos,payment)
                 teaRecordsList.add(record)
             }
 
@@ -1072,7 +1089,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         val db = readableDatabase
         val payments = mutableListOf<PaymentDetail>()
 
-        val query = "SELECT date, kilos, pay FROM TeaRecords WHERE employee_name = ? AND strftime('%m', date) = ? AND strftime('%Y', date) = ? ORDER BY date ASC"
+        val query = "SELECT date, kilos, pay FROM TeaRecords WHERE employee_name = ? AND strftime('%m', date) = ? AND strftime('%Y', date) = ?  ORDER BY date ASC"
 
         Log.d("DBHelper", "Executing query for employee: $employeeName, month: $month, year: $year")
 
@@ -1161,6 +1178,10 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
         return paymentAmount
     }
+
+
+
+
 
 
     fun getEmployeesAndKilosOfTheMonth(month: Int, year: Int): Map<String, Double> {

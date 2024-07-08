@@ -27,10 +27,13 @@ import com.betfam.apptea.App
 import com.betfam.apptea.DBHelper
 import com.betfam.apptea.PendingPaymentData
 import com.betfam.apptea.R
+import com.betfam.apptea.SyncService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.math.BigDecimal
+import java.math.RoundingMode
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -61,6 +64,7 @@ class MonthlyPaymentAdapter(
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val month = groupedData.keys.elementAt(position)
+        Log.d("MonthlyPaymentFragment-Dickson", "Month extracted Dickson: $month")
         val payments = groupedData[month]
 
         if (holder is GeneralViewHolder) {
@@ -87,6 +91,7 @@ class MonthlyPaymentAdapter(
 
         fun bind(month: String, payments: ArrayList<MonthlyPayment>?) {
             val formattedMonth = getFormattedMonth(month)
+            Log.d("monthly adapter", "Month extracted-Testing: $month $formattedMonth")
             monthTextView.text = formattedMonth
 
             val totalPayment = payments?.sumByDouble { it.paymentAmount } ?: 0.0
@@ -104,7 +109,11 @@ class MonthlyPaymentAdapter(
             makePayment.setOnClickListener {
                 val dbHelper = DBHelper(context) // Initialize your DBHelper instance
                 val monthValue = parseMonth(month)
-                val employeesOfTheMonth = dbHelper.getEmployeesAndKilosOfTheMonth(monthValue, Calendar.getInstance().get(Calendar.YEAR))
+                val date = month
+                val yearString = date.substring(0, 4)  // Extracts "2024"
+                val year = yearString.toInt()  // Converts "2024" to 2024 as an integer
+
+                val employeesOfTheMonth = dbHelper.getEmployeesAndKilosOfTheMonth(monthValue, year)
 
                 val alertDialogBuilder = AlertDialog.Builder(context)
 
@@ -118,7 +127,7 @@ class MonthlyPaymentAdapter(
                 val monthName = calendar.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.US)
 
                 alertDialogBuilder.setTitle("Employees to Be Paid")
-                alertDialogBuilder.setMessage("Here are the employees of $monthName, ${calendar.get(Calendar.YEAR)}:\n$message")
+                alertDialogBuilder.setMessage("Here are the employees of $monthName, $year:\n$message")
 
                 // Add the Close button
                 alertDialogBuilder.setNegativeButton("Close") { dialog, _ ->
@@ -128,7 +137,7 @@ class MonthlyPaymentAdapter(
                 // Add the Pay button
                 alertDialogBuilder.setPositiveButton("Pay") { dialog, _ ->
                     // Show another dialog to confirm the pay rate
-                    showPayRateConfirmationDialog(context, employeesOfTheMonth)
+                    showPayRateConfirmationDialog(context, employeesOfTheMonth, month)
                 }
 
                 // Show the AlertDialog
@@ -497,12 +506,14 @@ class MonthlyPaymentAdapter(
 
 
 
-    fun showPayRateConfirmationDialog(context: Context, employeesOfTheMonth: Map<String, Double>) {
+    fun showPayRateConfirmationDialog(context: Context, employeesOfTheMonth: Map<String, Double>, month: String) {
         val sharedPreferences = getSharedPreferences()
         val defaultPayRate = String.format("%.2f", sharedPreferences.getFloat("pay_rate", 8.0f).toDouble()).toDouble()
 
+
+
         // Fetch unpaid records and the total of paid records
-        val (unpaidRecords, totalPaidAmount) = getUnpaidRecordsAndTotalPaid(context, employeesOfTheMonth)
+        val (unpaidRecords, totalPaidAmount) = getUnpaidRecordsAndTotalPaid(context, employeesOfTheMonth,month)
 
         val (unpaidMessage, unpaidAmount) = generateTotalPayMessage(unpaidRecords, defaultPayRate)
 
@@ -520,7 +531,7 @@ class MonthlyPaymentAdapter(
         $unpaidMessage
         Total Unpaid Amount: Ksh $unpaidAmount
         
-        Note: Ksh $totalPaidAmount has already been paid for this period.
+        Note: Ksh $totalPaidAmount has already been paid for this period $month.
     """.trimIndent()
         layout.addView(messageTextView)
 
@@ -535,7 +546,7 @@ class MonthlyPaymentAdapter(
         }
 
         confirmationDialogBuilder.setPositiveButton("Confirm") { dialog, _ ->
-            handlePayment(context, unpaidRecords, defaultPayRate)
+            handlePayment(context, unpaidRecords, defaultPayRate,month)
             dialog.dismiss()
         }
         confirmationDialogBuilder.setNegativeButton("Cancel") { dialog, _ ->
@@ -559,29 +570,33 @@ class MonthlyPaymentAdapter(
 //
 //        return Pair(totalKilos, totalPayment)
 //    }
-    fun getUnpaidRecordsAndTotalPaid(context: Context, employeesOfTheMonth: Map<String, Double>): Pair<Map<String, Double>, Double> {
-        val dbHelper = DBHelper(context)
-        val unpaidRecords = mutableMapOf<String, Double>()
-        var totalPaidAmount = 0.0
+fun getUnpaidRecordsAndTotalPaid(context: Context, employeesOfTheMonth: Map<String, Double>,month: String): Pair<Map<String, Double>, Double> {
+    val dbHelper = DBHelper(context)
+    val unpaidRecords = mutableMapOf<String, Double>()
+    var totalPaidAmount = 0.0
+    Log.d("getUnpaidRecordsAndtotalPaid", "Month extracted Dickson Tested: $month")
+    for ((employeeName, _) in employeesOfTheMonth) {
+        val teaRecords = dbHelper.getTeaRecordsForEmployee(employeeName, month)
+        var unpaidKilos = 0.0
 
-        for ((employeeName, _) in employeesOfTheMonth) {
-            val teaRecords = dbHelper.getTeaRecordsForEmployee(employeeName)
-            var unpaidKilos = 0.0
+        for (record in teaRecords) {
+            Log.d("TeaRecord", "ID: ${record.id}, Date: ${record.date}, Company: ${record.company}, Employee: ${record.employees}, Kilos: ${record.kilos}, Payment: ${record.payment}")
+            val paymentAmount = record.payment // Assuming payment is stored in the record
 
-            teaRecords.forEach { record ->
-                val existingPaymentAmount = dbHelper.getPaymentAmountFromDatabase(employeeName, record.date)
-                if (existingPaymentAmount == 0.0) {
-                    unpaidKilos += record.kilos
-                } else {
-                    totalPaidAmount += existingPaymentAmount
-                }
+            if (paymentAmount == 0.0) {
+                unpaidKilos += record.kilos
+            } else {
+                totalPaidAmount += paymentAmount
             }
-
-            if (unpaidKilos > 0) unpaidRecords[employeeName] = unpaidKilos
         }
 
-        return Pair(unpaidRecords, totalPaidAmount)
+        if (unpaidKilos > 0) {
+            unpaidRecords[employeeName] = unpaidKilos
+        }
     }
+
+    return Pair(unpaidRecords, totalPaidAmount)
+}
 
     fun generateTotalPayMessage(unpaidRecords: Map<String, Double>, payRate: Double): Pair<String, Double> {
         var totalPayMessage = ""
@@ -644,10 +659,10 @@ class MonthlyPaymentAdapter(
 
 
 
-    fun handlePayment(context: Context, unpaidRecords: Map<String, Double>, payRate: Double) {
-        Log.d("HandlePayment", "Starting payment process...")
-
-        CoroutineScope(Dispatchers.IO).launch {
+    fun handlePayment(context: Context, employeesOfTheMonth: Map<String, Double>, payRate: Double,month: String) {
+        Log.d("HandlePayment", "Starting payment process...$month")
+        val recordsViewModel = RecordsViewModel.create(context)
+        CoroutineScope(Dispatchers.Default).launch {
             Log.d("HandlePayment", "Coroutine launched")
 
             val dbHelper = DBHelper(context)
@@ -655,40 +670,61 @@ class MonthlyPaymentAdapter(
             val pendingPaymentDataDao = appDatabase.pendingPaymentDao()
 
             val sharedPreferences = context.getSharedPreferences("com.betfam.apptea.preferences", Context.MODE_PRIVATE)
-            val payRateFromPreferences = sharedPreferences.getFloat("pay_rate", payRate.toFloat()).toDouble() // Assuming payRateKey is the key for stored pay rate
-            val formattedPayRate = String.format("%.2f", payRateFromPreferences).toDouble() // Format the pay rate to two decimal places and convert to double
+            val payRateFromPreferences = sharedPreferences.getFloat("pay_rate", payRate.toFloat()).toDouble()
+            val formattedPayRate = BigDecimal(payRateFromPreferences).setScale(2, RoundingMode.HALF_UP)
+
+            val (unpaidRecords, _) = getUnpaidRecordsAndTotalPaid(context, employeesOfTheMonth,month)
 
             for ((employeeName, totalUnpaidKilos) in unpaidRecords) {
                 Log.d("HandlePayment", "Processing employee: $employeeName, Total Unpaid Kilos: $totalUnpaidKilos")
 
-                val teaRecords = dbHelper.getTeaRecordsForEmployee(employeeName)
+                val teaRecords = withContext(Dispatchers.IO) {
+                    dbHelper.getTeaRecordsForEmployee(employeeName,month )
+                }
                 Log.d("HandlePayment", "Fetched ${teaRecords.size} tea records for $employeeName")
 
                 teaRecords.forEach { record ->
-                    val existingPaymentAmount = dbHelper.getPaymentAmountFromDatabase(employeeName, record.date)
-                    if (existingPaymentAmount == 0.0) {
-                        val paymentAmount = String.format("%.2f", record.kilos * formattedPayRate).toDouble()
+                    if (record.payment == 0.0) {
+                        val paymentAmount = BigDecimal(record.kilos).multiply(formattedPayRate).setScale(2, RoundingMode.HALF_UP)
                         val paymentData = PendingPaymentData(
                             id = record.id,
                             date = record.date,
                             employeeName = employeeName,
-                            paymentAmount = paymentAmount
+                            paymentAmount = paymentAmount.toDouble()
                         )
 
-                        Log.d("HandlePayment", "Saving payment for $employeeName on ${record.date}: Ksh $paymentAmount (${record.kilos} kilos) with ID ${record.id}")
+                        Log.d("HandlePayment", "Saving payment for $employeeName on ${record.date}: Ksh ${paymentAmount.toPlainString()} (${record.kilos} kilos) with ID ${record.id}")
 
                         withContext(Dispatchers.IO) {
-                            pendingPaymentDataDao.insert(paymentData)
-                            dbHelper.updatePaymentInTeaRecords(record.id, paymentAmount)
-                            Log.d("HandlePayment", "Record saved to pending payments: Employee: $employeeName, Date: ${record.date}, Amount: Ksh $paymentAmount, Record ID: ${record.id}")
+                            // pendingPaymentDataDao.insert(paymentData)
+                            dbHelper.updatePaymentInTeaRecords(record.id, paymentAmount.toDouble())
+
+                            Log.d("HandlePayment", "Record updated in TeaRecords: Employee: $employeeName, Date: ${record.date}, Amount: Ksh ${paymentAmount.toPlainString()}, Record ID: ${record.id}")
                         }
                     }
                 }
             }
+            try {
+                recordsViewModel.syncAndCompareDataWithGoogleSheet()
+                Log.d("HandlePayment", "Successfully synced with Google Sheets")
+            } catch (e: Exception) {
+                Log.e("HandlePayment", "Error syncing with Google Sheets", e)
+            }
 
+            // Refresh local records
+            withContext(Dispatchers.Main) {
+                recordsViewModel.refreshRecords()
+            }
             Log.d("HandlePayment", "Payment process completed")
         }
     }
+
+    private fun updateUIWithPaidRecords(paidRecords: List<TeaPaymentRecord>) {
+        // Implement this method to update your UI with the paid records
+        // For example, you might want to update your RecyclerView or show a summary
+        // This will depend on how you want to display the paid records in your UI
+    }
+
 
 
     private fun getSharedPreferences(): SharedPreferences {
