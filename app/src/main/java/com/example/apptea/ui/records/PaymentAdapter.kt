@@ -151,13 +151,14 @@ class PaymentAdapter(
             holder.checkBox.visibility = if (isVerified) View.GONE else View.VISIBLE
             holder.verifiedButton.visibility = if (isVerified) View.VISIBLE else View.GONE
 
-            holder.checkBox.setOnCheckedChangeListener { _, isChecked ->
+            holder.checkBox.setOnClickListener { view ->
+                val isChecked = (view as CheckBox).isChecked
                 if (isChecked) {
+                    Log.d("HOlder is GeneralViewHolder", "CheckBox clicked. New state: $isChecked")
                     val sharedPreferences = context.getSharedPreferences("com.betfam.apptea.preferences", Context.MODE_PRIVATE)
-                    //val defaultPayRate = String.format("%.2f", sharedPreferences.getFloat("pay_rate", 8.0f).toDouble()).toDouble()
-                    val payRate=8
-                    val payRateFromPreferences = sharedPreferences.getFloat("pay_rate", payRate.toFloat()).toDouble() // Assuming payRateKey is the key for stored pay rate
-                    val formattedPayRate = String.format("%.2f", payRateFromPreferences).toDouble() // Format the pay rate to two decimal places and convert to double
+                    val payRate = 8
+                    val payRateFromPreferences = sharedPreferences.getFloat("pay_rate", payRate.toFloat()).toDouble()
+                    val formattedPayRate = String.format("%.2f", payRateFromPreferences).toDouble()
 
                     val employeesForDay = payments?.map { it.employeeName to it.kilos }?.toMap() ?: emptyMap()
                     val (totalPayMessage, totalAmount) = generateTotalPayMessage(employeesForDay, formattedPayRate)
@@ -201,6 +202,10 @@ class PaymentAdapter(
                     }
 
                     confirmationDialogBuilder.show()
+                } else {
+                    // Handle unchecking if needed
+                    Log.d("HOlder is GeneralViewHolder", "CheckBox unchecked")
+                    // You may want to add logic here if unchecking should do something specific
                 }
             }
 
