@@ -11,7 +11,7 @@ interface PendingSyncDataDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(pendingSyncData: PendingSyncData)
 
-    @Query("SELECT * FROM pending_sync_data")
+    @Query("SELECT * FROM pending_sync_data ")
     suspend fun getAllPendingData(): List<PendingSyncData>
 
     @Delete

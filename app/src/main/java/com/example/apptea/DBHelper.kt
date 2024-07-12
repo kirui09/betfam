@@ -14,6 +14,7 @@ import com.betfam.apptea.ui.records.DailyRecord
 import com.betfam.apptea.ui.records.DailyTeaRecord
 import com.betfam.apptea.ui.records.MonthlyPayment
 import com.betfam.apptea.ui.records.Payment
+import com.betfam.apptea.ui.records.PendingTeaRecordEntity
 import com.betfam.apptea.ui.records.Record
 import com.betfam.apptea.ui.records.SyncedRecord
 import com.betfam.apptea.ui.records.TeaPaymentRecord
@@ -200,8 +201,10 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         val db = readableDatabase
         val datevalue=day
 
-        val query = "SELECT * FROM TeaRecords WHERE employee_name = ? AND date ='$datevalue'"
+        val query = "SELECT * FROM TeaRecords WHERE date = ?"
         val cursor = db.rawQuery(query, arrayOf(day))
+        Log.d("TeaRecordsQuery", "Query: $query, Parameters: [employee_name = ?, date = $datevalue]")
+
 
         val teaRecords = mutableListOf<TeaPaymentRecord>()
         if (cursor.moveToFirst()) {
@@ -213,11 +216,14 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
                 val kilos = cursor.getDouble(cursor.getColumnIndexOrThrow("kilos"))
                 val payment = cursor.getDouble(cursor.getColumnIndexOrThrow("pay"))
                 val synced = cursor.getInt(cursor.getColumnIndexOrThrow("synced"))
-
+                Log.d("TeaRecordFetched", "id: $id, date: $date, employee: $employee, company: $company, kilos: $kilos, payment: $payment, synced: $synced")
                 // Use employee_name for the employees field in TeaPaymentRecord
                 teaRecords.add(TeaPaymentRecord(id, date, company, employee , kilos, payment))
             } while (cursor.moveToNext())
+        } else {
+            Log.d("TeaRecords", "No records found for employee_name = $day and date = $datevalue")
         }
+
         cursor.close()
         return teaRecords
     }
@@ -432,6 +438,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
             put("company", record.company)
             put("kilos", record.kilos)
             put("pay", pay) // Add pay to ContentValues
+            put("synced", 0)
         }
 
         val result = db.insert("TeaRecords", null, cv)
@@ -452,6 +459,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
                     put("employee_name", newRecord.employees)
                     put("kilos", newRecord.kilos)
                     put("pay", newRecord.payment)
+                    put("synced", 1)
                 }
 
                 val existingRecord = existingRecords.find { it.id == newRecord.id }
@@ -741,6 +749,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
         return teaRecordsList
     }
+    
 
     // Method to get all employee names
     fun getAllEmployeeNames(): List<String> {
@@ -816,6 +825,21 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
         return rowsUpdated > 0
     }
+    fun updateTeaRecordSyncStatus(recordId: Int): Boolean {
+        val db = this.writableDatabase
+        val values = ContentValues()
+
+        values.put("synced", 1)
+
+        val whereClause = "id = ?"
+        val whereArgs = arrayOf(recordId.toString())
+
+        val rowsUpdated = db.update("TeaRecords", values, whereClause, whereArgs)
+
+        db.close()
+
+        return rowsUpdated > 0
+    }
     fun deleteRecord(id: Int): Boolean {
         val db = this.writableDatabase
         val result = db.delete("TeaRecords", "id=?", arrayOf(id.toString()))
@@ -838,6 +862,27 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         }
         return companyNames
     }
+    fun getAllPendingTeaRecords(): List<PendingTeaRecordEntity> {
+        val pendingTeaRecords = mutableListOf<PendingTeaRecordEntity>()
+        val db = this.readableDatabase
+        val cursor = db.rawQuery("SELECT * FROM TeaRecords WHERE synced=0", null)
+        cursor.use {
+            while (it.moveToNext()) {
+                val id = it.getInt(it.getColumnIndexOrThrow("id"))
+                val date = it.getString(it.getColumnIndexOrThrow("date"))
+                val employeeName = it.getString(it.getColumnIndexOrThrow("employee_name"))
+                val company = it.getString(it.getColumnIndexOrThrow("company"))
+                val kilos = it.getDouble(it.getColumnIndexOrThrow("kilos"))
+                val pay = it.getDouble(it.getColumnIndexOrThrow("pay"))
+                val synced = it.getInt(it.getColumnIndexOrThrow("synced"))
+                val record = PendingTeaRecordEntity(id, date, employeeName, company, kilos, pay, synced)
+                pendingTeaRecords.add(record)
+            }
+        }
+        return pendingTeaRecords
+    }
+
+
 
     // Add this method to your DBHelper class
     fun getPaymentTypes(): Map<String, Int> {

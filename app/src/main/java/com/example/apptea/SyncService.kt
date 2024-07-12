@@ -15,6 +15,7 @@ import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
+import com.betfam.apptea.ui.records.PendingTeaRecordDao
 import com.betfam.apptea.ui.records.Record
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.http.javanet.NetHttpTransport
@@ -35,17 +36,20 @@ import kotlin.coroutines.suspendCoroutine
 
 class SyncService : JobService() {
 
-    private lateinit var pendingSyncDataDao: PendingSyncDataDao
+    private lateinit var pendingTeaRecordDao: PendingTeaRecordDao
+    private lateinit var dbHelper: DBHelper
 
     override fun onCreate() {
         super.onCreate()
-        pendingSyncDataDao = App.getDatabase(this).pendingSyncDataDao()
+        dbHelper = DBHelper(this)
+       // pendingTeaRecordDao = App.getDatabase(this).pendingTeaRecordDao()
     }
 
     override fun onStartJob(params: JobParameters?): Boolean {
         if (isConnectedToInternet(applicationContext)) {
             Log.d(TAG, "Internet is connected, starting data sync")
             GlobalScope.launch(Dispatchers.IO) {
+
                 syncPendingData(params)
             }
         } else {
@@ -62,8 +66,11 @@ class SyncService : JobService() {
     }
 
     private suspend fun syncPendingData(params: JobParameters?) {
-        val pendingData = pendingSyncDataDao.getAllPendingData()
+        Log.d(TAG, "failing ")
 
+        val pendingData = dbHelper.getAllPendingTeaRecords()
+
+        Log.d(TAG, "failing $pendingData")
         if (pendingData.isNotEmpty()) {
             Log.d(TAG, "Syncing ${pendingData.size} pending data records")
             for (data in pendingData) {
@@ -71,12 +78,12 @@ class SyncService : JobService() {
                     id = data.id,
                     date = data.date,
                     company = data.company,
-                    employee = data.employeeName,
+                    employee = data.employee_name,
                     kilos = data.kilos.toDouble()
                 )
 
                 sendDataToGoogleSheet(record, applicationContext)
-                pendingSyncDataDao.delete(data)
+               // pendingSyncDataDao.delete(data)
             }
             Log.d(TAG, "Pending data sync completed successfully")
             jobFinished(params, false)
@@ -129,6 +136,9 @@ class SyncService : JobService() {
                     withContext(Dispatchers.Main) {
                         Log.d(ContentValues.TAG, "Data sent to Google Sheets")
                         Toast.makeText(context, "Data sent to Google Sheets", Toast.LENGTH_SHORT).show()
+                        val dbHelper = DBHelper(context)
+                        val appDatabase = App.getDatabase(context)
+                        dbHelper.updateTeaRecordSyncStatus(record.id)
                     }
                 } else {
                     withContext(Dispatchers.Main) {
@@ -217,11 +227,11 @@ class SyncService : JobService() {
     companion object {
         private const val TAG = "SyncService"
         fun scheduleSync(context: Context) {
-            // Schedule the job using JobScheduler
             val jobScheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
             val jobInfo = JobInfo.Builder(1, ComponentName(context, SyncService::class.java))
                 .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
                 .setPersisted(true)
+                .setPeriodic(15 * 60 * 1000) // Run every 15 minutes
                 .build()
             jobScheduler.schedule(jobInfo)
         }

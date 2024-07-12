@@ -27,7 +27,6 @@ import com.betfam.apptea.App
 import com.betfam.apptea.DBHelper
 import com.betfam.apptea.PendingPaymentData
 import com.betfam.apptea.R
-import com.betfam.apptea.SyncService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

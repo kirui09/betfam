@@ -154,7 +154,7 @@ class PaymentAdapter(
 
             holder.checkBox.isChecked = isVerified
             holder.checkBox.visibility = if (isVerified) View.GONE else View.VISIBLE
-            holder.verifiedButton.visibility = if (isVerified) View.VISIBLE else View.GONE
+           holder.verifiedButton.visibility = if (isVerified) View.VISIBLE else View.GONE
 
             holder.checkBox.setOnClickListener { view ->
                 val isChecked = (view as CheckBox).isChecked

@@ -257,7 +257,7 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
                         }
                     }
                 } else {
-                    GlobalScope.launch(Dispatchers.IO) {
+                   /* GlobalScope.launch(Dispatchers.IO) {
                         tempRecordsToSave.forEach { record ->
                             val pendingData = PendingSyncData(
                                 id = record.id,
@@ -269,7 +269,7 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
                             pendingSyncDataDao.insert(pendingData)
                         }
                         tempRecordsToSave.clear()
-                    }
+                    }*/
                 }
                 dialog.dismiss()
                 dismiss()
@@ -360,6 +360,9 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
                     withContext(Dispatchers.Main) {
                         Log.d(TAG, "Data sent to Google Sheets")
                         Toast.makeText(context, "Data sent to Google Sheets", Toast.LENGTH_SHORT).show()
+                        val dbHelper = DBHelper(context)
+                        val appDatabase = App.getDatabase(context)
+                        dbHelper.updateTeaRecordSyncStatus(record.id)
                         addRecordsProgressLayout?.visibility = View.GONE
                     }
                 } else {
