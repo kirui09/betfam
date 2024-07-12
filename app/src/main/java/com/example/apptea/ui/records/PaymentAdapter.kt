@@ -20,13 +20,17 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
+import com.betfam.apptea.App
 import com.betfam.apptea.DBHelper
+import com.betfam.apptea.PendingPaymentData
 import com.betfam.apptea.R
 import com.betfam.apptea.SharedPreferencesHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.math.BigDecimal
+import java.math.RoundingMode
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -74,6 +78,7 @@ class PaymentAdapter(
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         val day = groupedData.keys.elementAt(position)
+        Log.d("DayValue", "Day at position $position: $day")
         val payments = groupedData[day]
         val isVerified = sharedPreferencesHelper.getCheckBoxState(day)
 
@@ -160,7 +165,10 @@ class PaymentAdapter(
                     val payRateFromPreferences = sharedPreferences.getFloat("pay_rate", payRate.toFloat()).toDouble()
                     val formattedPayRate = String.format("%.2f", payRateFromPreferences).toDouble()
 
-                    val employeesForDay = payments?.map { it.employeeName to it.kilos }?.toMap() ?: emptyMap()
+                   // val employeesForDay = payments?.map { it.employeeName to it.kilos }?.toMap() ?: emptyMap()
+                    val employeesForDay = dbHelper.getEmployeesAndKilosOfTheDay(day)
+
+
                     val (totalPayMessage, totalAmount) = generateTotalPayMessage(employeesForDay, formattedPayRate)
 
                     val confirmationDialogBuilder = AlertDialog.Builder(context)
@@ -185,9 +193,7 @@ class PaymentAdapter(
 
                     confirmationDialogBuilder.setPositiveButton("Confirm") { dialog, _ ->
                         payments?.forEach { payment ->
-                            val paymentAmount = calculatePay(payment.copy(paymentAmount = formattedPayRate * payment.kilos))
-                            val updatedPayment = payment.copy(paymentAmount = paymentAmount)
-                            savePaymentToTeaRecords(updatedPayment)
+                            handlePayment(context,formattedPayRate,day)
                         }
                         sharedPreferencesHelper.saveCheckBoxState(day, true)
                         Toast.makeText(context, "Payments saved to database", Toast.LENGTH_SHORT).show()
@@ -380,6 +386,61 @@ class PaymentAdapter(
         }
 
         return Pair(totalPayMessage, totalAmount)
+    }
+    fun handlePayment(context: Context,payRate: Double,day: String) {
+
+        val recordsViewModel = RecordsViewModel.create(context)
+        CoroutineScope(Dispatchers.Default).launch {
+            Log.d("HandlePayment", "Coroutine launched")
+
+            val dbHelper = DBHelper(context)
+            val appDatabase = App.getDatabase(context)
+            val pendingPaymentDataDao = appDatabase.pendingPaymentDao()
+
+            val sharedPreferences = context.getSharedPreferences("com.betfam.apptea.preferences", Context.MODE_PRIVATE)
+            val payRateFromPreferences = sharedPreferences.getFloat("pay_rate", payRate.toFloat()).toDouble()
+            val formattedPayRate = BigDecimal(payRateFromPreferences).setScale(2, RoundingMode.HALF_UP)
+
+
+                val teaRecords = withContext(Dispatchers.IO) {
+                    dbHelper.getTeaRecordsForEmployeeforday(day )
+                }
+                Log.d("HandlePayment", "Fetched ${teaRecords.size} tea records for ")
+
+                teaRecords.forEach { record ->
+                    if (record.payment == 0.0) {
+                        val paymentAmount = BigDecimal(record.kilos).multiply(formattedPayRate).setScale(2, RoundingMode.HALF_UP)
+                        val paymentData = PendingPaymentData(
+                            id = record.id,
+                            date = record.date,
+                            employeeName = record.employees,
+                            paymentAmount = paymentAmount.toDouble()
+                        )
+
+
+
+                        withContext(Dispatchers.IO) {
+                            // pendingPaymentDataDao.insert(paymentData)
+                            dbHelper.updatePaymentInTeaRecords(record.id, paymentAmount.toDouble())
+
+
+                        }
+                    }
+                }
+
+            try {
+                recordsViewModel.syncAndCompareDataWithGoogleSheet()
+                Log.d("HandlePayment", "Successfully synced with Google Sheets")
+            } catch (e: Exception) {
+                Log.e("HandlePayment", "Error syncing with Google Sheets", e)
+            }
+
+            // Refresh local records
+            withContext(Dispatchers.Main) {
+                recordsViewModel.refreshRecords()
+            }
+            Log.d("HandlePayment", "Payment process completed")
+        }
     }
 
 

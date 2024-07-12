@@ -60,7 +60,7 @@ class RecordsViewModel(private val appContext: Context) : ViewModel() {
                     // Identify records that need to be updated in the Google Sheet
                     val recordsToUpdate = localRecords.filter { localRecord ->
                         val sheetRecord = sheetRecords.find { it.id == localRecord.id }
-                        sheetRecord != null && (sheetRecord.payment == 0.0 && localRecord.payment > 0.0 || sheetRecord != localRecord)
+                        sheetRecord != null && ((sheetRecord.payment == 0.0 || sheetRecord.payment == null)  && localRecord.payment > 0.0 || sheetRecord != localRecord)
                     }
 
                     // Update records in the Google Sheet

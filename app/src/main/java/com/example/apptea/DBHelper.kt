@@ -183,13 +183,39 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
             do {
                 val id = cursor.getInt(cursor.getColumnIndexOrThrow("id"))
                 val date = cursor.getString(cursor.getColumnIndexOrThrow("date"))
+                val employee = cursor.getString(cursor.getColumnIndexOrThrow("employee_name"))
                 val company = cursor.getString(cursor.getColumnIndexOrThrow("company"))
                 val kilos = cursor.getDouble(cursor.getColumnIndexOrThrow("kilos"))
                 val payment = cursor.getDouble(cursor.getColumnIndexOrThrow("pay"))
                 val synced = cursor.getInt(cursor.getColumnIndexOrThrow("synced"))
 
                 // Use employee_name for the employees field in TeaPaymentRecord
-                teaRecords.add(TeaPaymentRecord(id, date, company, employeeName, kilos, payment))
+                teaRecords.add(TeaPaymentRecord(id, date, company, employee, kilos, payment))
+            } while (cursor.moveToNext())
+        }
+        cursor.close()
+        return teaRecords
+    }
+    fun getTeaRecordsForEmployeeforday(day:String): List<TeaPaymentRecord> {
+        val db = readableDatabase
+        val datevalue=day
+
+        val query = "SELECT * FROM TeaRecords WHERE employee_name = ? AND date ='$datevalue'"
+        val cursor = db.rawQuery(query, arrayOf(day))
+
+        val teaRecords = mutableListOf<TeaPaymentRecord>()
+        if (cursor.moveToFirst()) {
+            do {
+                val id = cursor.getInt(cursor.getColumnIndexOrThrow("id"))
+                val date = cursor.getString(cursor.getColumnIndexOrThrow("date"))
+                val employee = cursor.getString(cursor.getColumnIndexOrThrow("employee_name"))
+                val company = cursor.getString(cursor.getColumnIndexOrThrow("company"))
+                val kilos = cursor.getDouble(cursor.getColumnIndexOrThrow("kilos"))
+                val payment = cursor.getDouble(cursor.getColumnIndexOrThrow("pay"))
+                val synced = cursor.getInt(cursor.getColumnIndexOrThrow("synced"))
+
+                // Use employee_name for the employees field in TeaPaymentRecord
+                teaRecords.add(TeaPaymentRecord(id, date, company, employee , kilos, payment))
             } while (cursor.moveToNext())
         }
         cursor.close()
@@ -1193,6 +1219,23 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         val dateEnd = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(calendar.time)
 
         val query = "SELECT DISTINCT employee_name, SUM(kilos) as total_kilos FROM TeaRecords WHERE date BETWEEN '$dateStart' AND '$dateEnd' GROUP BY employee_name"
+        val cursor = db.rawQuery(query, null)
+        val employees = mutableMapOf<String, Double>()
+        with(cursor) {
+            while (moveToNext()) {
+                val employeeName = cursor.getString(cursor.getColumnIndex("employee_name"))
+                val totalKilos = cursor.getDouble(cursor.getColumnIndex("total_kilos"))
+                employees[employeeName] = totalKilos
+            }
+        }
+        cursor.close()
+        return employees
+    }
+    fun getEmployeesAndKilosOfTheDay(day: String): Map<String, Double> {
+        val db = readableDatabase
+val datevalue=day
+
+        val query = "SELECT DISTINCT employee_name, SUM(kilos) as total_kilos FROM TeaRecords WHERE date ='$datevalue' GROUP BY employee_name"
         val cursor = db.rawQuery(query, null)
         val employees = mutableMapOf<String, Double>()
         with(cursor) {
