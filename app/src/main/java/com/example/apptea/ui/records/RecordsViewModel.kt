@@ -57,10 +57,56 @@ class RecordsViewModel(private val appContext: Context) : ViewModel() {
                     // Fetch records from the Google Sheet
                     val sheetRecords = fetchTeaRecords(sheetsService, spreadsheetId)
 
-                    // Identify records that need to be updated in the Google Sheet
+                    val newtearecords= localRecords.filter { localRecord ->
+                        sheetRecords.none { it.id == localRecord.id }
+                    }
+
+                    // Add new records to the Google Sheet first
+                    val newValues = newtearecords.map { record ->
+                        listOf(
+                            record.id,
+                            record.date,
+                            record.company,
+                            record.employees,
+                            record.kilos,
+                            record.payment
+                        )
+                    }
+                    if (newValues.isNotEmpty()) {
+                        val appendRange =
+                            "Sheet1!A:F" // Assuming new rows are appended at the end of columns A to F
+                        val appendBody = ValueRange().setValues(newValues)
+
+                        try {
+                            // Log the append details in Logcat
+                            Log.d(
+                                "SheetUpdater",
+                                "Appending new records with values: ${newValues.joinToString(", ")}"
+                            )
+
+                            sheetsService.spreadsheets().values()
+                                .append(spreadsheetId, appendRange, appendBody)
+                                .setValueInputOption("RAW")
+                                .setInsertDataOption("INSERT_ROWS")
+                                .execute()
+
+                            // Log the successful append in Logcat
+                            Log.d("SheetUpdater", "Successfully appended new records")
+                        } catch (e: Exception) {
+                            // Log the error in Logcat
+                            Log.e("SheetUpdater", "Failed to append new records", e)
+                        }
+                    }
+
                     val recordsToUpdate = localRecords.filter { localRecord ->
                         val sheetRecord = sheetRecords.find { it.id == localRecord.id }
-                        sheetRecord != null && ((sheetRecord.payment == 0.0 || sheetRecord.payment == null)  && localRecord.payment > 0.0 || sheetRecord != localRecord)
+                        sheetRecord != null && (
+                                sheetRecord.date != localRecord.date ||
+                                        sheetRecord.company != localRecord.company ||
+                                        sheetRecord.employees != localRecord.employees ||
+                                        sheetRecord.kilos != localRecord.kilos ||
+                                        sheetRecord.payment != localRecord.payment
+                                )
                     }
 
                     // Update records in the Google Sheet
@@ -71,10 +117,23 @@ class RecordsViewModel(private val appContext: Context) : ViewModel() {
                         val rowIndex = sheetRecords.indexOfFirst { it.id == updateValue[0] } + 2 // +2 because sheet is 1-indexed and has a header
                         val updateRange = "Sheet1!A$rowIndex:F$rowIndex"
                         val updateBody = ValueRange().setValues(listOf(updateValue))
-                        sheetsService.spreadsheets().values().update(spreadsheetId, updateRange, updateBody)
-                            .setValueInputOption("RAW")
-                            .execute()
+
+                        try {
+                            // Log the update details in Logcat
+                            Log.d("SheetUpdater", "Updating row $rowIndex with values: ${updateValue.joinToString(", ")}")
+
+                            sheetsService.spreadsheets().values().update(spreadsheetId, updateRange, updateBody)
+                                .setValueInputOption("RAW")
+                                .execute()
+
+                            // Log the successful update in Logcat
+                            Log.d("SheetUpdater", "Successfully updated row $rowIndex")
+                        } catch (e: Exception) {
+                            // Log the error in Logcat
+                            Log.e("SheetUpdater", "Failed to update row $rowIndex", e)
+                        }
                     }
+
 
                     // Fetch updated records from Google Sheet
                     val updatedSheetRecords = fetchTeaRecords(sheetsService, spreadsheetId)

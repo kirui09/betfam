@@ -462,27 +462,47 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
                     put("synced", 1)
                 }
 
+// Insert new record if it doesn't exist or no changes
                 val existingRecord = existingRecords.find { it.id == newRecord.id }
 
-                val result = db.insertWithOnConflict(
-                    "TeaRecords",
-                    null,
-                    values,
-                    SQLiteDatabase.CONFLICT_REPLACE
-                )
-
                 if (existingRecord == null) {
+                    val result = db.insertWithOnConflict(
+                        "TeaRecords",
+                        null,
+                        values,
+                        SQLiteDatabase.CONFLICT_REPLACE
+                    )
+
                     Log.d("InsertionResult", "Inserted new record with ID ${newRecord.id}: $result")
                 } else {
-                    Log.d("UpdateResult", "Updated record with ID ${newRecord.id}: $result")
-                }
-            }
+                    // Compare existingRecord with newRecord to check for changes
+                    if (existingRecord.date != newRecord.date ||
+                        existingRecord.company != newRecord.company ||
+                        existingRecord.employees != newRecord.employees ||
+                        existingRecord.kilos != newRecord.kilos ||
+                        existingRecord.payment != newRecord.payment
+                    ) {
+                        // Update only if there are changes
+                        val result = db.update(
+                            "TeaRecords",
+                            values,
+                            "id = ?",
+                            arrayOf(newRecord.id.toString())
+                        )
+
+                        Log.d("UpdateResult", "Updated record with ID ${newRecord.id}: $result")
+                    } else {
+                        Log.d("InsertionResult", "No changes detected for record with ID ${newRecord.id}")
+                    }
+                }}
+
             db.setTransactionSuccessful()
         } finally {
             db.endTransaction()
+            db.close()
         }
-        db.close()
     }
+
 
 
     fun insertTeaRecords(records: List<Record>): Boolean {
@@ -699,7 +719,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
 
                 // Log the selected data
-                Log.d("DB_SELECTION", "Date: $date, Employee: $employees, Company: $companies, Kilos: $kilos")
+               // Log.d("DB_SELECTION", "Date: $date, Employee: $employees, Company: $companies, Kilos: $kilos")
 
                 val record = TeaPaymentRecord(id , date, companies, employees, kilos,payment)
                 teaRecordsList.add(record)
@@ -722,7 +742,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         val db = this.readableDatabase
 
         try {
-            val query = "SELECT id, date, company, employee_name, kilos, pay FROM TeaRecords ORDER BY date DESC"
+            val query = "SELECT id, date, company, employee_name, kilos, pay FROM TeaRecords  ORDER BY date DESC"
             val cursor = db.rawQuery(query, null)
 
             while (cursor.moveToNext()) {
@@ -734,7 +754,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
                 val payment = cursor.getDouble(cursor.getColumnIndex("pay"))
 
                 // Log the selected data
-                Log.d("DB_SELECTION", "Date: $date, Employee: $employees, Company: $company, Kilos: $kilos, Payment: $payment")
+              //  Log.d("DB_SELECTION", "Date: $date, Employee: $employees, Company: $company, Kilos: $kilos, Payment: $payment")
 
                 val record = TeaPaymentRecord(id, date, company, employees, kilos, payment)
                 teaRecordsList.add(record)
