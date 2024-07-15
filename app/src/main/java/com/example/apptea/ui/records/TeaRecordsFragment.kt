@@ -128,7 +128,7 @@ class TeaRecordsFragment : Fragment(), EditButtonClickListener, AddButtonClickLi
             setMessage("Are you sure you want to delete the record for ${record.company}?")
             setPositiveButton("Delete") { dialog, which ->
                 // Delete the record from the database
-                dbHelper.deleteRecord(record.id)
+                dbHelper.preparedeleteRecord(record.id)
                 // Update the UI after the record is deleted
                 updateRecordsList()
             }

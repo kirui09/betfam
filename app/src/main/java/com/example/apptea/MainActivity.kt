@@ -113,7 +113,7 @@ class MainActivity : AppCompatActivity() {
 
         }
         Log.w(TAG, "Google Sign-In failed with resultCode: ${result.resultCode}")
-      
+
 
 
     }
@@ -131,6 +131,13 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestScopes(Scope(SheetsScopes.SPREADSHEETS), Scope(DriveScopes.DRIVE_FILE))
+            .requestIdToken(getString(R.string.web_client_id))
+            .requestEmail()
+            .build()
+
+        googleSignInClient = GoogleSignIn.getClient(this, gso)
 
         setSupportActionBar(binding.appBarMain.toolbar)
 
@@ -168,6 +175,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         googleCloudSignUp.setOnClickListener {
+
             val sharedPreferences = getSharedPreferences("user_details", Context.MODE_PRIVATE)
             val userEmail = sharedPreferences.getString("user_id", null)
             if (userEmail != null) {
@@ -179,13 +187,7 @@ class MainActivity : AppCompatActivity() {
         }
 
 
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestScopes(Scope(SheetsScopes.SPREADSHEETS), Scope(DriveScopes.DRIVE_FILE))
-            .requestIdToken(getString(R.string.web_client_id))
-            .requestEmail()
-            .build()
 
-        googleSignInClient = GoogleSignIn.getClient(this, gso)
 
         val sharedPreferences = getSharedPreferences("user_details", Context.MODE_PRIVATE)
         val userId = sharedPreferences.getString("user_id", null)
@@ -594,7 +596,7 @@ class MainActivity : AppCompatActivity() {
 //    }
 
 
-//    private fun isNotificationPermissionGranted(): Boolean {
+    //    private fun isNotificationPermissionGranted(): Boolean {
 //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 //            val notificationManager = getSystemService(NotificationManager::class.java)
 //            return notificationManager?.areNotificationsEnabled() == true

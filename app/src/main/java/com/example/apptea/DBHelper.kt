@@ -30,7 +30,7 @@ data class Employee(
     val phoneNumber: String,
     val employeeId: String = ""
 )
-class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", null, 1) {
+class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", null, 2) {
 
 
     override fun onCreate(db: SQLiteDatabase) {
@@ -97,7 +97,8 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
                     "company TEXT, " +
                     "kilos DECIMAL, " +
                     "pay DECIMAL, " + // Add a comma here
-                    "synced INTEGER DEFAULT 0" + // Add the 'synced' column with a default value of 0
+                    "synced INTEGER DEFAULT 0,"+
+                    "status TEXT"+ // Add the 'synced' column with a default value of 0
                     ")"
         )
     }
@@ -705,7 +706,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
         try {
             val query =
-                "SELECT id, date,company, employee_name, kilos, pay  FROM TeaRecords  ORDER BY date desc"
+                "SELECT id, date,company, employee_name, kilos, pay  FROM TeaRecords where status<>'Del' OR status IS NULL  ORDER BY date desc"
 
             val cursor = db.rawQuery(query, null)
 
@@ -755,6 +756,38 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
                 // Log the selected data
               //  Log.d("DB_SELECTION", "Date: $date, Employee: $employees, Company: $company, Kilos: $kilos, Payment: $payment")
+
+                val record = TeaPaymentRecord(id, date, company, employees, kilos, payment)
+                teaRecordsList.add(record)
+            }
+
+            cursor.close()
+        } catch (e: Exception) {
+            Log.e("DB_ERROR", "Error while retrieving tea records: ${e.message}")
+        } finally {
+            db.close()
+        }
+
+        return teaRecordsList
+    }
+    fun getPaymentRecordstodelete(): List<TeaPaymentRecord> {
+        val teaRecordsList = mutableListOf<TeaPaymentRecord>()
+        val db = this.readableDatabase
+
+        try {
+            val query = "SELECT id, date, company, employee_name, kilos, pay FROM TeaRecords where status='Del'  ORDER BY date DESC"
+            val cursor = db.rawQuery(query, null)
+
+            while (cursor.moveToNext()) {
+                val id = cursor.getInt(cursor.getColumnIndex("id"))
+                val date = cursor.getString(cursor.getColumnIndex("date"))
+                val company = cursor.getString(cursor.getColumnIndex("company"))
+                val employees = cursor.getString(cursor.getColumnIndex("employee_name"))
+                val kilos = cursor.getDouble(cursor.getColumnIndex("kilos"))
+                val payment = cursor.getDouble(cursor.getColumnIndex("pay"))
+
+                // Log the selected data
+                //  Log.d("DB_SELECTION", "Date: $date, Employee: $employees, Company: $company, Kilos: $kilos, Payment: $payment")
 
                 val record = TeaPaymentRecord(id, date, company, employees, kilos, payment)
                 teaRecordsList.add(record)
@@ -860,12 +893,29 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
         return rowsUpdated > 0
     }
+
+    fun preparedeleteRecord(id: Int): Boolean {
+        val db = this.writableDatabase
+        val contentValues = ContentValues().apply {
+            put("status", "Del")
+        }
+        val result = db.update("TeaRecords", contentValues, "id=?", arrayOf(id.toString()))
+        db.close()
+        return result > 0
+    }
+
     fun deleteRecord(id: Int): Boolean {
         val db = this.writableDatabase
-        val result = db.delete("TeaRecords", "id=?", arrayOf(id.toString()))
+
+        // Correct whereClause and selectionArgs
+        val whereClause = "id = ?"
+        val selectionArgs = arrayOf(id.toString())
+
+        val result = db.delete("TeaRecords", whereClause, selectionArgs)
         db.close()
         return result != -1
     }
+
 
 
     // In DBHelper.kt
@@ -1094,7 +1144,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         val paymentsLiveData = MutableLiveData<List<Payment>>()
         val db = readableDatabase
         val payments = mutableListOf<Payment>()
-        val queryBuilder = StringBuilder("SELECT id, date, employee_name, kilos ,pay FROM TeaRecords")
+        val queryBuilder = StringBuilder("SELECT id, date, employee_name, kilos ,pay FROM TeaRecords where status<>'Del' OR status IS NULL")
         queryBuilder.append(" ORDER BY date ASC")
         val query = queryBuilder.toString()
 
@@ -1160,7 +1210,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
     fun getSumOfKilosForEachEmployee(): ArrayList<MonthlyPayment> {
         val monthlyPayments = ArrayList<MonthlyPayment>()
         val db = this.readableDatabase
-        val query = "SELECT date, employee_name, SUM(pay) AS totalpay FROM TeaRecords GROUP BY date, employee_name"
+        val query = "SELECT date, employee_name, SUM(pay) AS totalpay FROM TeaRecords where status<>'Del' OR status IS NULL  GROUP BY date, employee_name"
         val cursor: Cursor? = db.rawQuery(query, null)
         cursor?.use {
             while (it.moveToNext()) {

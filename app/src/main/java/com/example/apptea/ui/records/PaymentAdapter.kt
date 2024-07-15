@@ -245,7 +245,7 @@ class PaymentAdapter(
     }
     fun getTotalPaymentForDay(date: String): Double {
         val db = dbHelper.readableDatabase
-        val cursor = db.rawQuery("SELECT SUM(pay) FROM TeaRecords WHERE date = ?", arrayOf(date))
+        val cursor = db.rawQuery("SELECT SUM(pay) FROM TeaRecords WHERE date = ? and (status<>'Del' OR status IS NULL)", arrayOf(date))
         cursor.moveToFirst()
         val totalPayment = cursor.getDouble(0)
         cursor.close()
