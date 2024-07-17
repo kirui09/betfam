@@ -858,12 +858,12 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 //        return employeeList
 //    }
 
-    fun updateTeaRecord(record: DailyTeaRecord): Boolean {
+    fun updateTeaRecord(record: TeaPaymentRecord): Boolean {
         val db = this.writableDatabase
         val values = ContentValues()
 
         values.put("date", record.date)
-        values.put("company", record.companies)
+        values.put("company", record.company)
         values.put("employee_name", record.employees)
         values.put("kilos", record.kilos)
 
