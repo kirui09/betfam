@@ -5,6 +5,7 @@ data class Record(
     val date: String,
     val company: String,
     val employee: String,
-    val kilos: Double
+    val kilos: Double,
+    val pay: Double
 )
 

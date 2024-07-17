@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.viewpager2.widget.ViewPager2
 import com.betfam.apptea.R
 import com.betfam.apptea.ui.employees.EmployeeAdapter
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
@@ -22,7 +23,7 @@ class RecordsFragment : Fragment(), AddRecordButtonClickListener {
     private lateinit var viewPager: ViewPager2
     private lateinit var tabLayout: TabLayout
     private lateinit var employeeAdapter: EmployeeAdapter
-    private lateinit var fabAddButton: FloatingActionButton
+    private lateinit var fabAddRecord: ExtendedFloatingActionButton
     private lateinit var fabSyncButton: FloatingActionButton
 
     private lateinit var viewModel: RecordsViewModel
@@ -53,7 +54,7 @@ class RecordsFragment : Fragment(), AddRecordButtonClickListener {
         }
 
         // Set click listener for add button
-        val fabAddRecord: FloatingActionButton = root.findViewById(R.id.fabAddRecord)
+        val fabAddRecord: ExtendedFloatingActionButton = root.findViewById(R.id.fabAddRecord)
         fabAddRecord.setOnClickListener {
             onAddButtonClick()
         }

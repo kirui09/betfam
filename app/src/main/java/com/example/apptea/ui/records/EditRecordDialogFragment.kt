@@ -8,8 +8,12 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.lifecycleScope
 import com.betfam.apptea.DBHelper
 import com.betfam.apptea.databinding.FragmentEditRecordDialogBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 interface RecordUpdateListener {
     fun onRecordUpdated()
@@ -65,6 +69,7 @@ class EditRecordDialogFragment : DialogFragment() {
 
         // Set click listener for the save button
         binding.updateRecordButton.setOnClickListener {
+
             // Validate fields and update record
             if (validateFields()) {
                 updateRecord()
@@ -157,6 +162,7 @@ class EditRecordDialogFragment : DialogFragment() {
         record?.let { existingRecord ->
             try {
                 val dbHelper = DBHelper(requireContext())
+                val recordsViewModel = RecordsViewModel.create(requireContext())
 
                 // Create a DailyTeaRecord object with the updated values including the ID
                 val updatedRecord = TeaPaymentRecord(
@@ -165,8 +171,8 @@ class EditRecordDialogFragment : DialogFragment() {
                     company = binding.spinnerCompanyName.selectedItem.toString(),
                     employees = binding.spinnerEmployeeName.selectedItem.toString(),
                     kilos = binding.updateTextEmployeeKilos.text.toString().toDouble(),
-                     payment = existingRecord.payment
-                    )
+                    payment = existingRecord.payment
+                )
 
                 // Log the update operation details
                 Log.d("EditRecordDialog", "Updating record:")
@@ -180,11 +186,25 @@ class EditRecordDialogFragment : DialogFragment() {
                 val isUpdated = dbHelper.updateTeaRecord(updatedRecord)
 
                 if (isUpdated) {
-                    Toast.makeText(context, "Record updated successfully", Toast.LENGTH_SHORT)
-                        .show()
+                    Toast.makeText(context, "Record updated successfully", Toast.LENGTH_SHORT).show()
+
+                    // New code for syncing with Google Sheets and refreshing records
+                    try {
+                        recordsViewModel.syncAndCompareDataWithGoogleSheet()
+                        Log.d("HandlePayment", "Successfully synced with Google Sheets")
+                    } catch (e: Exception) {
+                        Log.e("HandlePayment", "Error syncing with Google Sheets", e)
+                    }
+
+                    // Refresh local records
+                    lifecycleScope.launch {
+                        withContext(Dispatchers.Main) {
+                            recordsViewModel.refreshRecords()
+                        }
+                    }
+                    Log.d("HandlePayment", "Payment process completed")
                 } else {
-                    Toast.makeText(context, "Failed to update record", Toast.LENGTH_SHORT)
-                        .show()
+                    Toast.makeText(context, "Failed to update record", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 // Handle any exceptions here (e.g., log or notify)

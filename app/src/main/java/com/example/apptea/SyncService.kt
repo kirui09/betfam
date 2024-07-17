@@ -78,8 +78,9 @@ class SyncService : JobService() {
                     id = data.id,
                     date = data.date,
                     company = data.company,
-                    employee = data.employee_name,
-                    kilos = data.kilos.toDouble()
+                    employee = data.employees,
+                    kilos = data.kilos.toDouble(),
+                    pay=data.payment
                 )
 
                 sendDataToGoogleSheet(record, applicationContext)

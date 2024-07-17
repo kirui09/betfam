@@ -802,6 +802,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
         return teaRecordsList
     }
+
     
 
     // Method to get all employee names
@@ -866,6 +867,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         values.put("company", record.company)
         values.put("employee_name", record.employees)
         values.put("kilos", record.kilos)
+        values.put("status", "UPD")
 
         // Use the ID as the unique identifier for the WHERE clause
         val whereClause = "id = ?"
@@ -932,8 +934,8 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         }
         return companyNames
     }
-    fun getAllPendingTeaRecords(): List<PendingTeaRecordEntity> {
-        val pendingTeaRecords = mutableListOf<PendingTeaRecordEntity>()
+    fun getAllPendingTeaRecords(): List<TeaPaymentRecord> {
+        val pendingTeaRecords = mutableListOf<TeaPaymentRecord>()
         val db = this.readableDatabase
         val cursor = db.rawQuery("SELECT * FROM TeaRecords WHERE synced=0", null)
         cursor.use {
@@ -945,7 +947,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
                 val kilos = it.getDouble(it.getColumnIndexOrThrow("kilos"))
                 val pay = it.getDouble(it.getColumnIndexOrThrow("pay"))
                 val synced = it.getInt(it.getColumnIndexOrThrow("synced"))
-                val record = PendingTeaRecordEntity(id, date, employeeName, company, kilos, pay, synced)
+                val record = TeaPaymentRecord(id, date, company, employeeName, kilos, pay)
                 pendingTeaRecords.add(record)
             }
         }

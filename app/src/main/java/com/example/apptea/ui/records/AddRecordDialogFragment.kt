@@ -116,6 +116,7 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
                 val selectedItem = parent?.getItemAtPosition(position).toString()
                 if (selectedItem == "Add Employee") {
                     showAddEmployeeDialog()
+
                 }
             }
 
@@ -134,6 +135,7 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
                 val selectedItem = parent?.getItemAtPosition(position).toString()
                 if (selectedItem == "Add Company") {
                     showAddCompanyDialog()
+
                 }
             }
 
@@ -147,12 +149,14 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
         val dialogFragment = AddCompanyDialogFragment()
         dialogFragment.setAddCompanyDialogListener(this)
         dialogFragment.show(parentFragmentManager, "AddCompanyDialog")
+
     }
 
     private fun showAddEmployeeDialog() {
         val dialogFragment = AddEmployeeDialogFragment()
         dialogFragment.employeeSavedListener = this
         dialogFragment.show(parentFragmentManager, "AddEmployeeDialog")
+
     }
 
     override fun onSaveCompanyClicked(name: String, location: String) {
@@ -202,7 +206,7 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
 
             // Assuming that 'id' is initialized with a default value where 'Record' class is defined
             val id = generateUniqueId() // Generate a unique ID
-            val record = Record(id, date, company, employee, kilos)
+            val record = Record(id, date, company, employee, kilos,0.0)
             tempRecords.add(record)
             recordSavedListener?.onRecordAdded()
 
@@ -227,7 +231,7 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
         if (date.isNotEmpty() && company.isNotEmpty() && employee.isNotEmpty() && kilosString.isNotEmpty()) {
             val kilos = kilosString.toDouble()
             val id = generateUniqueId()
-            val record = Record(id, date, company, employee, kilos)
+            val record = Record(id, date, company, employee, kilos,0.0)
             tempRecordsToSave.add(record)
         }
 
