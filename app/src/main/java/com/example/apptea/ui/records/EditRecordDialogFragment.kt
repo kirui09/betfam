@@ -18,7 +18,7 @@ interface RecordUpdateListener {
 class EditRecordDialogFragment : DialogFragment() {
 
     private lateinit var binding: FragmentEditRecordDialogBinding
-    private var record: DailyTeaRecord? = null
+    private var record: TeaPaymentRecord? = null
 
     private var recordUpdateListener: RecordUpdateListener? = null
 
@@ -80,7 +80,7 @@ class EditRecordDialogFragment : DialogFragment() {
     private fun populateUI() {
         record?.let { record ->
             binding.updaterecordEntryTime.setText(record.date)
-            binding.spinnerCompanyName.setSelection(findIndexOfCompany(record.companies))
+            binding.spinnerCompanyName.setSelection(findIndexOfCompany(record.company))
             binding.spinnerEmployeeName.setSelection(findIndexOfEmployee(record.employees))
             binding.updateTextEmployeeKilos.setText(record.kilos.toString())
         }
@@ -159,20 +159,20 @@ class EditRecordDialogFragment : DialogFragment() {
                 val dbHelper = DBHelper(requireContext())
 
                 // Create a DailyTeaRecord object with the updated values including the ID
-                val updatedRecord = DailyTeaRecord(
+                val updatedRecord = TeaPaymentRecord(
                     id = existingRecord.id, // Set the ID of the existing record
                     date = binding.updaterecordEntryTime.text.toString(),
-                    companies = binding.spinnerCompanyName.selectedItem.toString(),
+                    company = binding.spinnerCompanyName.selectedItem.toString(),
                     employees = binding.spinnerEmployeeName.selectedItem.toString(),
                     kilos = binding.updateTextEmployeeKilos.text.toString().toDouble(),
-
+                     payment = existingRecord.payment
                     )
 
                 // Log the update operation details
                 Log.d("EditRecordDialog", "Updating record:")
                 Log.d("EditRecordDialog", "ID: ${updatedRecord.id}")
                 Log.d("EditRecordDialog", "Date: ${updatedRecord.date}")
-                Log.d("EditRecordDialog", "Companies: ${updatedRecord.companies}")
+                Log.d("EditRecordDialog", "Companies: ${updatedRecord.company}")
                 Log.d("EditRecordDialog", "Employees: ${updatedRecord.employees}")
                 Log.d("EditRecordDialog", "Kilos: ${updatedRecord.kilos}")
 
