@@ -64,6 +64,7 @@
         android:layout_marginBottom="16dp"
         android:src="@drawable/baseline_cloud_sync_24"
         app:backgroundTint="#4CAF50"
-        app:elevation="10dp" />
+        app:elevation="10dp"
+        android:visibility="gone"/>
 
 </RelativeLayout>

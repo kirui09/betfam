@@ -13,12 +13,15 @@ import android.view.Menu
 import android.view.View
 import android.view.animation.Animation
 import android.view.animation.AnimationUtils
+import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
@@ -26,6 +29,8 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.betfam.apptea.databinding.ActivityMainBinding
 import com.betfam.apptea.ui.home.HomeFragment
+import com.betfam.apptea.ui.records.RecordsViewModel
+import com.betfam.apptea.ui.records.RecordsViewModelFactory
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -74,7 +79,8 @@ class MainActivity : AppCompatActivity() {
     private var isUserSignedIn: Boolean = false
 
     private lateinit var googleCloudSignUp: ImageButton
-
+    private lateinit var btnSyncRecord: com.google.android.material.button.MaterialButton
+    private lateinit var viewModel: RecordsViewModel
 
 
     val CITY: String = "Litein, KE"
@@ -166,6 +172,8 @@ class MainActivity : AppCompatActivity() {
         fetchWeatherData()
 
         googleCloudSignUp = findViewById(R.id.googleSignUpButton)
+        btnSyncRecord = findViewById(R.id.btnSyncRecord)
+
         blinkingAnimation = AnimationUtils.loadAnimation(this, R.anim.blink_animation)
 
         isUserSignedIn = isUserSignedIn()
@@ -184,6 +192,14 @@ class MainActivity : AppCompatActivity() {
                 signIn()
                 googleCloudSignUp.clearAnimation()
             }
+        }
+        btnSyncRecord.setOnClickListener{
+
+            val context = this
+            val factory = RecordsViewModelFactory(context)
+            viewModel = ViewModelProvider(this, factory).get(RecordsViewModel::class.java)
+            viewModel.syncAndCompareDataWithGoogleSheet()
+
         }
 
 

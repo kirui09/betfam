@@ -17,8 +17,8 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:popupTheme="@style/Theme.AppTea.PopupOverlay"
-            android:visibility="visible">
+            android:visibility="visible"
+            app:popupTheme="@style/Theme.AppTea.PopupOverlay">
 
             <!-- Your other toolbar components go here -->
 
@@ -29,8 +29,23 @@
                 android:layout_gravity="end"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:src="@drawable/icons8_google_cloud" />
-
-
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSyncRecord"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:layout_centerHorizontal="true"
+                android:layout_marginBottom="0dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                app:icon="@drawable/baseline_cloud_sync_24"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp"
+                android:text="Sync"
+                android:textSize="14sp"
+                app:cornerRadius="24dp"
+                app:elevation="4dp"
+                style="@style/Widget.MaterialComponents.Button"
+                app:backgroundTint="#4CAF50" />
 
 
 

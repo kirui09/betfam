@@ -54,7 +54,7 @@ class RecordsFragment : Fragment(), AddRecordButtonClickListener {
         }
 
         // Set click listener for add button
-        val fabAddRecord: ExtendedFloatingActionButton = root.findViewById(R.id.fabAddRecord)
+         fabAddRecord = root.findViewById(R.id.fabAddRecord)
         fabAddRecord.setOnClickListener {
             onAddButtonClick()
         }

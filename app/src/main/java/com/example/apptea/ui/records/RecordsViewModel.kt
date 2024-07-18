@@ -24,7 +24,10 @@ import com.google.api.services.sheets.v4.model.ValueRange
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.io.IOException
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -49,115 +52,120 @@ class RecordsViewModel(private val appContext: Context) : ViewModel() {
         fetchTeaRecords()
     }
 
+
+
+    private val syncMutex = Mutex()
+    private val isSyncing = AtomicBoolean(false)
+
     fun syncAndCompareDataWithGoogleSheet() {
         GlobalScope.launch(Dispatchers.IO) {
-            try {
-                val credential = getGoogleAccountCredential()
-                val sheetsService = setupSheetsService(credential)
-                val spreadsheetId = getSpreadsheetIdFromDrive(credential)
+            if (isSyncing.getAndSet(true)) {
+                Log.d("SyncWithGoogleSheet", "Sync already in progress, skipping this call")
+                return@launch
+            }
 
-                if (spreadsheetId != null) {
+            syncMutex.withLock {
+                try {
+                    val credential = getGoogleAccountCredential()
+                    val sheetsService = setupSheetsService(credential)
+                    val spreadsheetId = getSpreadsheetIdFromDrive(credential)
 
-                    val localRecordsToDelete = dbHelper.getPaymentRecordstodelete()
-                    // Fetch records from the Google Sheet
-                    val sheetRecordsbeforedelete = fetchTeaRecords(sheetsService, spreadsheetId)
+                    if (spreadsheetId != null) {
+                        val localRecordsToDelete = dbHelper.getPaymentRecordstodelete()
+                        val sheetRecordsbeforedelete = fetchTeaRecords(sheetsService, spreadsheetId)
 
-                    // Delete records from Google Sheet
-                    deleteRecordsFromSheet(sheetsService, spreadsheetId, localRecordsToDelete, sheetRecordsbeforedelete)
-                    val idsToDelete = localRecordsToDelete.map { it.id }
-                    idsToDelete.forEach { id ->
-                        dbHelper.deleteRecord(id)
-                    }
-                    // Fetch existing records from the local database
-                    val localRecords = dbHelper.getPaymentRecords()
-                    // Fetch records from the Google Sheet
-                    val sheetRecords = fetchTeaRecords(sheetsService, spreadsheetId)
-                    val newTeaRecords = localRecords.filter { localRecord ->
-                        sheetRecords.none { it.id == localRecord.id }
-                    }
+                        deleteRecordsFromSheet(sheetsService, spreadsheetId, localRecordsToDelete, sheetRecordsbeforedelete)
+                        val idsToDelete = localRecordsToDelete.map { it.id }
+                        idsToDelete.forEach { id ->
+                            dbHelper.deleteRecord(id)
+                        }
 
-                    // Add new records to the Google Sheet first
-                    val newValues = newTeaRecords.map { record ->
-                        listOf(
-                            record.id,
-                            record.date,
-                            record.company,
-                            record.employees,
-                            record.kilos,
-                            record.payment
-                        )
-                    }
-                    if (newValues.isNotEmpty()) {
-                        val appendRange = "Sheet1!A:F"
-                        val appendBody = ValueRange().setValues(newValues)
+                        val localRecords = dbHelper.getPaymentRecords()
+                        val sheetRecords = fetchTeaRecords(sheetsService, spreadsheetId)
+                        val newTeaRecords = localRecords.filter { localRecord ->
+                            sheetRecords.none { it.id == localRecord.id }
+                        }
 
-                        try {
-                            Log.d(
-                                "SheetUpdater",
-                                "Appending new records with values: ${newValues.joinToString(", ")}"
+                        val newValues = newTeaRecords.map { record ->
+                            listOf(
+                                record.id,
+                                record.date,
+                                record.company,
+                                record.employees,
+                                record.kilos,
+                                record.payment
                             )
-
-                            sheetsService.spreadsheets().values()
-                                .append(spreadsheetId, appendRange, appendBody)
-                                .setValueInputOption("RAW")
-                                .setInsertDataOption("INSERT_ROWS")
-                                .execute()
-
-                            Log.d("SheetUpdater", "Successfully appended new records")
-                        } catch (e: Exception) {
-                            Log.e("SheetUpdater", "Failed to append new records", e)
                         }
-                    }
+                        if (newValues.isNotEmpty()) {
+                            val appendRange = "Sheet1!A:F"
+                            val appendBody = ValueRange().setValues(newValues)
 
-                    val recordsToUpdate = localRecords.filter { localRecord ->
-                        val sheetRecord = sheetRecords.find { it.id == localRecord.id }
-                        sheetRecord != null && (
-                                sheetRecord.date != localRecord.date ||
-                                        sheetRecord.company != localRecord.company ||
-                                        sheetRecord.employees != localRecord.employees ||
-                                        sheetRecord.kilos != localRecord.kilos ||
-                                        sheetRecord.payment != localRecord.payment
+                            try {
+                                Log.d(
+                                    "SheetUpdater",
+                                    "Appending new records with values: ${newValues.joinToString(", ")}"
                                 )
-                    }
 
-                    // Update records in the Google Sheet
-                    val updateValues = recordsToUpdate.map { record ->
-                        listOf(record.id, record.date, record.company, record.employees, record.kilos, record.payment)
-                    }
-                    for ((index, updateValue) in updateValues.withIndex()) {
-                        val rowIndex = sheetRecords.indexOfFirst { it.id == updateValue[0] } + 2
-                        val updateRange = "Sheet1!A$rowIndex:F$rowIndex"
-                        val updateBody = ValueRange().setValues(listOf(updateValue))
+                                sheetsService.spreadsheets().values()
+                                    .append(spreadsheetId, appendRange, appendBody)
+                                    .setValueInputOption("RAW")
+                                    .setInsertDataOption("INSERT_ROWS")
+                                    .execute()
 
-                        try {
-                            Log.d("SheetUpdater", "Updating row $rowIndex with values: ${updateValue.joinToString(", ")}")
+                                Log.d("SheetUpdater", "Successfully appended new records")
+                            } catch (e: Exception) {
+                                Log.e("SheetUpdater", "Failed to append new records", e)
+                            }
+                        }
 
-                            sheetsService.spreadsheets().values().update(spreadsheetId, updateRange, updateBody)
-                                .setValueInputOption("RAW")
-                                .execute()
+                        val recordsToUpdate = localRecords.filter { localRecord ->
+                            val sheetRecord = sheetRecords.find { it.id == localRecord.id }
+                            sheetRecord != null && (
+                                    sheetRecord.date != localRecord.date ||
+                                            sheetRecord.company != localRecord.company ||
+                                            sheetRecord.employees != localRecord.employees ||
+                                            sheetRecord.kilos != localRecord.kilos ||
+                                            sheetRecord.payment != localRecord.payment
+                                    )
+                        }
 
-                            Log.d("SheetUpdater", "Successfully updated row $rowIndex")
-                        } catch (e: Exception) {
-                            Log.e("SheetUpdater", "Failed to update row $rowIndex", e)
+                        val updateValues = recordsToUpdate.map { record ->
+                            listOf(record.id, record.date, record.company, record.employees, record.kilos, record.payment)
+                        }
+                        for ((index, updateValue) in updateValues.withIndex()) {
+                            val rowIndex = sheetRecords.indexOfFirst { it.id == updateValue[0] } + 2
+                            val updateRange = "Sheet1!A$rowIndex:F$rowIndex"
+                            val updateBody = ValueRange().setValues(listOf(updateValue))
+
+                            try {
+                                Log.d("SheetUpdater", "Updating row $rowIndex with values: ${updateValue.joinToString(", ")}")
+
+                                sheetsService.spreadsheets().values().update(spreadsheetId, updateRange, updateBody)
+                                    .setValueInputOption("RAW")
+                                    .execute()
+
+                                Log.d("SheetUpdater", "Successfully updated row $rowIndex")
+                            } catch (e: Exception) {
+                                Log.e("SheetUpdater", "Failed to update row $rowIndex", e)
+                            }
+                        }
+
+                        val updatedSheetRecords = fetchTeaRecords(sheetsService, spreadsheetId)
+
+                        dbHelper.insertOrUpdateTeaRecords(updatedSheetRecords)
+
+                        val newRecords = updatedSheetRecords.filter { sheetRecord ->
+                            localRecords.none { it.id == sheetRecord.id }
+                        }
+                        if (newRecords.isNotEmpty()) {
+                            dbHelper.insertOrUpdateTeaRecords(newRecords)
                         }
                     }
-
-                    // Fetch updated records from Google Sheet
-                    val updatedSheetRecords = fetchTeaRecords(sheetsService, spreadsheetId)
-
-                    // Insert or update records in the local database
-                    dbHelper.insertOrUpdateTeaRecords(updatedSheetRecords)
-
-                    // Handle any new records in Google Sheets not present in local DB
-                    val newRecords = updatedSheetRecords.filter { sheetRecord ->
-                        localRecords.none { it.id == sheetRecord.id }
-                    }
-                    if (newRecords.isNotEmpty()) {
-                        dbHelper.insertOrUpdateTeaRecords(newRecords)
-                    }
+                } catch (e: Exception) {
+                    Log.e("SyncWithGoogleSheet", "Error syncing with Google Sheet", e)
+                } finally {
+                    isSyncing.set(false)
                 }
-            } catch (e: Exception) {
-                Log.e("SyncWithGoogleSheet", "Error syncing with Google Sheet", e)
             }
         }
     }
