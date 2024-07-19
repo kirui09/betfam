@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.betfam.apptea.DBHelper
 import com.betfam.apptea.R
+import com.betfam.apptea.SyncService
 import com.betfam.apptea.databinding.FragmentTeaRecordsBinding
 import com.betfam.apptea.databinding.ItemExpandedDayBinding
 import com.betfam.apptea.ui.employees.EmployeeAdapter
@@ -262,7 +263,8 @@ class TeaRecordsFragment : Fragment(), EditButtonClickListener, AddButtonClickLi
 
     override fun onResume() {
         super.onResume()
-        recordsViewModel.syncAndCompareDataWithGoogleSheet()
+      //  recordsViewModel.syncAndCompareDataWithGoogleSheet()
+        SyncService.startImmediateSync(requireContext())
     }
 
 
