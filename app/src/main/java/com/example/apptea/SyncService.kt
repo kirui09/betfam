@@ -9,6 +9,7 @@ import android.app.job.JobService
 import android.content.ComponentName
 import android.content.ContentValues
 import android.content.Context
+import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
@@ -17,6 +18,7 @@ import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import com.betfam.apptea.ui.records.PendingTeaRecordDao
 import com.betfam.apptea.ui.records.Record
+import com.betfam.apptea.ui.records.TeaPaymentRecord
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.JsonFactory
@@ -25,11 +27,18 @@ import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.services.drive.Drive
 import com.google.api.services.sheets.v4.Sheets
 import com.google.api.services.sheets.v4.SheetsScopes
+import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetRequest
+import com.google.api.services.sheets.v4.model.DeleteDimensionRequest
+import com.google.api.services.sheets.v4.model.DimensionRange
+import com.google.api.services.sheets.v4.model.Request
 import com.google.api.services.sheets.v4.model.ValueRange
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -50,7 +59,7 @@ class SyncService : JobService() {
             Log.d(TAG, "Internet is connected, starting data sync")
             GlobalScope.launch(Dispatchers.IO) {
 
-                syncPendingData(params)
+                syncAndCompareDataWithGoogleSheet()
             }
         } else {
             Log.d(TAG, "Internet is not connected, skipping data sync")
@@ -59,12 +68,21 @@ class SyncService : JobService() {
         // Return true to keep the job scheduled
         return true
     }
-
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        when (intent?.action) {
+            ACTION_IMMEDIATE_SYNC -> {
+                GlobalScope.launch(Dispatchers.IO) {
+                    syncAndCompareDataWithGoogleSheet()
+                }
+            }
+        }
+        return START_NOT_STICKY
+    }
     override fun onStopJob(params: JobParameters?): Boolean {
         // Optionally handle job cancellation here
         return true
     }
-
+/*
     private suspend fun syncPendingData(params: JobParameters?) {
         Log.d(TAG, "failing ")
 
@@ -83,7 +101,7 @@ class SyncService : JobService() {
                     pay=data.payment
                 )
 
-                sendDataToGoogleSheet(record, applicationContext)
+                syncAndCompareDataWithGoogleSheet(record, applicationContext)
                // pendingSyncDataDao.delete(data)
             }
             Log.d(TAG, "Pending data sync completed successfully")
@@ -93,7 +111,7 @@ class SyncService : JobService() {
             Log.d(TAG, "No pending data to sync")
             jobFinished(params, false)
         }
-    }
+    }*/
 
     private fun showSyncSuccessNotification() {
         Log.d(ContentValues.TAG, "Creating sync success notification")
@@ -115,8 +133,186 @@ class SyncService : JobService() {
 
         notificationManager.notify(0, builder.build())
     }
+    private val syncMutex = Mutex()
+    private val isSyncing = AtomicBoolean(false)
 
-    private fun sendDataToGoogleSheet(record: Record, context: Context) {
+    fun syncAndCompareDataWithGoogleSheet() {
+        GlobalScope.launch(Dispatchers.IO) {
+            if (isSyncing.getAndSet(true)) {
+                Log.d("SyncWithGoogleSheet", "Sync already in progress, skipping this call")
+                return@launch
+            }
+
+            syncMutex.withLock {
+                try {
+                    val credential = getGoogleAccountCredential()
+                    val sheetsService = setupSheetsService(credential)
+                    val spreadsheetId = getSpreadsheetIdFromDrive(credential)
+
+                    if (spreadsheetId != null) {
+                        val localRecordsToDelete = dbHelper.getPaymentRecordstodelete()
+                        val sheetRecordsbeforedelete = fetchTeaRecords(sheetsService, spreadsheetId)
+
+                        deleteRecordsFromSheet(sheetsService, spreadsheetId, localRecordsToDelete, sheetRecordsbeforedelete)
+                        val idsToDelete = localRecordsToDelete.map { it.id }
+                        idsToDelete.forEach { id ->
+                            dbHelper.deleteRecord(id)
+                        }
+
+                        val localRecords = dbHelper.getPaymentRecords()
+                        val sheetRecords = fetchTeaRecords(sheetsService, spreadsheetId)
+                        val newTeaRecords = localRecords.filter { localRecord ->
+                            sheetRecords.none { it.id == localRecord.id }
+                        }
+
+                        val newValues = newTeaRecords.map { record ->
+                            listOf(
+                                record.id,
+                                record.date,
+                                record.company,
+                                record.employees,
+                                record.kilos,
+                                record.payment
+                            )
+                        }
+                        if (newValues.isNotEmpty()) {
+                            val appendRange = "Sheet1!A:F"
+                            val appendBody = ValueRange().setValues(newValues)
+
+                            try {
+                                Log.d(
+                                    "SheetUpdater",
+                                    "Appending new records with values: ${newValues.joinToString(", ")}"
+                                )
+
+                                sheetsService.spreadsheets().values()
+                                    .append(spreadsheetId, appendRange, appendBody)
+                                    .setValueInputOption("RAW")
+                                    .setInsertDataOption("INSERT_ROWS")
+                                    .execute()
+
+                                Log.d("SheetUpdater", "Successfully appended new records")
+                            } catch (e: Exception) {
+                                Log.e("SheetUpdater", "Failed to append new records", e)
+                            }
+                        }
+
+                        val recordsToUpdate = localRecords.filter { localRecord ->
+                            val sheetRecord = sheetRecords.find { it.id == localRecord.id }
+                            sheetRecord != null && (
+                                    sheetRecord.date != localRecord.date ||
+                                            sheetRecord.company != localRecord.company ||
+                                            sheetRecord.employees != localRecord.employees ||
+                                            sheetRecord.kilos != localRecord.kilos ||
+                                            sheetRecord.payment != localRecord.payment
+                                    )
+                        }
+
+                        val updateValues = recordsToUpdate.map { record ->
+                            listOf(record.id, record.date, record.company, record.employees, record.kilos, record.payment)
+                        }
+                        for ((index, updateValue) in updateValues.withIndex()) {
+                            val rowIndex = sheetRecords.indexOfFirst { it.id == updateValue[0] } + 2
+                            val updateRange = "Sheet1!A$rowIndex:F$rowIndex"
+                            val updateBody = ValueRange().setValues(listOf(updateValue))
+
+                            try {
+                                Log.d("SheetUpdater", "Updating row $rowIndex with values: ${updateValue.joinToString(", ")}")
+
+                                sheetsService.spreadsheets().values().update(spreadsheetId, updateRange, updateBody)
+                                    .setValueInputOption("RAW")
+                                    .execute()
+
+                                Log.d("SheetUpdater", "Successfully updated row $rowIndex")
+                            } catch (e: Exception) {
+                                Log.e("SheetUpdater", "Failed to update row $rowIndex", e)
+                            }
+                        }
+
+                        val updatedSheetRecords = fetchTeaRecords(sheetsService, spreadsheetId)
+
+                        dbHelper.insertOrUpdateTeaRecords(updatedSheetRecords)
+
+                        val newRecords = updatedSheetRecords.filter { sheetRecord ->
+                            localRecords.none { it.id == sheetRecord.id }
+                        }
+                        if (newRecords.isNotEmpty()) {
+                            dbHelper.insertOrUpdateTeaRecords(newRecords)
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e("SyncWithGoogleSheet", "Error syncing with Google Sheet", e)
+                } finally {
+                    isSyncing.set(false)
+                }
+            }
+        }
+    }
+
+    private fun deleteRecordsFromSheet(
+        sheetsService: Sheets,
+        spreadsheetId: String,
+        recordsToDelete: List<TeaPaymentRecord>,
+        sheetRecords: List<TeaPaymentRecord>
+    ) {
+        for (recordToDelete in recordsToDelete) {
+            val rowIndex = sheetRecords.indexOfFirst { it.id == recordToDelete.id }
+            if (rowIndex != -1) {
+                val deleteRange = "Sheet1!A${rowIndex + 2}:F${rowIndex + 2}"
+                try {
+                    val requestBody = BatchUpdateSpreadsheetRequest().setRequests(
+                        listOf(
+                            Request().setDeleteDimension(
+                                DeleteDimensionRequest().setRange(
+                                    DimensionRange()
+                                        .setSheetId(0)
+                                        .setDimension("ROWS")
+                                        .setStartIndex(rowIndex + 1)
+                                        .setEndIndex(rowIndex + 2)
+                                )
+                            )
+                        )
+                    )
+
+                    Log.d("SheetDeleter", "Deleting row ${rowIndex + 2} with ID: ${recordToDelete.id}")
+
+                    sheetsService.spreadsheets().batchUpdate(spreadsheetId, requestBody).execute()
+
+                    Log.d("SheetDeleter", "Successfully deleted row ${rowIndex + 2}")
+                } catch (e: Exception) {
+                    Log.e("SheetDeleter", "Failed to delete row ${rowIndex + 2}", e)
+                }
+            }
+        }
+    }
+
+
+    private fun fetchTeaRecords(sheetsService: Sheets, spreadsheetId: String): List<TeaPaymentRecord> {
+        val range = "Sheet1!A:F"
+        val response = sheetsService.spreadsheets().values().get(spreadsheetId, range).execute()
+        val values = response.getValues()
+
+        val recordsFromSheet = mutableListOf<TeaPaymentRecord>()
+        if (values != null) {
+            for (rowIndex in values.indices) {
+                val row = values[rowIndex]
+                if (rowIndex == 0 || row.size < 5) {
+                    // Skip the header row or rows with fewer than 5 columns
+                    continue
+                }
+                val id = row[0].toString().toIntOrNull() ?: 0
+                val date = row[1].toString()
+                val company = row[2].toString()
+                val employee = row[3].toString()
+                val kilos = if (row.size >= 5) row[4].toString().toDoubleOrNull() ?: 0.0 else 0.0
+                val payment = if (row.size >= 6) row[5].toString().toDoubleOrNull() ?: 0.0 else 0.0
+                recordsFromSheet.add(TeaPaymentRecord(id, date, company, employee, kilos, payment))
+            }
+        }
+        return recordsFromSheet
+    }
+
+   /* private fun sendDataToGoogleSheet(record: Record, context: Context) {
         GlobalScope.launch(Dispatchers.Main) {
         }
 
@@ -127,7 +323,7 @@ class SyncService : JobService() {
                 // Get the spreadsheet ID from Google Drive
                 val spreadsheetId = getSpreadsheetIdFromDrive(credential)
                 if (spreadsheetId != null) {
-                    val range = "Sheet1!A:E" // Adjust the range based on your needs.
+                    val range = "Sheet1!A:F" // Adjust the range based on your needs.
                     val valueRange = ValueRange().setValues(
                         listOf(listOf(record.id, record.date, record.company, record.employee, record.kilos))
                     )
@@ -154,7 +350,7 @@ class SyncService : JobService() {
                 }
             }
         }
-    }
+    }*/
 
 
 
@@ -236,6 +432,13 @@ class SyncService : JobService() {
                 .build()
             jobScheduler.schedule(jobInfo)
         }
+        fun startImmediateSync(context: Context) {
+            val intent = Intent(context, SyncService::class.java)
+            intent.action = ACTION_IMMEDIATE_SYNC
+            context.startService(intent)
+        }
+
+        private const val ACTION_IMMEDIATE_SYNC = "ACTION_IMMEDIATE_SYNC"
     }
 }
 

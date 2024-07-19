@@ -19,6 +19,8 @@ import android.widget.TableRow
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.AppCompatButton
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.betfam.apptea.App
 import com.betfam.apptea.DBHelper
@@ -54,7 +56,7 @@ class PaymentAdapter(
         val generalPayDateTextView: TextView = itemView.findViewById(R.id.generalpaydateTextView)
         val totalPayForDayTextView: TextView = itemView.findViewById(R.id.totalpayForDay)
         val seeMorePayButton: Button = itemView.findViewById(R.id.seeMorePayButton)
-        val checkBox: CheckBox = itemView.findViewById(R.id.checkedpayCheckBox)
+        val paybutton: AppCompatButton = itemView.findViewById(R.id.payButton)
         val verifiedButton: ImageButton = itemView.findViewById(R.id.verifiedButton)
 
         init {
@@ -152,14 +154,14 @@ class PaymentAdapter(
             val totalPayment = getTotalPaymentForDay(day)
             holder.totalPayForDayTextView.text = "Total Payment: Ksh ${NumberFormat.getInstance().format(totalPayment)}"
 
-            holder.checkBox.isChecked = isVerified
-            holder.checkBox.visibility = if (isVerified) View.GONE else View.VISIBLE
-           holder.verifiedButton.visibility = if (isVerified) View.VISIBLE else View.GONE
+          //  holder.checkBox.isChecked = isVerified
+          //  holder.checkBox.visibility = if (isVerified) View.GONE else View.VISIBLE
+       //    holder.verifiedButton.visibility = if (isVerified) View.VISIBLE else View.GONE
 
-            holder.checkBox.setOnClickListener { view ->
-                val isChecked = (view as CheckBox).isChecked
-                if (isChecked) {
-                    Log.d("HOlder is GeneralViewHolder", "CheckBox clicked. New state: $isChecked")
+            holder.paybutton.setOnClickListener { view ->
+               // val isChecked = (view as CheckBox).isChecked
+                if (holder.paybutton.text == "Pay") {
+
                     val sharedPreferences = context.getSharedPreferences("com.betfam.apptea.preferences", Context.MODE_PRIVATE)
                     val payRate = 8
                     val payRateFromPreferences = sharedPreferences.getFloat("pay_rate", payRate.toFloat()).toDouble()
@@ -197,14 +199,17 @@ class PaymentAdapter(
                         }
                         sharedPreferencesHelper.saveCheckBoxState(day, true)
                         Toast.makeText(context, "Payments saved to database", Toast.LENGTH_SHORT).show()
-                        holder.checkBox.visibility = View.GONE
-                        holder.verifiedButton.visibility = View.VISIBLE
+                       // holder.checkBox.visibility = View.GONE
+                        holder.paybutton.text = "Paid"
+                        holder.paybutton.isEnabled = false
+                       // holder.paybutton.setBackgroundColor(ContextCompat.getColor(this, R.color.paid_button_color))
+                       // holder.verifiedButton.visibility = View.VISIBLE
                         dialog.dismiss()
                     }
 
                     confirmationDialogBuilder.setNegativeButton("Cancel") { dialog, _ ->
                         dialog.dismiss()
-                        holder.checkBox.isChecked = false
+                     //   holder.checkBox.isChecked = false
                     }
 
                     confirmationDialogBuilder.show()
@@ -293,7 +298,7 @@ class PaymentAdapter(
             }
             CoroutineScope(Dispatchers.IO).launch {
                 try {
-                    recordsViewModel.syncAndCompareDataWithGoogleSheet()
+                   // recordsViewModel.syncAndCompareDataWithGoogleSheet()
                     Log.d("HandlePayment", "Successfully synced with Google Sheets")
                 } catch (e: Exception) {
                     Log.e("HandlePayment", "Error syncing with Google Sheets", e)
@@ -429,7 +434,7 @@ class PaymentAdapter(
                 }
 
             try {
-                recordsViewModel.syncAndCompareDataWithGoogleSheet()
+               // recordsViewModel.syncAndCompareDataWithGoogleSheet()
                 Log.d("HandlePayment", "Successfully synced with Google Sheets")
             } catch (e: Exception) {
                 Log.e("HandlePayment", "Error syncing with Google Sheets", e)

@@ -704,7 +704,7 @@ fun getUnpaidRecordsAndTotalPaid(context: Context, employeesOfTheMonth: Map<Stri
                 }
             }
             try {
-                recordsViewModel.syncAndCompareDataWithGoogleSheet()
+               // recordsViewModel.syncAndCompareDataWithGoogleSheet()
                 Log.d("HandlePayment", "Successfully synced with Google Sheets")
             } catch (e: Exception) {
                 Log.e("HandlePayment", "Error syncing with Google Sheets", e)

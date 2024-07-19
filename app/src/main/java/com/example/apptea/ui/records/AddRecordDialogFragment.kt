@@ -257,7 +257,7 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
                 if (isConnectedToInternet()) {
                     GlobalScope.launch(Dispatchers.IO) {
                         tempRecordsToSave.forEach { record ->
-                            sendDataToGoogleSheet(record, requireContext())
+                            //sendDataToGoogleSheet(record, requireContext())
                         }
                     }
                 } else {

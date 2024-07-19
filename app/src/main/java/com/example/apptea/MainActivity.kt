@@ -195,10 +195,8 @@ class MainActivity : AppCompatActivity() {
         }
         btnSyncRecord.setOnClickListener{
 
-            val context = this
-            val factory = RecordsViewModelFactory(context)
-            viewModel = ViewModelProvider(this, factory).get(RecordsViewModel::class.java)
-            viewModel.syncAndCompareDataWithGoogleSheet()
+            SyncService.startImmediateSync(this)
+            Toast.makeText(this, "Sync started", Toast.LENGTH_SHORT).show()
 
         }
 

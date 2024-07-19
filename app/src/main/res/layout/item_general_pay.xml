@@ -46,12 +46,15 @@
                 android:textStyle="bold"
                 android:padding="5dp"/>
 
-            <CheckBox
-                android:id="@+id/checkedpayCheckBox"
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/payButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"/>
-
+                android:layout_alignParentEnd="true"
+                android:text="Pay"
+                android:textAllCaps="false"
+                android:backgroundTint="@android:color/holo_blue_light"
+                android:textColor="@android:color/white"/>
             <ImageButton
                 android:id="@+id/verifiedButton"
                 android:layout_width="wrap_content"
