@@ -2,6 +2,7 @@ package com.betfam.apptea.ui.home
 
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -43,6 +44,7 @@ class HomeFragment : Fragment() {
     private lateinit var skyDetailsTextView: TextView
     private lateinit var myCityTextView: TextView
     private lateinit var todaysTemperatureTextView: TextView
+    private lateinit var teaRecordsIcon: View
 
 
     // This property is only valid between onCreateView and onDestroyView.
@@ -55,6 +57,7 @@ class HomeFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        Log.d("HomeFragement", "onCreateView called")
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         val root: View = binding.root
         // Initialize the text view
@@ -62,7 +65,8 @@ class HomeFragment : Fragment() {
         myCityTextView = binding.myCity
         skyDetailsTextView = binding.skyDetails
         todaysTemperatureTextView = binding.todaysTemprature
-
+//Initalize AddTea Records icon
+        teaRecordsIcon = binding.teaRecordsContainer
 
         // Initialize PieChart
         val pieChart: PieChart = binding.pieChart
@@ -71,7 +75,9 @@ class HomeFragment : Fragment() {
         // Initialize BarChart
         barChart = binding.barChart
         initializeBarChart()
-
+        teaRecordsIcon.setOnClickListener {
+            openTeaRecordsDrawer()
+        }
 
         return root
     }
@@ -82,6 +88,11 @@ class HomeFragment : Fragment() {
         myCityTextView.text = weatherInfo.city
         skyDetailsTextView.text = weatherInfo.description
         todaysTemperatureTextView.text = weatherInfo.temperature
+    }
+    private fun openTeaRecordsDrawer() {
+        val activity = activity as? MainActivity
+        activity?.openTeaRecordsDrawer()
+        Log.d("Home Fraement", "Moving from Button CLick From Home to Tea Records")
     }
 
 

@@ -6,7 +6,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="ui.home.HomeFragment">
 
-
     <FrameLayout
         android:id="@+id/firstPart"
         android:layout_width="match_parent"
@@ -14,7 +13,7 @@
         android:layout_weight="1">
 
         <RelativeLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="20dp"
             android:layout_marginTop="5dp"
@@ -46,7 +45,6 @@
                 android:textSize="15sp"
                 android:textColor="@color/black"/>
 
-
             <TextView
                 android:id="@+id/my_city"
                 android:layout_width="wrap_content"
@@ -67,7 +65,6 @@
                 android:textColor="@color/black"
                 android:textSize="13sp" />
 
-
             <TextView
                 android:id="@+id/todays_temprature"
                 android:layout_width="wrap_content"
@@ -78,9 +75,40 @@
                 android:text="25°C"
                 android:textSize="30sp" />
 
+            <LinearLayout
+                android:id="@+id/tea_records_container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackgroundBorderless">
+
+                <ImageView
+                    android:id="@+id/tea_records_icon"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:src="@drawable/ic_baseline_library_records_24"
+                    android:padding="16dp"
+                    android:background="@drawable/circular_background"
+                    android:contentDescription="Add Tea Record"
+                    android:scaleType="fitCenter"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ADD TEA RECORD"
+                    android:textSize="12sp"
+                    android:textColor="@color/black"
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="@font/poppins"/>
+
+            </LinearLayout>
+
         </RelativeLayout>
-
-
 
     </FrameLayout>
 
@@ -98,8 +126,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:id="@+id/bar_chart"/>
-
-
 
     </FrameLayout>
 
@@ -126,6 +152,5 @@
         android:layout_height="wrap_content"
         app:menu="@menu/bottom_navigation_bar"
         android:id="@+id/bottom_nav" />
-
 
 </LinearLayout>

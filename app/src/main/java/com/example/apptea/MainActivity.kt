@@ -22,6 +22,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
@@ -131,7 +132,7 @@ class MainActivity : AppCompatActivity() {
 //        if (!isNotificationPermissionGranted()) {
 //            showNotificationPermissionDialog()
 //        }
-
+        Log.d("Navigation", "Testing if it gets here")
 
         DBHelper.init(this)
 
@@ -149,15 +150,61 @@ class MainActivity : AppCompatActivity() {
 
         val drawerLayout: DrawerLayout = binding.drawerLayout
         val navView: NavigationView = binding.navView
+       // val navView: NavigationView = findViewById(R.id.nav_view)
         val navController = findNavController(R.id.nav_host_fragment_content_main)
-
+        Log.d("Navigation", "Testing if it gets here")
         appBarConfiguration = AppBarConfiguration(
             setOf(
+
                 R.id.nav_home, R.id.nav_records, R.id.nav_employees_menu, R.id.nav_managers, R.id.nav_companies,
                 R.id.nav_payment_types
             ), drawerLayout
-        )
 
+        )
+        navView.setCheckedItem(R.id.nav_home)
+
+
+        navView.setNavigationItemSelectedListener { menuItem ->
+            when (menuItem.itemId) {
+                R.id.nav_home -> {
+                    if (navController.currentDestination?.id == R.id.nav_records) {
+                        navController.navigate(R.id.action_records_to_home)
+                    } else {
+                        navController.navigate(R.id.nav_home)
+                    }
+                    drawerLayout.closeDrawers()
+                     true
+                }
+                R.id.nav_records -> {
+                    Log.d("Navigation", "Tea Records clicked")
+                    navController.navigate(R.id.nav_records)
+                    drawerLayout.closeDrawers()
+                    true
+                }
+                R.id.nav_employees_menu -> {
+                    Log.d("Navigation", "Employees clicked")
+                    navController.navigate(R.id.nav_employees_menu)
+                    drawerLayout.closeDrawers()
+                    true
+                }
+                R.id.nav_managers -> {
+                    navController.navigate(R.id.nav_managers)
+                    drawerLayout.closeDrawers()
+                    true
+                }
+                R.id.nav_companies -> {
+                    navController.navigate(R.id.nav_companies)
+                    drawerLayout.closeDrawers()
+                    true
+                }
+                R.id.nav_payment_types -> {
+                    navController.navigate(R.id.nav_payment_types)
+                    drawerLayout.closeDrawers()
+                    true
+                }
+                else -> false
+            }
+        }
 
 
         setupActionBarWithNavController(navController, appBarConfiguration)
@@ -214,7 +261,22 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    fun openTeaRecordsDrawer() {
+        val navController = findNavController(R.id.nav_host_fragment_content_main)
 
+        // Check if we're not already on the Tea Records fragment
+        if (navController.currentDestination?.id != R.id.nav_records) {
+            // Navigate to the Tea Records fragment
+            navController.navigate(R.id.nav_records)
+        }
+
+        // Update the checked item in the navigation view
+        binding.navView.setCheckedItem(R.id.nav_records)
+
+        // Close the drawer
+        binding.drawerLayout.closeDrawers()
+    }
+   
 
 
     private fun isUserSignedIn(): Boolean {

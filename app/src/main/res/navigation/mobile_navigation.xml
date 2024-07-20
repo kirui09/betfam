@@ -9,35 +9,23 @@
         android:id="@+id/nav_home"
         android:name="com.betfam.apptea.ui.home.HomeFragment"
         android:label="@string/menu_home"
-        tools:layout="@layout/fragment_home" >
+        tools:layout="@layout/fragment_home">
 
-
-        <!-- Define actions to navigate to ScheduleFragment and ChartsFragment -->
-<!--        <action-->
-<!--            android:id="@+id/action_homeFragment_to_scheduleFragment"-->
-<!--            app:destination="@id/scheduleFragment" />-->
-<!--        <action-->
-<!--            android:id="@+id/action_homeFragment_to_chartsFragment"-->
-<!--            app:destination="@id/chartsFragment" />-->
+        <action
+            android:id="@+id/action_homeFragment_to_teaRecordsFragment"
+            app:destination="@id/nav_records" />
     </fragment>
-
-<!--    <fragment-->
-<!--        android:id="@+id/scheduleFragment"-->
-<!--        android:name="com.betfam.apptea.ui.home.ScheduleFragment"-->
-<!--        android:label="fragment_schedule"-->
-<!--        tools:layout="@layout/fragment_schedule" />-->
-
-<!--    <fragment-->
-<!--        android:id="@+id/chartsFragment"-->
-<!--        android:name="com.betfam.apptea.ui.home.ChartsFragment"-->
-<!--        android:label="fragment_charts"-->
-<!--        tools:layout="@layout/fragment_charts" />-->
 
     <fragment
         android:id="@+id/nav_records"
         android:name="com.betfam.apptea.ui.records.RecordsFragment"
         android:label="@string/menu_records"
-        tools:layout="@layout/fragment_tea_records" />
+        tools:layout="@layout/fragment_tea_records">
+        <!-- Define the action to navigate to HomeFragment -->
+        <action
+            android:id="@+id/action_records_to_home"
+            app:destination="@id/nav_home" />
+    </fragment>
 
     <fragment
         android:id="@+id/nav_employees_menu"
@@ -62,9 +50,5 @@
         android:name="com.betfam.apptea.ui.payment_types.PaymentTypesFragment"
         android:label="@string/menu_payment_types"
         tools:layout="@layout/fragment_payment_types" />
-
-
-
-
 
 </navigation>
