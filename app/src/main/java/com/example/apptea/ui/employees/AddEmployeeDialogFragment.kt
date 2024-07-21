@@ -15,8 +15,12 @@ import com.betfam.apptea.R
 
 class AddEmployeeDialogFragment : DialogFragment() {
 
-    private lateinit var dbh: DBHelper
+    interface OnEmployeeSavedListener {
+        fun onEmployeeSaved()
+    }
+
     var employeeSavedListener: OnEmployeeSavedListener? = null
+    private lateinit var dbh: DBHelper
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -57,27 +61,24 @@ class AddEmployeeDialogFragment : DialogFragment() {
 
             val employee = Employee(id = null, empType = empType, name = name, age = age, phoneNumber = phoneNumber, employeeId = id)
             saveEmployeeToDatabase(employee)
-            employeeSavedListener?.onEmployeeSaved()
-            dismiss()
         }
 
         return view
     }
 
     private fun saveEmployeeToDatabase(employee: Employee) {
-        val success = DBHelper.getInstance().insertEmployee(employee)
+        val success = dbh.insertEmployee(employee)
         if (success) {
             showToast("Employee saved successfully")
+            employeeSavedListener?.onEmployeeSaved()
+            dismiss()
         } else {
             showToast("Failed to save employee")
         }
     }
 
+
     private fun showToast(message: String) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
-    }
-
-    interface OnEmployeeSavedListener {
-        fun onEmployeeSaved()
     }
 }

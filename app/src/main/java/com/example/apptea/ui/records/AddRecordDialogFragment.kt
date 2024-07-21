@@ -203,13 +203,17 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
         val employeeAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, employeeNamesWithSelectOption)
         employeeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerEmployeeName?.adapter = employeeAdapter
-        spinnerEmployeeName?.setSelection(employeeNames.size + 1)
 
-        // Dismiss the dialog
-        parentFragmentManager.findFragmentByTag("AddEmployeeDialog")?.let {
-            (it as DialogFragment).dismiss()
+        // Select the newly added employee
+        val newEmployeeIndex = employeeNames.indexOfLast { it == employeeNames.last() }
+        if (newEmployeeIndex != -1) {
+            spinnerEmployeeName?.setSelection(newEmployeeIndex + 1) // +1 because of "Select Employee" at the beginning
         }
+
+        // Show a toast to confirm the addition
+        Toast.makeText(context, "Employee added successfully", Toast.LENGTH_SHORT).show()
     }
+
 
 
     private fun saveTempRecord() {
