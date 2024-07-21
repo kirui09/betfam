@@ -14,7 +14,7 @@ import com.betfam.apptea.R
 import com.betfam.apptea.ui.employees.Employee
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
-class CompaniesFragment : Fragment(), CompanyClickHandler {
+class CompaniesFragment : Fragment(), CompanyClickHandler, AddCompanyDialogFragment.AddCompanyDialogListener {
 
     private lateinit var dbHelper: DBHelper
     private lateinit var companyAdapter: CompanyAdapter
@@ -53,35 +53,24 @@ class CompaniesFragment : Fragment(), CompanyClickHandler {
 
     private fun openAddCompanyDialog() {
         val addCompanyDialogFragment = AddCompanyDialogFragment()
-        addCompanyDialogFragment.setAddCompanyDialogListener(object :
-            AddCompanyDialogFragment.AddCompanyDialogListener {
-            override fun onSaveCompanyClicked(name: String, location: String) {
-                // Handle the save operation (e.g., add the company to the database)
-                // You can use your DBHelper here
-                // dbHelper.insertCompany(name, location)
-
-                // Dismiss the dialog
-                addCompanyDialogFragment.dismiss()
-
-                // Refresh the company list after adding a new company
-                updateCompanyList()
-            }
-        })
+        addCompanyDialogFragment.setAddCompanyDialogListener(this)
 
         addCompanyDialogFragment.show(requireFragmentManager(), "AddCompanyDialogFragment")
     }
 
-    // Update the company list or perform any other UI updates as needed
+    override fun onCompanyAdded(name: String, location: String) {
+        // Handle the save operation (e.g., add the company to the database)
+        dbHelper.insertCompany(name, location)
+
+        // Refresh the company list after adding a new company
+        updateCompanyList()
+    }
 
     override fun onEditClick(company: Company) {
         // Handle the edit action here
         // For example, open the UpdateCompanyDialogFragment with the selected company data
-        val updateCompanyDialogFragment =
-            UpdateCompanyDialogFragment.newInstance(company)
-        updateCompanyDialogFragment.show(
-            requireFragmentManager(),
-            "UpdateCompanyDialogFragment"
-        )
+        val updateCompanyDialogFragment = UpdateCompanyDialogFragment.newInstance(company)
+        updateCompanyDialogFragment.show(requireFragmentManager(), "UpdateCompanyDialogFragment")
     }
 
     override fun onDeleteClick(company: Company) {
@@ -95,7 +84,6 @@ class CompaniesFragment : Fragment(), CompanyClickHandler {
             .setPositiveButton("Yes") { _, _ ->
                 // Delete the company from the database
                 dbHelper.deleteCompany(company.id)
-
                 updateCompanyList()
             }
             .setNegativeButton("No", null)
@@ -113,10 +101,8 @@ class CompaniesFragment : Fragment(), CompanyClickHandler {
 
             // Update the adapter with the new list of companies
             companyAdapter.updateData(updatedCompanies)
-            companyAdapter.updateData(updatedCompanies)
 
             // Notify the adapter that the data set has changed
-            companyAdapter.notifyDataSetChanged()
             companyAdapter.notifyDataSetChanged()
 
             Log.d("CompaniesFragment", "Company list updated successfully")
@@ -124,7 +110,4 @@ class CompaniesFragment : Fragment(), CompanyClickHandler {
             Log.e("CompaniesFragment", "Error updating company list: $e")
         }
     }
-
-
-
 }
