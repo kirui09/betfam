@@ -1,19 +1,26 @@
 package com.betfam.apptea.ui.records
 
+import android.app.AlertDialog
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
+import android.widget.Button
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
-import androidx.lifecycle.lifecycleScope
+import com.betfam.apptea.App
 import com.betfam.apptea.DBHelper
+import com.betfam.apptea.PendingPaymentData
 import com.betfam.apptea.databinding.FragmentEditRecordDialogBinding
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 interface RecordUpdateListener {
     fun onRecordUpdated()
@@ -21,16 +28,15 @@ interface RecordUpdateListener {
 
 class EditRecordDialogFragment : DialogFragment() {
 
-    private lateinit var binding: FragmentEditRecordDialogBinding
+    private var _binding: FragmentEditRecordDialogBinding? = null
+    private val binding get() = _binding!!
     private var record: TeaPaymentRecord? = null
-
     private var recordUpdateListener: RecordUpdateListener? = null
 
     fun setRecordUpdateListener(listener: RecordUpdateListener) {
         recordUpdateListener = listener
     }
 
-    // Call this method after successfully updating the record
     private fun notifyRecordUpdated() {
         recordUpdateListener?.onRecordUpdated()
     }
@@ -39,7 +45,6 @@ class EditRecordDialogFragment : DialogFragment() {
         fun newInstance(record: TeaPaymentRecord): EditRecordDialogFragment {
             val fragment = EditRecordDialogFragment()
             val args = Bundle().apply {
-                // Pass the record data as arguments
                 putParcelable("record", record)
             }
             fragment.arguments = args
@@ -50,38 +55,29 @@ class EditRecordDialogFragment : DialogFragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        binding = FragmentEditRecordDialogBinding.inflate(inflater, container, false)
+    ): View {
+        _binding = FragmentEditRecordDialogBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Populate the spinners with data from the database
         populateSpinners()
-
-        // Get the clicked record from arguments
         record = arguments?.getParcelable("record")
-
-        // Populate the UI with the data from the clicked record
         populateUI()
 
-        // Set click listener for the save button
         binding.updateRecordButton.setOnClickListener {
-
-            // Validate fields and update record
             if (validateFields()) {
                 updateRecord()
-                notifyRecordUpdated() // Notify the parent fragment about the record update
-                dismiss() // Close the dialog after updating the record
+                notifyRecordUpdated()
+                dismiss()
             } else {
-                Toast.makeText(context, "Validation failed!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Validation failed!", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    // Function to populate the UI fields with record data
     private fun populateUI() {
         record?.let { record ->
             binding.updaterecordEntryTime.setText(record.date)
@@ -91,82 +87,122 @@ class EditRecordDialogFragment : DialogFragment() {
         }
     }
 
-    // Function to populate spinners with data from the database
     private fun populateSpinners() {
+        val safeContext = context ?: return
         try {
-            val dbHelper = DBHelper(requireContext())
+            val dbHelper = DBHelper(safeContext)
 
-            // Retrieve employee names and company names from the database
             val employeeNames = dbHelper.getAllEmployeeNames()
             val companyNames = dbHelper.getAllCompanyNames()
 
-            // Create ArrayAdapter for employee spinner and set data
             val employeeAdapter = ArrayAdapter(
-                requireContext(),
+                safeContext,
                 android.R.layout.simple_spinner_item,
                 employeeNames
-            )
-            employeeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            ).apply {
+                setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            }
             binding.spinnerEmployeeName.adapter = employeeAdapter
 
-            // Create ArrayAdapter for company spinner and set data
             val companyAdapter = ArrayAdapter(
-                requireContext(),
+                safeContext,
                 android.R.layout.simple_spinner_item,
                 companyNames
-            )
-            companyAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            ).apply {
+                setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            }
             binding.spinnerCompanyName.adapter = companyAdapter
         } catch (e: Exception) {
-            // Handle any exceptions here (e.g., log or notify)
             e.printStackTrace()
             Toast.makeText(
-                context,
+                safeContext,
                 "An error occurred while populating spinners",
                 Toast.LENGTH_SHORT
             ).show()
         }
     }
 
-    // Function to find the index of the company in the spinner's adapter
     private fun findIndexOfCompany(companyName: String): Int {
         val adapter = binding.spinnerCompanyName.adapter
-        for (i in 0 until adapter.count) {
-            if (adapter.getItem(i) == companyName) {
-                return i
-            }
-        }
-        return 0 // Default to the first item if company name not found
+        return (0 until adapter.count).firstOrNull { adapter.getItem(it) == companyName } ?: 0
     }
 
-    // Function to find the index of the employee in the spinner's adapter
     private fun findIndexOfEmployee(employeeName: String): Int {
         val adapter = binding.spinnerEmployeeName.adapter
-        for (i in 0 until adapter.count) {
-            if (adapter.getItem(i) == employeeName) {
-                return i
-            }
-        }
-        return 0 // Default to the first item if employee name not found
+        return (0 until adapter.count).firstOrNull { adapter.getItem(it) == employeeName } ?: 0
     }
 
-    // Function to validate input fields
     private fun validateFields(): Boolean {
         // Add your validation logic here
-        // Return true if all fields are valid, otherwise false
         return true
     }
 
-    // Function to update the record in the database
+    private fun handlePayment(context: Context, payRate: Double, day: String, existingRecord: TeaPaymentRecord?, updatedKilos: Double, onPaymentUpdate: (Double) -> Unit) {
+        val recordsViewModel = RecordsViewModel.create(context)
+        CoroutineScope(Dispatchers.Default).launch {
+            Log.d("HandlePayment", "Coroutine launched")
+
+            val dbHelper = DBHelper(context)
+            val appDatabase = App.getDatabase(context)
+            val pendingPaymentDataDao = appDatabase.pendingPaymentDao()
+
+            val sharedPreferences = context.getSharedPreferences("com.betfam.apptea.preferences", Context.MODE_PRIVATE)
+            val payRateFromPreferences = sharedPreferences.getFloat("pay_rate", payRate.toFloat()).toDouble()
+            val formattedPayRate = BigDecimal(payRateFromPreferences).setScale(2, RoundingMode.HALF_UP)
+
+            val teaRecords = withContext(Dispatchers.IO) {
+                dbHelper.getTeaRecordsForEmployeeforday(day)
+            }
+            Log.d("HandlePayment", "Fetched ${teaRecords.size} tea records for $day")
+
+            teaRecords.forEach { record ->
+                if (existingRecord != null && record.id == existingRecord.id) {
+                    val paymentAmount = if (record.payment != 0.0) {
+                        BigDecimal(updatedKilos).multiply(formattedPayRate).setScale(2, RoundingMode.HALF_UP).toDouble()
+                    } else {
+                        BigDecimal(record.kilos).multiply(formattedPayRate).setScale(2, RoundingMode.HALF_UP).toDouble()
+                    }
+                    withContext(Dispatchers.IO) {
+                        dbHelper.updatePaymentInTeaRecords(record.id, paymentAmount)
+                    }
+                } else if (record.payment == 0.0) {
+                    val paymentAmount = 0.0
+                    val paymentData = PendingPaymentData(
+                        id = record.id,
+                        date = record.date,
+                        employeeName = record.employees,
+                        paymentAmount = paymentAmount
+                    )
+                    withContext(Dispatchers.IO) {
+                        dbHelper.updatePaymentInTeaRecords(record.id, paymentAmount)
+                    }
+                }
+            }
+
+            try {
+                // recordsViewModel.syncAndCompareDataWithGoogleSheet()
+                Log.d("HandlePayment", "Successfully synced with Google Sheets")
+            } catch (e: Exception) {
+                Log.e("HandlePayment", "Error syncing with Google Sheets", e)
+            }
+
+            withContext(Dispatchers.Main) {
+                recordsViewModel.refreshRecords()
+            }
+            Log.d("HandlePayment", "Payment process completed")
+        }
+    }
+
     private fun updateRecord() {
+        val safeContext = context ?: return
         record?.let { existingRecord ->
             try {
-                val dbHelper = DBHelper(requireContext())
-                val recordsViewModel = RecordsViewModel.create(requireContext())
+                val dbHelper = DBHelper(safeContext)
+                val recordsViewModel = RecordsViewModel.create(safeContext)
+                val payRate = 8.0
 
-                // Create a DailyTeaRecord object with the updated values including the ID
                 val updatedRecord = TeaPaymentRecord(
-                    id = existingRecord.id, // Set the ID of the existing record
+                    id = existingRecord.id,
                     date = binding.updaterecordEntryTime.text.toString(),
                     company = binding.spinnerCompanyName.selectedItem.toString(),
                     employees = binding.spinnerEmployeeName.selectedItem.toString(),
@@ -174,47 +210,36 @@ class EditRecordDialogFragment : DialogFragment() {
                     payment = existingRecord.payment
                 )
 
-                // Log the update operation details
-                Log.d("EditRecordDialog", "Updating record:")
-                Log.d("EditRecordDialog", "ID: ${updatedRecord.id}")
-                Log.d("EditRecordDialog", "Date: ${updatedRecord.date}")
-                Log.d("EditRecordDialog", "Companies: ${updatedRecord.company}")
-                Log.d("EditRecordDialog", "Employees: ${updatedRecord.employees}")
-                Log.d("EditRecordDialog", "Kilos: ${updatedRecord.kilos}")
+                if (existingRecord.payment != 0.0) {
+                    AlertDialog.Builder(safeContext)
+                        .setTitle("Update Payment")
+                        .setMessage("The current payment amount is greater than zero. Do you want to update the payment to the new amount?")
 
-                // Update the record in the database
-                val isUpdated = dbHelper.updateTeaRecord(updatedRecord)
-
-                if (isUpdated) {
-                    Toast.makeText(context, "Record updated successfully", Toast.LENGTH_SHORT).show()
-
-                    // New code for syncing with Google Sheets and refreshing records
-                    try {
-                        recordsViewModel.syncAndCompareDataWithGoogleSheet()
-                        Log.d("HandlePayment", "Successfully synced with Google Sheets")
-                    } catch (e: Exception) {
-                        Log.e("HandlePayment", "Error syncing with Google Sheets", e)
-                    }
-
-                    // Refresh local records
-                    lifecycleScope.launch {
-                        withContext(Dispatchers.Main) {
-                            recordsViewModel.refreshRecords()
+                        .setPositiveButton("Yes") { _, _ ->
+                            val isUpdated = dbHelper.updateTeaRecord(updatedRecord)
+                            handlePayment(safeContext, payRate, updatedRecord.date, existingRecord, updatedRecord.kilos) {}
                         }
-                    }
-                    Log.d("HandlePayment", "Payment process completed")
+                        .setNegativeButton("No") { _, _ ->
+                            // If user declines, just update the kilos
+                            val isUpdated = dbHelper.updateTeaRecord(updatedRecord)
+                        }
+                        .show()
                 } else {
-                    Toast.makeText(context, "Failed to update record", Toast.LENGTH_SHORT).show()
+                    handlePayment(safeContext, 0.0, updatedRecord.date, null, updatedRecord.kilos) {}
                 }
             } catch (e: Exception) {
-                // Handle any exceptions here (e.g., log or notify)
                 e.printStackTrace()
                 Toast.makeText(
-                    context,
+                    safeContext,
                     "An error occurred while updating record",
                     Toast.LENGTH_SHORT
                 ).show()
             }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }
