@@ -14,7 +14,7 @@ import com.betfam.apptea.R
 class AddCompanyDialogFragment : DialogFragment() {
 
     interface AddCompanyDialogListener {
-        fun onSaveCompanyClicked(name: String, location: String)
+        fun onCompanyAdded(name: String, location: String)
     }
 
     private var listener: AddCompanyDialogListener? = null
@@ -45,10 +45,8 @@ class AddCompanyDialogFragment : DialogFragment() {
             // Insert the company into the database
             saveCompany(name, location)
 
-            // Notify the listener if needed
-            listener?.onSaveCompanyClicked(name, location)
-
-            // Close the dialog
+            // Notify the listener and dismiss the dialog
+            listener?.onCompanyAdded(name, location)
             dismiss()
         }
 
@@ -60,13 +58,8 @@ class AddCompanyDialogFragment : DialogFragment() {
         val isSuccess = dbHelper.insertCompany(name, location)
 
         if (isSuccess) {
-            // Show a success message using Toast
             showToast("Company saved successfully")
-
-            // Notify the listener if needed
-            listener?.onSaveCompanyClicked(name, location)
         } else {
-            // Show an error message using Toast
             showToast("Failed to save company")
         }
     }
@@ -76,9 +69,6 @@ class AddCompanyDialogFragment : DialogFragment() {
     }
 
     private fun showToast(message: String) {
-        // Display a toast message
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
-
-
 }

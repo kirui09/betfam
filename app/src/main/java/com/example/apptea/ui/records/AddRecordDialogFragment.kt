@@ -136,6 +136,7 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
                 if (selectedItem == "Add Company") {
                     showAddCompanyDialog()
 
+
                 }
             }
 
@@ -145,11 +146,17 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
         return view
     }
 
+
+    private fun navigateToCompanyList() {
+        // Implementation to navigate to company list
+    }
+
+
+
     private fun showAddCompanyDialog() {
         val dialogFragment = AddCompanyDialogFragment()
         dialogFragment.setAddCompanyDialogListener(this)
         dialogFragment.show(parentFragmentManager, "AddCompanyDialog")
-
     }
 
     private fun showAddEmployeeDialog() {
@@ -158,8 +165,26 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
         dialogFragment.show(parentFragmentManager, "AddEmployeeDialog")
 
     }
+    override fun onCompanyAdded(name: String, location: String) {
+        // Update the company spinner
+        val companySpinner = view?.findViewById<Spinner>(R.id.spinnerCompanyName)
+        val companyNames = dbh.getAllCompanyNames()
+        val companyNamesWithSelectOption = listOf("Select Company") + companyNames + "Add Company"
+        val companyAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, companyNamesWithSelectOption)
+        companyAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        companySpinner?.adapter = companyAdapter
 
-    override fun onSaveCompanyClicked(name: String, location: String) {
+        // Select the newly added company
+        val newCompanyIndex = companyNames.indexOf(name)
+        if (newCompanyIndex != -1) {
+            companySpinner?.setSelection(newCompanyIndex + 1) // +1 because of "Select Company" at the beginning
+        }
+
+        // Show a toast to confirm the addition
+        Toast.makeText(context, "Company added: $name", Toast.LENGTH_SHORT).show()
+    }
+
+    /*override fun onSaveCompanyClicked(name: String, location: String) {
         val companySpinner = view?.findViewById<Spinner>(R.id.spinnerCompanyName)
         val companyNames = dbh.getAllCompanyNames()
         val companyNamesWithSelectOption = listOf("Select Company") + companyNames + "Add Company"
@@ -168,11 +193,8 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
         companySpinner?.adapter = companyAdapter
         companySpinner?.setSelection(companyNames.size + 1)
 
-        // Dismiss the dialog
-        parentFragmentManager.findFragmentByTag("AddCompanyDialog")?.let {
-            (it as DialogFragment).dismiss()
-        }
-    }
+        // The AddCompanyDialogFragment will automatically dismiss itself after saving
+    }*/
 
     override fun onEmployeeSaved() {
         val spinnerEmployeeName = view?.findViewById<Spinner>(R.id.spinnerEmployeeName)
