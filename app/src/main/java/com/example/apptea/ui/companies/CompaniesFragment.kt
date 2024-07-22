@@ -83,7 +83,7 @@ class CompaniesFragment : Fragment(), CompanyClickHandler, AddCompanyDialogFragm
             .setMessage("Are you sure you want to delete ${company.name}?")
             .setPositiveButton("Yes") { _, _ ->
                 // Delete the company from the database
-                dbHelper.deleteCompany(company.id)
+                dbHelper.preparedeleteCompany(company.name)
                 updateCompanyList()
             }
             .setNegativeButton("No", null)

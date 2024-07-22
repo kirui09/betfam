@@ -48,6 +48,7 @@ import com.google.api.services.drive.DriveScopes
 import com.google.api.services.drive.model.File
 import com.google.api.services.sheets.v4.Sheets
 import com.google.api.services.sheets.v4.SheetsScopes
+import com.google.api.services.sheets.v4.model.AddSheetRequest
 import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetRequest
 import com.google.api.services.sheets.v4.model.CellData
 import com.google.api.services.sheets.v4.model.CellFormat
@@ -55,6 +56,8 @@ import com.google.api.services.sheets.v4.model.Color
 import com.google.api.services.sheets.v4.model.GridRange
 import com.google.api.services.sheets.v4.model.RepeatCellRequest
 import com.google.api.services.sheets.v4.model.Request
+import com.google.api.services.sheets.v4.model.Sheet
+import com.google.api.services.sheets.v4.model.SheetProperties
 import com.google.api.services.sheets.v4.model.Spreadsheet
 import com.google.api.services.sheets.v4.model.SpreadsheetProperties
 import com.google.api.services.sheets.v4.model.ValueRange
@@ -584,6 +587,14 @@ class MainActivity : AppCompatActivity() {
                             SpreadsheetProperties().setTitle("Tea Records")
                         )
                     ).execute()
+                    val addSheetRequest = Request().setAddSheet(
+                        AddSheetRequest().setProperties(
+                            SheetProperties().setTitle("Companies")
+                        )
+                    )
+                    val batchUpdateRequest = BatchUpdateSpreadsheetRequest().setRequests(listOf(addSheetRequest))
+                    sheetsService.spreadsheets().batchUpdate(spreadsheet.spreadsheetId, batchUpdateRequest).execute()
+
 
                     // Add header row and set green background in a single BatchUpdate
                     val headerValues = listOf("ID", "Date", "Company", "EmployeeName", "Kilos" ,"Pay")
@@ -595,6 +606,14 @@ class MainActivity : AppCompatActivity() {
                     updateValuesRequest.setValueInputOption("RAW") // Set the value input option here
                     updateValuesRequest.execute()
 
+                    // Add headers to the second sheet (Locations)
+                    val headerValues2 = listOf("id", "name", "location","synced")
+                    val valueRange2 = ValueRange().setValues(listOf(headerValues2))
+
+                    val updateValuesRequest2 = sheetsService.spreadsheets().values()
+                        .update(spreadsheet.spreadsheetId, "Companies!A1:D1", valueRange2)
+                    updateValuesRequest2.setValueInputOption("RAW")
+                    updateValuesRequest2.execute()
                     val headerRequest = Request()
                         .setRepeatCell( // Using Request again
                             RepeatCellRequest().setRange(
@@ -608,6 +627,7 @@ class MainActivity : AppCompatActivity() {
                                 )
                             ).setFields("userEnteredFormat.backgroundColor")
                         )
+
 
                     val headerRangeRequest = BatchUpdateSpreadsheetRequest()
                         .setRequests(listOf(headerRequest))

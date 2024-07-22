@@ -16,6 +16,7 @@ import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
+import com.betfam.apptea.ui.companies.Company
 import com.betfam.apptea.ui.records.PendingTeaRecordDao
 import com.betfam.apptea.ui.records.Record
 import com.betfam.apptea.ui.records.TeaPaymentRecord
@@ -29,7 +30,9 @@ import com.google.api.services.sheets.v4.Sheets
 import com.google.api.services.sheets.v4.SheetsScopes
 import com.google.api.services.sheets.v4.model.BatchUpdateSpreadsheetRequest
 import com.google.api.services.sheets.v4.model.DeleteDimensionRequest
+import com.google.api.services.sheets.v4.model.DeleteRangeRequest
 import com.google.api.services.sheets.v4.model.DimensionRange
+import com.google.api.services.sheets.v4.model.GridRange
 import com.google.api.services.sheets.v4.model.Request
 import com.google.api.services.sheets.v4.model.ValueRange
 import kotlinx.coroutines.Dispatchers
@@ -239,6 +242,60 @@ class SyncService : JobService() {
                         if (newRecords.isNotEmpty()) {
                             dbHelper.insertOrUpdateTeaRecords(newRecords)
                         }
+                        // New code for Company Records (Sheet2)
+
+                        val sheetCompanies = fetchCompanyRecords(sheetsService, spreadsheetId)
+
+                        // Delete companies from Sheet2
+                         val localCompaniesToDelete = dbHelper.getCompanyRecordsToDelete()
+                        Log.d("SyncCompanies", "Local companies to delete: $localCompaniesToDelete")
+                          deleteCompaniesFromSheet(sheetsService, spreadsheetId, localCompaniesToDelete, sheetCompanies,"Companies")
+                          val companyIdsToDelete = localCompaniesToDelete.map { it.name }
+                        Log.d("SyncCompanies", "Company IDs to delete: $companyIdsToDelete")
+                        companyIdsToDelete.forEach { name ->
+                            val isDeleted = dbHelper.deleteCompany(name)
+                            if (isDeleted) {
+                                Log.d("CompanyDeletion", "Successfully deleted company: $name")
+                            } else {
+                                Log.w("CompanyDeletion", "Failed to delete company: $name")
+                            }
+                        }
+
+                        // Append new companies to Sheet2
+                        val companies = dbHelper.getAllCompanies()
+                        val newCompanies = companies.filter { localCompany ->
+                            sheetCompanies.none { it.name == localCompany.name }
+                        }
+                        if (newCompanies.isNotEmpty()) {
+                            appendCompaniesToSheet(sheetsService, spreadsheetId, newCompanies)
+                        }
+
+                        // Update existing companies in Sheet2
+                        val companiesToUpdate = companies.filter { localCompany ->
+                            val sheetCompany = sheetCompanies.find { it.id == localCompany.id }
+                            sheetCompany != null && (
+                                    sheetCompany.name != localCompany.name ||
+                                            sheetCompany.location != localCompany.location ||
+                                            sheetCompany.synced != localCompany.synced
+                                    )
+                        }
+                        updateCompaniesInSheet(sheetsService, spreadsheetId, companiesToUpdate, sheetCompanies)
+
+                        // Fetch updated company records from Sheet2
+                        val updatedSheetCompanies = fetchCompanyRecords(sheetsService, spreadsheetId)
+
+                        // Update local database with new or updated company records from Sheet2
+                        dbHelper.insertOrUpdateCompanyRecords(updatedSheetCompanies)
+
+                        val newCompanyRecords = updatedSheetCompanies.filter { sheetCompany ->
+                            companies.none { it.name == sheetCompany.name }
+                        }
+                        if (newCompanyRecords.isNotEmpty()) {
+                            dbHelper.insertOrUpdateCompanyRecords(newCompanyRecords)
+                        }
+
+
+
                     }
                 } catch (e: Exception) {
                     Log.e("SyncWithGoogleSheet", "Error syncing with Google Sheet", e)
@@ -248,6 +305,122 @@ class SyncService : JobService() {
             }
         }
     }
+    // New helper functions for Company operations
+
+    private fun fetchCompanyRecords(sheetsService: Sheets, spreadsheetId: String): List<Company> {
+        val range = "Companies!A:D"
+        val response = sheetsService.spreadsheets().values().get(spreadsheetId, range).execute()
+        val values = response.getValues()
+
+        return values?.drop(1)?.mapNotNull { row ->
+            try {
+                Company(
+                    id = row.getOrNull(0)?.toString()?.toIntOrNull() ?: return@mapNotNull null,
+                    name = row.getOrNull(1)?.toString() ?: "",
+                    location = row.getOrNull(2)?.toString() ?: "",
+                    synced = row.getOrNull(3)?.toString()?.toIntOrNull() ?: 0
+                )
+            } catch (e: Exception) {
+                Log.e("FetchCompanyRecords", "Error parsing row: $row", e)
+                null
+            }
+        } ?: emptyList()
+    }
+
+    private fun deleteCompaniesFromSheet(
+        sheetsService: Sheets,
+        spreadsheetId: String,
+        companiesToDelete: List<Company>,
+        sheetCompanies: List<Company>,
+        sheetName: String) {
+// Get the sheet ID
+        // Get the sheet ID
+        val spreadsheet = sheetsService.spreadsheets().get(spreadsheetId).execute()
+        val sheet = spreadsheet.sheets.firstOrNull { it.properties.title == sheetName }
+        val sheetId = sheet?.properties?.sheetId
+        if (sheetId == null) {
+            Log.e("SheetDeletercompanies", "Sheet ID not found for sheet: $sheetName")
+            return
+        }
+
+            for (companyToDelete in companiesToDelete) {
+            val rowIndex = sheetCompanies.indexOfFirst { it.name.equals(companyToDelete.name, ignoreCase = true) }
+            if (rowIndex != -1) {
+
+                try {
+                    val requestBody = BatchUpdateSpreadsheetRequest().setRequests(
+                        listOf(
+                            Request().setDeleteRange(
+                                DeleteRangeRequest()
+                                    .setRange(
+                                        GridRange()
+                                            .setSheetId(sheetId) // You might need to set the sheetId explicitly
+                                            .setStartRowIndex(rowIndex+1)
+                                            .setEndRowIndex(rowIndex + 2)
+                                    )
+                                    .setShiftDimension("ROWS")
+                            )
+                        )
+                    )
+
+                    Log.d("SheetDeletercompanies", "Attempting to delete row ${rowIndex + 1} with company name: ${companyToDelete.name}")
+
+                    val response = sheetsService.spreadsheets().batchUpdate(spreadsheetId, requestBody).execute()
+
+                    Log.d("SheetDeletercompanies", "API Response: ${response.toPrettyString()}")
+
+                    if (response.replies != null && response.replies.isNotEmpty()) {
+                        Log.d("SheetDeletercompanies", "Successfully deleted row ${rowIndex + 1} for company: ${companyToDelete.name}")
+                    } else {
+                        Log.w("SheetDeletercompanies", "No changes made for row ${rowIndex + 1}, company: ${companyToDelete.name}")
+                    }
+
+                    // Verify deletion
+                    val range = "$sheetName!A${rowIndex + 1}:F${rowIndex + 1}"
+                    val readResult = sheetsService.spreadsheets().values().get(spreadsheetId, range).execute()
+                    if (readResult.values == null || readResult.values.isEmpty()) {
+                        Log.d("SheetDeletercompanies", "Verified: Row ${rowIndex + 1} is now empty or deleted")
+                    } else {
+                        Log.w("SheetDeletercompanies", "Verification failed: Row ${rowIndex + 1} still contains data")
+                    }
+
+                } catch (e: Exception) {
+                    Log.e("SheetDeletercompanies", "Failed to delete row ${rowIndex + 1} for company: ${companyToDelete.name}", e)
+                }
+            } else {
+                Log.w("SheetDeletercompanies", "Company not found in sheet: ${companyToDelete.name}")
+            }
+        }
+    }
+
+
+    private fun appendCompaniesToSheet(sheetsService: Sheets, spreadsheetId: String, newCompanies: List<com.betfam.apptea.ui.companies.Company>) {
+        val appendRange = "Companies!A:D"
+        val appendBody = ValueRange().setValues(newCompanies.map { company ->
+            listOf(company.id, company.name, company.location, company.synced)
+        })
+
+        sheetsService.spreadsheets().values()
+            .append(spreadsheetId, appendRange, appendBody)
+            .setValueInputOption("RAW")
+            .setInsertDataOption("INSERT_ROWS")
+            .execute()
+    }
+
+    private fun updateCompaniesInSheet(sheetsService: Sheets, spreadsheetId: String, companiesToUpdate: List<Company>, sheetCompanies: List<Company>) {
+        companiesToUpdate.forEach { company ->
+            val rowIndex = sheetCompanies.indexOfFirst { it.id == company.id } + 2
+            val updateRange = "Companies!A$rowIndex:D$rowIndex"
+            val updateBody = ValueRange().setValues(listOf(
+                listOf(company.id, company.name, company.location, company.synced)
+            ))
+
+            sheetsService.spreadsheets().values().update(spreadsheetId, updateRange, updateBody)
+                .setValueInputOption("RAW")
+                .execute()
+        }
+    }
+
 
     private fun deleteRecordsFromSheet(
         sheetsService: Sheets,

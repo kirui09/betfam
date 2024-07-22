@@ -6,7 +6,8 @@ import android.os.Parcelable
 data class Company(
     val id: Int,
     val name: String,
-    val location: String
+    val location: String,
+    val synced: Int=0
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readInt(),
