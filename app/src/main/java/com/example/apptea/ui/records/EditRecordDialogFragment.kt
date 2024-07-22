@@ -3,12 +3,16 @@ package com.betfam.apptea.ui.records
 import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
+import android.text.InputType
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import com.betfam.apptea.App
@@ -211,13 +215,33 @@ class EditRecordDialogFragment : DialogFragment() {
                 )
 
                 if (existingRecord.payment != 0.0) {
-                    AlertDialog.Builder(safeContext)
-                        .setTitle("Update Payment")
-                        .setMessage("The current payment amount is greater than zero. Do you want to update the payment to the new amount?")
+                    val sharedPreferences = safeContext.getSharedPreferences("com.betfam.apptea.preferences", Context.MODE_PRIVATE)
+                    val payRate = 8
+                    val payRateFromPreferences = sharedPreferences.getFloat("pay_rate", payRate.toFloat()).toDouble()
+                    val formattedPayRate = String.format("%.2f", payRateFromPreferences).toDouble()
+
+                    val confirmationDialogBuilder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                    confirmationDialogBuilder.setTitle("Confirm Pay Rate")
+
+                    val layout = LinearLayout(context)
+                    layout.orientation = LinearLayout.VERTICAL
+
+                    val messageTextView = TextView(context)
+                    messageTextView.text = "The pay rate is Ksh .$formattedPayRate\n"
+                    layout.addView(messageTextView)
+
+                    val editButton = Button(context)
+                    editButton.text = "Edit Pay Rate"
+                    layout.addView(editButton)
+                    editButton.setOnClickListener {
+                        showEditPayRateDialog(safeContext, messageTextView)
+                    }
+
+                    confirmationDialogBuilder.setView(layout)
 
                         .setPositiveButton("Yes") { _, _ ->
                             val isUpdated = dbHelper.updateTeaRecord(updatedRecord)
-                            handlePayment(safeContext, payRate, updatedRecord.date, existingRecord, updatedRecord.kilos) {}
+                            handlePayment(safeContext, formattedPayRate, updatedRecord.date, existingRecord, updatedRecord.kilos) {}
                         }
                         .setNegativeButton("No") { _, _ ->
                             // If user declines, just update the kilos
@@ -225,6 +249,7 @@ class EditRecordDialogFragment : DialogFragment() {
                         }
                         .show()
                 } else {
+                    val isUpdated = dbHelper.updateTeaRecord(updatedRecord)
                     handlePayment(safeContext, 0.0, updatedRecord.date, null, updatedRecord.kilos) {}
                 }
             } catch (e: Exception) {
@@ -241,5 +266,42 @@ class EditRecordDialogFragment : DialogFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+    private fun showEditPayRateDialog(context: Context, messageTextView: TextView) {
+        val editDialogBuilder = androidx.appcompat.app.AlertDialog.Builder(context)
+        editDialogBuilder.setTitle("Edit Pay Rate")
+
+        val editText = EditText(context)
+        editText.inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
+        editText.hint = "Enter new pay rate"
+        editDialogBuilder.setView(editText)
+
+        editDialogBuilder.setPositiveButton("OK") { dialog, _ ->
+            val inputText = editText.text.toString()
+            val newPayRate = inputText.toDoubleOrNull()
+            if (newPayRate != null) {
+                val formattedPayRate = String.format("%.2f", newPayRate).toFloat()
+                val sharedPreferences = context.getSharedPreferences("com.betfam.apptea.preferences", Context.MODE_PRIVATE)
+                with(sharedPreferences.edit()) {
+                    putFloat("pay_rate", formattedPayRate)
+                    apply()
+                }
+
+                messageTextView.text = """
+                The pay rate is Ksh $formattedPayRate.
+                
+      
+            """.trimIndent()
+            } else {
+                Toast.makeText(context, "Please enter a valid number", Toast.LENGTH_SHORT).show()
+            }
+            dialog.dismiss()
+        }
+
+        editDialogBuilder.setNegativeButton("Cancel") { dialog, _ ->
+            dialog.dismiss()
+        }
+
+        editDialogBuilder.show()
     }
 }
