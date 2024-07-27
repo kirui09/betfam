@@ -592,7 +592,12 @@ class MainActivity : AppCompatActivity() {
                             SheetProperties().setTitle("Companies")
                         )
                     )
-                    val batchUpdateRequest = BatchUpdateSpreadsheetRequest().setRequests(listOf(addSheetRequest))
+                    val addSheetRequest2 = Request().setAddSheet(
+                        AddSheetRequest().setProperties(
+                            SheetProperties().setTitle("Employees")
+                        )
+                    )
+                    val batchUpdateRequest = BatchUpdateSpreadsheetRequest().setRequests(listOf(addSheetRequest,addSheetRequest2))
                     sheetsService.spreadsheets().batchUpdate(spreadsheet.spreadsheetId, batchUpdateRequest).execute()
 
 
@@ -606,7 +611,7 @@ class MainActivity : AppCompatActivity() {
                     updateValuesRequest.setValueInputOption("RAW") // Set the value input option here
                     updateValuesRequest.execute()
 
-                    // Add headers to the second sheet (Locations)
+                    // Add headers to the second sheet (Companies)
                     val headerValues2 = listOf("id", "name", "location","synced")
                     val valueRange2 = ValueRange().setValues(listOf(headerValues2))
 
@@ -614,6 +619,16 @@ class MainActivity : AppCompatActivity() {
                         .update(spreadsheet.spreadsheetId, "Companies!A1:D1", valueRange2)
                     updateValuesRequest2.setValueInputOption("RAW")
                     updateValuesRequest2.execute()
+
+                    // Add headers to the second sheet (Employees)
+                    val headerValues3 = listOf("id", "name", "emp_type","age","phone","employee_id","synced")
+                    val valueRange3 = ValueRange().setValues(listOf(headerValues3))
+
+                    val updateValuesRequest3 = sheetsService.spreadsheets().values()
+                        .update(spreadsheet.spreadsheetId, "Employees!A1:G1", valueRange3)
+                    updateValuesRequest3.setValueInputOption("RAW")
+                    updateValuesRequest3.execute()
+                    //colors
                     val headerRequest = Request()
                         .setRepeatCell( // Using Request again
                             RepeatCellRequest().setRange(
