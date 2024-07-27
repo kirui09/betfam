@@ -60,7 +60,7 @@ class CompaniesFragment : Fragment(), CompanyClickHandler, AddCompanyDialogFragm
 
     override fun onCompanyAdded(name: String, location: String) {
         // Handle the save operation (e.g., add the company to the database)
-        dbHelper.insertCompany(name, location)
+      //  dbHelper.insertCompany(name, location)
 
         // Refresh the company list after adding a new company
         updateCompanyList()
