@@ -17,6 +17,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import com.betfam.apptea.ui.companies.Company
+import com.betfam.apptea.ui.employees.Employee
 import com.betfam.apptea.ui.records.PendingTeaRecordDao
 import com.betfam.apptea.ui.records.Record
 import com.betfam.apptea.ui.records.TeaPaymentRecord
@@ -293,7 +294,57 @@ class SyncService : JobService() {
                         if (newCompanyRecords.isNotEmpty()) {
                             dbHelper.insertOrUpdateCompanyRecords(newCompanyRecords)
                         }
+                        // New code for Employees Records (Sheet3)
 
+                        val sheetEmployees = fetchEmployeeRecords(sheetsService, spreadsheetId)
+
+                         // Delete employees from Sheet
+                        val localEmployeesToDelete = dbHelper.getEmployeesRecordsToDelete()
+                        Log.d("SyncEmployees", "Local employees to delete: $localEmployeesToDelete")
+
+                        deleteEmployeesFromSheet(sheetsService, spreadsheetId, localEmployeesToDelete, sheetEmployees, "Employees")
+
+                        localEmployeesToDelete.forEach { employee ->
+                            val isDeleted = dbHelper.deleteEmployee(employee)
+                            if (isDeleted) {
+                                Log.d("EmployeeDeletion", "Successfully deleted employee: ${employee.name}")
+                            } else {
+                                Log.w("EmployeeDeletion", "Failed to delete employee: ${employee.name}")
+                            }
+                        }
+                        // Append new employees to Sheet3
+                        val employees = dbHelper.getAllEmployees()
+                        val newemployees = employees.filter { localEmployee ->
+                            sheetEmployees.none { it.name == localEmployee.name }
+                        }
+                        if (newemployees.isNotEmpty()) {
+                            appendEmployeesToSheet(sheetsService, spreadsheetId, newemployees)
+                        }
+                        // Update existing companies in Sheet2
+                        val employeesToUpdate = employees.filter { localEmployee ->
+                            val sheetEmployee = sheetEmployees.find { it.name == localEmployee.name }
+                            sheetEmployee != null && (
+
+                                            sheetEmployee.empType != localEmployee.empType ||
+                                            sheetEmployee.age != localEmployee.age ||
+                                                    sheetEmployee.phoneNumber != localEmployee.phoneNumber ||
+                                                    sheetEmployee.employeeId != localEmployee.employeeId
+
+                                    )
+                        }
+                        updateEmployeesInSheet(sheetsService, spreadsheetId, employeesToUpdate, sheetEmployees)
+                        // Fetch updated company records from Sheet2
+                        val updatedSheetEmployee = fetchEmployeeRecords(sheetsService, spreadsheetId)
+
+                        // Update local database with new or updated company records from Sheet2
+                        dbHelper.insertOrUpdateEmployeeRecords(updatedSheetEmployee)
+
+                        val newEmployeesRecords = updatedSheetEmployee.filter { sheetEmployee ->
+                            companies.none { it.name == sheetEmployee.name }
+                        }
+                        if (newEmployeesRecords.isNotEmpty()) {
+                            dbHelper.insertOrUpdateEmployeeRecords(newEmployeesRecords)
+                        }
 
 
                     }
@@ -322,6 +373,29 @@ class SyncService : JobService() {
                 )
             } catch (e: Exception) {
                 Log.e("FetchCompanyRecords", "Error parsing row: $row", e)
+                null
+            }
+        } ?: emptyList()
+    }
+    // New helper functions for Company operations
+
+    private fun fetchEmployeeRecords(sheetsService: Sheets, spreadsheetId: String): List<com.betfam.apptea.ui.employees.Employee> {
+        val range = "Employees!A:F"
+        val response = sheetsService.spreadsheets().values().get(spreadsheetId, range).execute()
+        val values = response.getValues()
+
+        return values?.drop(1)?.mapNotNull { row ->
+            try {
+                Employee(
+                    id = row.getOrNull(0)?.toString()?.toLongOrNull(),
+                    name = row.getOrNull(1)?.toString(),
+                    empType = row.getOrNull(2)?.toString(),
+                    age = row.getOrNull(3)?.toString(),
+                    phoneNumber = row.getOrNull(4)?.toString(),
+                    employeeId = row.getOrNull(5)?.toString()
+                )
+            } catch (e: Exception) {
+                Log.e("FetchEmployeeRecords", "Error parsing row: $row", e)
                 null
             }
         } ?: emptyList()
@@ -393,11 +467,89 @@ class SyncService : JobService() {
         }
     }
 
+    private fun deleteEmployeesFromSheet(
+        sheetsService: Sheets,
+        spreadsheetId: String,
+        employeesToDelete: List<Employee>,
+        sheetemployees: List<Employee>,
+        sheetName: String) {
+// Get the sheet ID
+        // Get the sheet ID
+        val spreadsheet = sheetsService.spreadsheets().get(spreadsheetId).execute()
+        val sheet = spreadsheet.sheets.firstOrNull { it.properties.title == sheetName }
+        val sheetId = sheet?.properties?.sheetId
+        if (sheetId == null) {
+            Log.e("SheetDeleteremployees", "Sheet ID not found for sheet: $sheetName")
+            return
+        }
+
+        for (employeesToDelete in employeesToDelete) {
+            val rowIndex = sheetemployees.indexOfFirst { it.name.equals(employeesToDelete.name, ignoreCase = true) }
+            if (rowIndex != -1) {
+
+                try {
+                    val requestBody = BatchUpdateSpreadsheetRequest().setRequests(
+                        listOf(
+                            Request().setDeleteRange(
+                                DeleteRangeRequest()
+                                    .setRange(
+                                        GridRange()
+                                            .setSheetId(sheetId) // You might need to set the sheetId explicitly
+                                            .setStartRowIndex(rowIndex+1)
+                                            .setEndRowIndex(rowIndex + 2)
+                                    )
+                                    .setShiftDimension("ROWS")
+                            )
+                        )
+                    )
+
+                    Log.d("SheetDeleteremployees", "Attempting to delete row ${rowIndex + 1} with employee name: ${employeesToDelete.name}")
+
+                    val response = sheetsService.spreadsheets().batchUpdate(spreadsheetId, requestBody).execute()
+
+                    Log.d("SheetDeleteremployees", "API Response: ${response.toPrettyString()}")
+
+                    if (response.replies != null && response.replies.isNotEmpty()) {
+                        Log.d("SheetDeleteremployees", "Successfully deleted row ${rowIndex + 1} for employee: ${employeesToDelete.name}")
+                    } else {
+                        Log.w("SheetDeleteremployees", "No changes made for row ${rowIndex + 1}, employee: ${employeesToDelete.name}")
+                    }
+
+                    // Verify deletion
+                    val range = "$sheetName!A${rowIndex + 1}:F${rowIndex + 1}"
+                    val readResult = sheetsService.spreadsheets().values().get(spreadsheetId, range).execute()
+                    if (readResult.values == null || readResult.values.isEmpty()) {
+                        Log.d("SheetDeleteremployees", "Verified: Row ${rowIndex + 1} is now empty or deleted")
+                    } else {
+                        Log.w("SheetDeleteremployees", "Verification failed: Row ${rowIndex + 1} still contains data")
+                    }
+
+                } catch (e: Exception) {
+                    Log.e("SheetDeleteremployees", "Failed to delete row ${rowIndex + 1} for company: ${employeesToDelete.name}", e)
+                }
+            } else {
+                Log.w("SheetDeletercompanies", "Company not found in sheet: ${employeesToDelete.name}")
+            }
+        }
+    }
+
 
     private fun appendCompaniesToSheet(sheetsService: Sheets, spreadsheetId: String, newCompanies: List<com.betfam.apptea.ui.companies.Company>) {
         val appendRange = "Companies!A:D"
         val appendBody = ValueRange().setValues(newCompanies.map { company ->
             listOf(company.id, company.name, company.location, company.synced)
+        })
+
+        sheetsService.spreadsheets().values()
+            .append(spreadsheetId, appendRange, appendBody)
+            .setValueInputOption("RAW")
+            .setInsertDataOption("INSERT_ROWS")
+            .execute()
+    }
+    private fun appendEmployeesToSheet(sheetsService: Sheets, spreadsheetId: String, newEmployees: List<Employee>) {
+        val appendRange = "Employees!A:H"
+        val appendBody = ValueRange().setValues(newEmployees.map { employees ->
+            listOf(employees.id, employees.name, employees.empType, employees.age,employees.phoneNumber,employees.employeeId)
         })
 
         sheetsService.spreadsheets().values()
@@ -413,6 +565,19 @@ class SyncService : JobService() {
             val updateRange = "Companies!A$rowIndex:D$rowIndex"
             val updateBody = ValueRange().setValues(listOf(
                 listOf(company.id, company.name, company.location, company.synced)
+            ))
+
+            sheetsService.spreadsheets().values().update(spreadsheetId, updateRange, updateBody)
+                .setValueInputOption("RAW")
+                .execute()
+        }
+    }
+    private fun updateEmployeesInSheet(sheetsService: Sheets, spreadsheetId: String,employeesToupdate : List<Employee>, sheetEmployee : List<Employee>) {
+        employeesToupdate.forEach { employees ->
+            val rowIndex = sheetEmployee.indexOfFirst { it.name == employees.name} + 2
+            val updateRange = "Employees!A$rowIndex:H$rowIndex"
+            val updateBody = ValueRange().setValues(listOf(
+                listOf( employees.id,employees.name,employees.empType, employees.age,employees.phoneNumber,employees.employeeId)
             ))
 
             sheetsService.spreadsheets().values().update(spreadsheetId, updateRange, updateBody)

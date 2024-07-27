@@ -128,7 +128,7 @@ class EmployeesFragment : Fragment(), AddEmployeeDialogFragment.OnEmployeeSavedL
     private fun deleteEmployee(employee: Employee) {
         // Implement the delete operation in your DBHelper
         val dbHelper = DBHelper(requireContext())
-        val success = dbHelper.deleteEmployee(employee)
+        val success = dbHelper.preparedeleteEmployee(employee)
 
         if (success) {
             Toast.makeText(

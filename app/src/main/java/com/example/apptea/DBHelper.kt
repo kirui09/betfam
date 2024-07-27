@@ -561,7 +561,59 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
             db.close()
         }
     }
+    fun insertOrUpdateEmployeeRecords(employees: List<Employee>) {
+        val existingRecords = getAllEmployees()
+        val db = this.writableDatabase
+        db.beginTransaction()
+        try {
+            employees.forEach { newRecord ->
+                val values = ContentValues().apply {
+                    put("name", newRecord.name)
+                    put("emp_type", newRecord.empType)
+                    put("age", newRecord.age)
+                    put("phone", newRecord.phoneNumber)
+                    put("employee_id", newRecord.employeeId)
+                    put("synced", 1)
+                }
 
+                // Find existing record by employee_id instead of name
+                val existingRecord = existingRecords.find { it.name == newRecord.name }
+
+                if (existingRecord == null) {
+                    val result = db.insertWithOnConflict(
+                        "Employees",
+                        null,
+                        values,
+                        SQLiteDatabase.CONFLICT_REPLACE
+                    )
+                    Log.d("InsertionResult", "Inserted new record with ID ${newRecord.employeeId}: $result")
+                } else {
+                    // Compare existingRecord with newRecord to check for changes
+                    if (
+                        existingRecord.empType != newRecord.empType ||
+                        existingRecord.age != newRecord.age ||
+                        existingRecord.phoneNumber != newRecord.phoneNumber ||
+                        existingRecord.employeeId != newRecord.employeeId
+                    ) {
+                        // Update only if there are changes
+                        val result = db.update(
+                            "Employees",  // Changed from "TeaRecords" to "Employees"
+                            values,
+                            "employee_id = ?",
+                            arrayOf(newRecord.employeeId)
+                        )
+                        Log.d("UpdateResult", "Updated record with ID ${newRecord.employeeId}: $result")
+                    } else {
+                        Log.d("InsertionResult", "No changes detected for record with ID ${newRecord.employeeId}")
+                    }
+                }
+            }
+            db.setTransactionSuccessful()
+        } finally {
+            db.endTransaction()
+            db.close()
+        }
+    }
 
 
     fun insertTeaRecords(records: List<Record>): Boolean {
@@ -890,6 +942,39 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
 
         return companyList
     }
+    fun getEmployeesRecordsToDelete(): List<Employee> {
+        val employeeList = mutableListOf<Employee>()
+        val db = this.readableDatabase
+
+        try {
+            val query = "SELECT * FROM Employees where status='Del'  ORDER BY id DESC"
+            val cursor = db.rawQuery(query, null)
+
+            while (cursor.moveToNext()) {
+                val id = cursor.getLong(cursor.getColumnIndex("id"))
+                val name = cursor.getString(cursor.getColumnIndex("name"))
+                val emptype = cursor.getString(cursor.getColumnIndex("emp_type"))
+                val age = cursor.getString(cursor.getColumnIndex("age"))
+                val phone = cursor.getString(cursor.getColumnIndex("phone"))
+                val employeeId = cursor.getString(cursor.getColumnIndex("employee_id"))
+
+
+                // Log the selected data
+                //  Log.d("DB_SELECTION", "Date: $date, Employee: $employees, Company: $company, Kilos: $kilos, Payment: $payment")
+
+                val record = Employee(id, name, emptype,age,phone,employeeId)
+                employeeList.add(record)
+            }
+
+            cursor.close()
+        } catch (e: Exception) {
+            Log.e("DB_ERROR", "Error while retrieving tea records: ${e.message}")
+        } finally {
+            db.close()
+        }
+
+        return employeeList
+    }
     
 
     // Method to get all employee names
@@ -998,6 +1083,15 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
             put("status", "Del")
         }
         val result = db.update("Companies", contentValues, "companyname=?", arrayOf(name.toString()))
+        db.close()
+        return result > 0
+    }
+    fun preparedeleteEmployee(employee: Employee): Boolean {
+        val db = this.writableDatabase
+        val contentValues = ContentValues().apply {
+            put("status", "Del")
+        }
+        val result = db.update("Employees", contentValues, "name=?", arrayOf(employee.name.toString()))
         db.close()
         return result > 0
     }
