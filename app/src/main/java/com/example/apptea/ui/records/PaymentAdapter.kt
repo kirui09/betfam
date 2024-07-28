@@ -56,7 +56,6 @@ class PaymentAdapter(
         val generalPayDateTextView: TextView = itemView.findViewById(R.id.generalpaydateTextView)
         val totalPayForDayTextView: TextView = itemView.findViewById(R.id.totalpayForDay)
         val seeMorePayButton: Button = itemView.findViewById(R.id.seeMorePayButton)
-        val paybutton: AppCompatButton = itemView.findViewById(R.id.payButton)
         val verifiedButton: ImageButton = itemView.findViewById(R.id.verifiedButton)
 
         init {
@@ -157,10 +156,14 @@ class PaymentAdapter(
           //  holder.checkBox.isChecked = isVerified
           //  holder.checkBox.visibility = if (isVerified) View.GONE else View.VISIBLE
        //    holder.verifiedButton.visibility = if (isVerified) View.VISIBLE else View.GONE
-
-            holder.paybutton.setOnClickListener { view ->
+            val paybutton: AppCompatButton = holder.itemView.findViewById(R.id.payButton)
+            val isPaid = totalPayment >0
+            // Update the button text and enable/disable it based on the payment status
+            paybutton.text = if (isPaid) "Paid" else "Pay"
+            paybutton.isEnabled = !isPaid
+            paybutton.setOnClickListener { view ->
                // val isChecked = (view as CheckBox).isChecked
-                if (holder.paybutton.text == "Pay") {
+                if (paybutton.text == "Pay") {
 
                     val sharedPreferences = context.getSharedPreferences("com.betfam.apptea.preferences", Context.MODE_PRIVATE)
                     val payRate = 8
@@ -200,8 +203,8 @@ class PaymentAdapter(
                         sharedPreferencesHelper.saveCheckBoxState(day, true)
                         Toast.makeText(context, "Payments saved to database", Toast.LENGTH_SHORT).show()
                        // holder.checkBox.visibility = View.GONE
-                        holder.paybutton.text = "Paid"
-                        holder.paybutton.isEnabled = false
+                        paybutton.text = "Paid"
+                        paybutton.isEnabled = false
                        // holder.paybutton.setBackgroundColor(ContextCompat.getColor(this, R.color.paid_button_color))
                        // holder.verifiedButton.visibility = View.VISIBLE
                         dialog.dismiss()
