@@ -23,6 +23,7 @@ import android.widget.EditText
 import android.widget.RelativeLayout
 import android.widget.Spinner
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import com.betfam.apptea.App
 import com.betfam.apptea.DBHelper
@@ -96,12 +97,71 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
             showDatePickerDialog(currentDate, editTextDate)
         }
 
+        // Define error background color
+        val errorColor = ContextCompat.getColor(requireContext(), android.R.color.holo_red_light)
+        val defaultColor = ContextCompat.getColor(requireContext(), android.R.color.transparent)
+
         buttonSaveRecord.setOnClickListener {
-            saveTempRecord()
+            val selectedCompany = spinnerCompanyName.selectedItem.toString()
+            val selectedEmployee = spinnerEmployeeName.selectedItem.toString()
+
+            var valid = true
+
+            // Check if the selected company is valid
+            if (selectedCompany.lowercase() == "add company") {
+                spinnerCompanyName.setBackgroundColor(errorColor)
+                valid = false
+            } else {
+                spinnerCompanyName.setBackgroundColor(defaultColor)
+            }
+
+            // Check if the selected employee is valid
+            if (selectedEmployee.lowercase() == "add employee") {
+                spinnerEmployeeName.setBackgroundColor(errorColor)
+                valid = false
+            } else {
+                spinnerEmployeeName.setBackgroundColor(defaultColor)
+            }
+
+            // Proceed if all inputs are valid
+            if (valid) {
+                saveTempRecord()
+            } else {
+                // Optionally, you can show a toast message in addition to highlighting the spinner
+                Toast.makeText(context, "Use Valid Inputs", Toast.LENGTH_LONG).show()
+            }
         }
 
+
         buttonSaveAllRecords.setOnClickListener {
-            saveAllRecords()
+            val selectedCompany = spinnerCompanyName.selectedItem.toString()
+            val selectedEmployee = spinnerEmployeeName.selectedItem.toString()
+
+            var valid = true
+
+            // Check if the selected company is valid
+            if (selectedCompany.lowercase() == "add company") {
+                spinnerCompanyName.setBackgroundColor(errorColor)
+                valid = false
+            } else {
+                spinnerCompanyName.setBackgroundColor(defaultColor)
+            }
+
+            // Check if the selected employee is valid
+            if (selectedEmployee.lowercase() == "add employee") {
+                spinnerEmployeeName.setBackgroundColor(errorColor)
+                valid = false
+            } else {
+                spinnerEmployeeName.setBackgroundColor(defaultColor)
+            }
+
+            // Proceed if all inputs are valid
+            if (valid) {
+                saveAllRecords()
+            } else {
+                // Optionally, you can show a toast message in addition to highlighting the spinner
+                Toast.makeText(context, "Use Valid Inputs", Toast.LENGTH_LONG).show()
+            }
         }
 
         val employeeNames = dbh.getAllEmployeeNames()
