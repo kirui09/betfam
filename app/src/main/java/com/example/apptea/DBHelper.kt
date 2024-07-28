@@ -387,7 +387,7 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
         val db = this.readableDatabase
 
         // Use the actual column names from the SELECT query
-        val cursor = db.rawQuery("SELECT id, name,emp_type , age, phone, employee_id FROM Employees", null)
+        val cursor = db.rawQuery("SELECT id, name,emp_type , age, phone, employee_id FROM Employees where status<>'Del' OR status IS NULL", null)
 
         while (cursor.moveToNext()) {
             // Retrieve values using the correct column names
