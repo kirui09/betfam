@@ -22,6 +22,7 @@ import android.widget.TableLayout
 import android.widget.TableRow
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.widget.AppCompatButton
 import androidx.recyclerview.widget.RecyclerView
 import com.betfam.apptea.App
 import com.betfam.apptea.DBHelper
@@ -86,7 +87,7 @@ class MonthlyPaymentAdapter(
         private val totalPaymentTextView: TextView =
             itemView.findViewById(R.id.monthlypaymentTextView)
         private val showdetailsButton: Button = itemView.findViewById(R.id.showmoredetails)
-        val makePayment: ImageButton = itemView.findViewById(R.id.makePayment)
+        val makePayment: AppCompatButton = itemView.findViewById(R.id.makePayment)
 
         fun bind(month: String, payments: ArrayList<MonthlyPayment>?) {
             val formattedMonth = getFormattedMonth(month)
@@ -350,7 +351,10 @@ class MonthlyPaymentAdapter(
             detailsTable.layoutParams = TableLayout.LayoutParams(
                 TableLayout.LayoutParams.MATCH_PARENT,
                 TableLayout.LayoutParams.WRAP_CONTENT
+
             )
+            detailsTable.setBackgroundColor(Color.parseColor("#B0BEC5")) // Light Blue
+
             detailsTable.visibility = View.GONE
 
             val paymentDetailsList = buildPaymentDetailsList(employeeName, month)
