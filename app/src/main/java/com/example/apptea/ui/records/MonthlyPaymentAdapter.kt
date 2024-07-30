@@ -94,7 +94,8 @@ class MonthlyPaymentAdapter(
             monthTextView.text = formattedMonth
 
             val totalPayment = payments?.sumByDouble { it.paymentAmount } ?: 0.0
-            totalPaymentTextView.text = NumberFormat.getCurrencyInstance(Locale("sw", "KE")).format(totalPayment)
+            val kilos = payments?.sumByDouble { it.kilos } ?: 0.0
+            totalPaymentTextView.text = NumberFormat.getCurrencyInstance(Locale("sw", "KE")).format(totalPayment)+"-Kgs"+kilos
 
             showdetailsButton.setOnClickListener {
                 expandedPosition = if (expandedPosition == adapterPosition) {

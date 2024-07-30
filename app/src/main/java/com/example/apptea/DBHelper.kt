@@ -1402,14 +1402,15 @@ class DBHelper(context: Context) : SQLiteOpenHelper(context, "FarmersDatabase", 
     fun getSumOfKilosForEachEmployee(): ArrayList<MonthlyPayment> {
         val monthlyPayments = ArrayList<MonthlyPayment>()
         val db = this.readableDatabase
-        val query = "SELECT date, employee_name, SUM(pay) AS totalpay FROM TeaRecords where status<>'Del' OR status IS NULL  GROUP BY date, employee_name"
+        val query = "SELECT date, employee_name,sum(kilos), SUM(pay) AS totalpay FROM TeaRecords where status<>'Del' OR status IS NULL  GROUP BY date, employee_name"
         val cursor: Cursor? = db.rawQuery(query, null)
         cursor?.use {
             while (it.moveToNext()) {
                 val date = it.getString(0)
                 val employeeName = it.getString(1)
-                val paymentAmount = it.getDouble(2)
-                val monthlyPayment = MonthlyPayment(date, employeeName, paymentAmount)
+                val kilos = it.getDouble(2)
+                val paymentAmount = it.getDouble(3)
+                val monthlyPayment = MonthlyPayment(date, employeeName,kilos, paymentAmount)
                 monthlyPayments.add(monthlyPayment)
             }
         }

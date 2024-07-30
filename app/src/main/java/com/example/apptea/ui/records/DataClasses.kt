@@ -9,6 +9,7 @@ import androidx.room.PrimaryKey
 data class MonthlyPayment(
     val date: String,
     val employeeName: String,
+    val kilos: Double,
     val paymentAmount: Double
 )
 
