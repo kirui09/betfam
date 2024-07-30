@@ -330,8 +330,9 @@ class MonthlyPaymentAdapter(
 
 
             val totalPaymentAmount = payments.sumByDouble { it.paymentAmount }
+            val kilos = payments.sumByDouble { it.kilos }
             val paymentAmountTextView = TextView(context)
-            paymentAmountTextView.text = "TOT: Ksh ${NumberFormat.getInstance().format(totalPaymentAmount)}"
+            paymentAmountTextView.text = "TOT: Ksh ${NumberFormat.getInstance().format(totalPaymentAmount)}"+" Kgs "+kilos
             paymentAmountTextView.setPadding(5, 5, 5, 5)
             paymentAmountTextView.setTypeface(null, Typeface.BOLD)
             paymentAmountTextView.textSize = 16f
