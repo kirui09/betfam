@@ -437,7 +437,24 @@ class MonthlyPaymentAdapter(
                     detailsTable.visibility = View.VISIBLE
                 }
             }
-
+            nameTextView.setOnClickListener{
+                if (detailsTable.visibility == View.VISIBLE) {
+                    imageButton.setImageResource(R.drawable.baseline_keyboard_arrow_down_24)
+                    detailsTable.visibility = View.GONE
+                } else {
+                    imageButton.setImageResource(R.drawable.baseline_keyboard_arrow_up_24)
+                    detailsTable.visibility = View.VISIBLE
+                }
+            }
+            paymentAmountTextView.setOnClickListener{
+                if (detailsTable.visibility == View.VISIBLE) {
+                    imageButton.setImageResource(R.drawable.baseline_keyboard_arrow_down_24)
+                    detailsTable.visibility = View.GONE
+                } else {
+                    imageButton.setImageResource(R.drawable.baseline_keyboard_arrow_up_24)
+                    detailsTable.visibility = View.VISIBLE
+                }
+            }
 
             tableLayout.addView(tableRow)
             tableLayout.addView(detailsTable)
