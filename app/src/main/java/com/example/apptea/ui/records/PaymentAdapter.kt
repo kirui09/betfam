@@ -3,6 +3,7 @@ package com.betfam.apptea.ui.records
 import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
+import android.graphics.Color
 import android.graphics.Typeface
 import android.text.InputType
 import android.util.Log
@@ -157,10 +158,15 @@ class PaymentAdapter(
           //  holder.checkBox.visibility = if (isVerified) View.GONE else View.VISIBLE
        //    holder.verifiedButton.visibility = if (isVerified) View.VISIBLE else View.GONE
             val paybutton: AppCompatButton = holder.itemView.findViewById(R.id.payButton)
+
             val isPaid = totalPayment >0
             // Update the button text and enable/disable it based on the payment status
             paybutton.text = if (isPaid) "Paid" else "Pay"
             paybutton.isEnabled = !isPaid
+            // Set the background color based on payment status
+            val backgroundColor = if (isPaid) Color.parseColor("#E57373") // Red for paid
+            else Color.parseColor("#2E8B57") // Green for not paid
+            paybutton.setBackgroundColor(backgroundColor)
             paybutton.setOnClickListener { view ->
                // val isChecked = (view as CheckBox).isChecked
                 if (paybutton.text == "Pay") {
@@ -205,6 +211,7 @@ class PaymentAdapter(
                        // holder.checkBox.visibility = View.GONE
                         paybutton.text = "Paid"
                         paybutton.isEnabled = false
+                        paybutton.setBackgroundColor(Color.parseColor("#d4edda"))
                        // holder.paybutton.setBackgroundColor(ContextCompat.getColor(this, R.color.paid_button_color))
                        // holder.verifiedButton.visibility = View.VISIBLE
                         dialog.dismiss()

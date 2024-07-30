@@ -53,7 +53,6 @@
                 android:layout_alignParentEnd="true"
                 android:text="Pay"
                 android:textAllCaps="false"
-                android:backgroundTint="@android:color/holo_blue_light"
                 android:textColor="@android:color/white"/>
             <ImageButton
                 android:id="@+id/verifiedButton"
