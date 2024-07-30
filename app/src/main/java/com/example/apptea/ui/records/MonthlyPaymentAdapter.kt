@@ -85,7 +85,7 @@ class MonthlyPaymentAdapter(
         private val monthTextView: TextView = itemView.findViewById(R.id.monthlypaymentdateTextView)
         private val totalPaymentTextView: TextView =
             itemView.findViewById(R.id.monthlypaymentTextView)
-        private val showdetailsButton: ImageButton = itemView.findViewById(R.id.showmoredetails)
+        private val showdetailsButton: Button = itemView.findViewById(R.id.showmoredetails)
         val makePayment: ImageButton = itemView.findViewById(R.id.makePayment)
 
         fun bind(month: String, payments: ArrayList<MonthlyPayment>?) {
@@ -155,7 +155,7 @@ class MonthlyPaymentAdapter(
         private val paymentAmountTextView: TextView =
             itemView.findViewById(R.id.monthlypaymentTextView)
         private val imageButtonContainer: TableLayout = itemView.findViewById(R.id.myTableLayout)
-        private val showLessButton: ImageButton = itemView.findViewById(R.id.showlessdetails)
+        private val showLessButton: Button = itemView.findViewById(R.id.showlessdetails)
 
         init {
             showLessButton.setOnClickListener {
