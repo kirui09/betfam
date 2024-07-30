@@ -278,10 +278,10 @@ class MonthlyPaymentAdapter(
 //            calculatePay(paymentDetails.kilos, dbHelper.getEmployeeType(payment.employeeName))
 //        }
 
-        val progressBar = ProgressBar(context, null, android.R.attr.progressBarStyleHorizontal)
-        progressBar.layoutParams =
+      //  val progressBar = ProgressBar(context, null, android.R.attr.progressBarStyleHorizontal)
+      //  progressBar.layoutParams =
             TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.WRAP_CONTENT, 1f)
-        progressBar.progressDrawable = context.resources.getDrawable(R.drawable.progress_bar_white, null) // Set custom drawable
+       // progressBar.progressDrawable = context.resources.getDrawable(R.drawable.progress_bar_white, null) // Set custom drawable
 
         // Calculate the progress percentage
 //        val progressPercentage = if (totalCalculatedPayment != 0.0) {
@@ -292,7 +292,7 @@ class MonthlyPaymentAdapter(
 //        progressBar.progress = progressPercentage
 
         // Add the progress bar to the row
-        dateRow.addView(progressBar)
+       // dateRow.addView(progressBar)
 
         // Add an empty cell for the employee name column
         val emptyCell = TextView(context)
@@ -303,7 +303,7 @@ class MonthlyPaymentAdapter(
         tableLayout.addView(dateRow)
 
         // Add a separator line
-        val separator = View(context)
+       val separator = View(context)
         separator.layoutParams = TableLayout.LayoutParams(
             TableLayout.LayoutParams.MATCH_PARENT,
             1
@@ -332,7 +332,7 @@ class MonthlyPaymentAdapter(
             val totalPaymentAmount = payments.sumByDouble { it.paymentAmount }
             val kilos = payments.sumByDouble { it.kilos }
             val paymentAmountTextView = TextView(context)
-            paymentAmountTextView.text = "TOT: Ksh ${NumberFormat.getInstance().format(totalPaymentAmount)}"+" Kgs "+kilos
+            paymentAmountTextView.text = "Ksh ${NumberFormat.getInstance().format(totalPaymentAmount)}"+" Kgs "+kilos
             paymentAmountTextView.setPadding(5, 5, 5, 5)
             paymentAmountTextView.setTypeface(null, Typeface.BOLD)
             paymentAmountTextView.textSize = 16f
@@ -411,17 +411,19 @@ class MonthlyPaymentAdapter(
 
                 detailsRow.addView(checkImageButton)
 
-                // Add a separator line
+                // Add the detailsRow to the detailsTable
+                detailsTable.addView(detailsRow)
+
+                // Add a separator line after the detailsRow
                 val separator = View(context)
-                separator.layoutParams = TableLayout.LayoutParams(
-                    TableLayout.LayoutParams.MATCH_PARENT,
+                separator.layoutParams = TableRow.LayoutParams(
+                    TableRow.LayoutParams.MATCH_PARENT,
                     1
                 )
                 separator.setBackgroundColor(Color.BLACK)
-                tableLayout.addView(separator)
-
-                detailsTable.addView(detailsRow)
+                detailsTable.addView(separator)
             }
+
 
 
 
