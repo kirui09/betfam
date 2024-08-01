@@ -104,11 +104,12 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
         buttonSaveRecord.setOnClickListener {
             val selectedCompany = spinnerCompanyName.selectedItem.toString()
             val selectedEmployee = spinnerEmployeeName.selectedItem.toString()
-
+            Log.d("Validation", "Selected Company: $selectedCompany")
+            Log.d("Validation", "Selected Employee: $selectedEmployee")
             var valid = true
 
             // Check if the selected company is valid
-            if (selectedCompany.lowercase() == "add company") {
+            if (selectedCompany.lowercase() == "add company" || selectedCompany.lowercase() == "select company")  {
                 spinnerCompanyName.setBackgroundColor(errorColor)
                 valid = false
             } else {
@@ -116,7 +117,7 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
             }
 
             // Check if the selected employee is valid
-            if (selectedEmployee.lowercase() == "add employee") {
+            if (selectedEmployee.lowercase() == "add employee" || selectedEmployee.lowercase()=="select employee") {
                 spinnerEmployeeName.setBackgroundColor(errorColor)
                 valid = false
             } else {
@@ -140,7 +141,7 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
             var valid = true
 
             // Check if the selected company is valid
-            if (selectedCompany.lowercase() == "add company") {
+            if (selectedCompany.lowercase() == "add company" || selectedCompany.lowercase() == "select company") {
                 spinnerCompanyName.setBackgroundColor(errorColor)
                 valid = false
             } else {
@@ -148,7 +149,7 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
             }
 
             // Check if the selected employee is valid
-            if (selectedEmployee.lowercase() == "add employee") {
+            if (selectedEmployee.lowercase() == "add employee" || selectedEmployee.lowercase()=="select employee") {
                 spinnerEmployeeName.setBackgroundColor(errorColor)
                 valid = false
             } else {

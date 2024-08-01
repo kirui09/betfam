@@ -125,14 +125,14 @@ class TeaRecordsAdapter(
             val recordsByDate = sortedRecords.groupBy { it.date }
 
             recordsByDate.forEach { (date, records) ->
-                val headerRow = TableRow(tableLayout.context)
+               /* val headerRow = TableRow(tableLayout.context)
                 val headerDateTextView = TextView(tableLayout.context)
                 val formattedDate = formatDate(date)
                 headerDateTextView.text = formattedDate
                 headerDateTextView.setTypeface(null, Typeface.BOLD)
                 headerDateTextView.setPadding(5, 5, 5, 5)
                 headerRow.addView(headerDateTextView)
-                tableLayout.addView(headerRow)
+                tableLayout.addView(headerRow)*/
 
                 records.forEach { record ->
                     val row = TableRow(tableLayout.context)
