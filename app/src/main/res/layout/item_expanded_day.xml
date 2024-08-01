@@ -28,7 +28,7 @@
     app:cardCornerRadius="8dp"
     android:stretchColumns="*"
     android:padding="16dp"
-    android:background="#3498db">
+    android:background="#FCE4EC">
 
     <TableRow
         android:id="@+id/table_row"
