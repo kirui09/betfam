@@ -458,10 +458,10 @@ class MainActivity : AppCompatActivity() {
             NetHttpTransport(),
             JacksonFactory.getDefaultInstance(),
             credentials
-        ).setApplicationName("AppChai(DoNotDelete)").build()
+        ).setApplicationName("BetFam(DoNotDelete)").build()
 
-        val folderName = "AppChai(DoNotDelete)"
-        val spreadsheetFileName = "AppChaiSpreadSheet(DoNotDelete)"
+        val folderName = "BetFam(DoNotDelete)"
+        val spreadsheetFileName = "BetFamSpreadSheet(DoNotDelete)"
 
         // Function to check if the folder with the specified name already exists
         fun getFolderId(drive: Drive, folderName: String): String? {
@@ -540,10 +540,10 @@ class MainActivity : AppCompatActivity() {
                     NetHttpTransport(),
                     JacksonFactory.getDefaultInstance(),
                     credential
-                ).setApplicationName("AppChai").build()
+                ).setApplicationName("BetFam").build()
 
-                val folderName = "AppChai(DoNotDelete)"
-                val spreadsheetFileName = "AppChaiSpreadSheet(DoNotDelete)"
+                val folderName = "BetFam(DoNotDelete)"
+                val spreadsheetFileName = "BetFamSpreadSheet(DoNotDelete)"
 
                 // Function to check if the folder with the specified name already exists
                 fun getFolderId(drive: Drive, folderName: String): String? {
@@ -597,7 +597,27 @@ class MainActivity : AppCompatActivity() {
                             SheetProperties().setTitle("Employees")
                         )
                     )
-                    val batchUpdateRequest = BatchUpdateSpreadsheetRequest().setRequests(listOf(addSheetRequest,addSheetRequest2))
+                    val addSheetRequest3 = Request().setAddSheet(
+                        AddSheetRequest().setProperties(
+                            SheetProperties().setTitle("Farms")
+                        )
+                    )
+                    val addSheetRequest4 = Request().setAddSheet(
+                        AddSheetRequest().setProperties(
+                            SheetProperties().setTitle("placeholder")
+                        )
+                    )
+                    val addSheetRequest5 = Request().setAddSheet(
+                        AddSheetRequest().setProperties(
+                            SheetProperties().setTitle("placeholder2")
+                        )
+                    )
+                    val addSheetRequest6 = Request().setAddSheet(
+                        AddSheetRequest().setProperties(
+                            SheetProperties().setTitle("placeholder3")
+                        )
+                    )
+                    val batchUpdateRequest = BatchUpdateSpreadsheetRequest().setRequests(listOf(addSheetRequest,addSheetRequest2,addSheetRequest3,addSheetRequest4,addSheetRequest5,addSheetRequest6))
                     sheetsService.spreadsheets().batchUpdate(spreadsheet.spreadsheetId, batchUpdateRequest).execute()
 
 

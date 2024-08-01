@@ -15,8 +15,8 @@ android {
         applicationId = "com.betfam.apptea"
         minSdk = 24
         targetSdk = 34
-        versionCode = 5
-        versionName = "5.0"
+        versionCode = 6
+        versionName = "6.0"
         multiDexEnabled= true
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
