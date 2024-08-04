@@ -78,7 +78,7 @@ class TeaRecordsAdapter(
             val formattedDate = formatDate(day)
             binding.generaldateTextView.text = formattedDate
             val recordsForDay = recordsByDay[day]
-            val totalKilos = recordsForDay?.sumBy { it.kilos.toInt() } ?: 0
+            val totalKilos = recordsForDay?.sumOf { it.kilos.toDouble() } ?: 0
             binding.totalKilofForDay.text = "Total Kilos: $totalKilos"
             binding.seeMoreButton.visibility =
                 if (expandedPosition == absoluteAdapterPosition) View.GONE else View.VISIBLE
