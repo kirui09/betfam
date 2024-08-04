@@ -37,8 +37,8 @@ class AddCompanyDialogFragment : DialogFragment() {
             val location = editTextCompanyLocation.text.toString().trim()
 
             // Check for empty values
-            if (name.isEmpty() || location.isEmpty()) {
-                showToast("Please fill in all fields")
+            if (name.isEmpty()) {
+                showToast("Please fill in the Company Name")
                 return@setOnClickListener
             }
 

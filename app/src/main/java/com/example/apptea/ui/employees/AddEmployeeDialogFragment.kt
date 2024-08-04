@@ -49,10 +49,10 @@ class AddEmployeeDialogFragment : DialogFragment() {
             val id = editTextEmployeeID.text.toString().trim()
             val empType = spinnerEmpType.selectedItem.toString()
 
-            if (empType == "Select Employee Type") {
+          /*  if (empType == "Select Employee Type") {
                 showToast("Please select an employee type")
                 return@setOnClickListener
-            }
+            }*/
 
             if (name.isEmpty()) {
                 showToast("Add Employee Name")
