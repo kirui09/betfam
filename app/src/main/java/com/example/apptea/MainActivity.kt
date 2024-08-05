@@ -306,27 +306,38 @@ class MainActivity : AppCompatActivity() {
                 .setMessage("Are you sure you want to log out?")
                 .setPositiveButton("Yes") { _, _ ->
                     // Handle logout logic here
-                    googleSignInClient.signOut().addOnCompleteListener(this) {
-                        // Clear user details from SharedPreferences
-                        val sharedPreferences = getSharedPreferences("user_details", Context.MODE_PRIVATE)
-                        val editor = sharedPreferences.edit()
-                        editor.clear()
-                        editor.apply()
+                    googleSignInClient.signOut().addOnCompleteListener(this) { signOutTask ->
+                        if (signOutTask.isSuccessful) {
+                            // Clear user details from SharedPreferences
+                            val sharedPreferences = getSharedPreferences("user_details", Context.MODE_PRIVATE)
+                            val editor = sharedPreferences.edit()
+                            editor.clear()
+                            editor.apply()
 
-                        // Clear the data from the SQLite database
-                        dbh.clearData()
+                            // Clear the data from the SQLite database
+                            try {
+                                dbh.clearData()
+                            } catch (e: Exception) {
+                                Log.e("LogoutError", "Failed to clear database: ${e.message}")
+                                Toast.makeText(this, "Error clearing data. Please try again.", Toast.LENGTH_SHORT).show()
+                                return@addOnCompleteListener
+                            }
 
-                        // Set the signed-in status flag to false
-                        isUserSignedIn = false
+                            // Set the signed-in status flag to false
+                            isUserSignedIn = false
 
-                        // Show a success message
-                        Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show()
+                            // Show a success message
+                            Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show()
 
-                        // Optionally, redirect the user to the sign-in screen or main screen
-                        val intent = Intent(this, MainActivity::class.java)
-                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                        startActivity(intent)
-                        finish()
+                            // Redirect the user to the sign-in screen or main screen
+                            val intent = Intent(this, MainActivity::class.java)
+                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            startActivity(intent)
+                            finish()
+                        } else {
+                            // Handle sign-out failure
+                            Toast.makeText(this, "Sign out failed. Please try again.", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
                 .setNegativeButton("No", null)
