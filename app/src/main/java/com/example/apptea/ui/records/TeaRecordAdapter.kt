@@ -202,7 +202,7 @@ class TeaRecordsAdapter(
                 }
             }
 
-            val totalKilos = recordsForDay.sumByDouble { it.kilos }
+            val totalKilos = recordsForDay.sumOf { it.kilos.toDouble() }
             val totalPayAmount = recordsForDay.sumByDouble { it.kilos * 8.0 }
 
             val totalsRow = TableRow(tableLayout.context)
@@ -216,7 +216,7 @@ class TeaRecordsAdapter(
             totalsRow.addView(totalsLabelTextView)
 
             val totalKilosTextView = TextView(tableLayout.context)
-            totalKilosTextView.text = "${totalKilos} Kgs"
+            totalKilosTextView.text = String.format("%.2f Kgs", totalKilos)
             totalKilosTextView.setTypeface(null, Typeface.BOLD)
             totalKilosTextView.setPadding(5, 5, 5, 5)
             totalsRow.addView(totalKilosTextView)

@@ -95,8 +95,8 @@ class MonthlyPaymentAdapter(
             monthTextView.text = formattedMonth
 
             val totalPayment = payments?.sumByDouble { it.paymentAmount } ?: 0.0
-            val kilos = payments?.sumByDouble { it.kilos } ?: 0.0
-            totalPaymentTextView.text = NumberFormat.getCurrencyInstance(Locale("sw", "KE")).format(totalPayment)+"-Kgs"+kilos
+            val kilos = payments?.sumOf { it.kilos.toDouble() } ?: 0.0
+            totalPaymentTextView.text = NumberFormat.getCurrencyInstance(Locale("sw", "KE")).format(totalPayment) + " - " + String.format("%.2f Kgs", kilos)
 
             showdetailsButton.setOnClickListener {
                 expandedPosition = if (expandedPosition == adapterPosition) {
@@ -333,7 +333,7 @@ class MonthlyPaymentAdapter(
             val totalPaymentAmount = payments.sumByDouble { it.paymentAmount }
             val kilos = payments.sumByDouble { it.kilos }
             val paymentAmountTextView = TextView(context)
-            paymentAmountTextView.text = "Ksh ${NumberFormat.getInstance().format(totalPaymentAmount)}"+" Kgs "+kilos
+            paymentAmountTextView.text = String.format("Ksh %.2f - %.2f Kgs", totalPaymentAmount, kilos)
             paymentAmountTextView.setPadding(5, 5, 5, 5)
             paymentAmountTextView.setTypeface(null, Typeface.BOLD)
             paymentAmountTextView.textSize = 16f
