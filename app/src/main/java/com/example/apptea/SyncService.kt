@@ -156,11 +156,27 @@ class SyncService : JobService() {
                     if (spreadsheetId != null) {
                         val localRecordsToDelete = dbHelper.getPaymentRecordstodelete()
                         val sheetRecordsbeforedelete = fetchTeaRecords(sheetsService, spreadsheetId)
+                        try {
 
-                        deleteRecordsFromSheet(sheetsService, spreadsheetId, localRecordsToDelete, sheetRecordsbeforedelete)
+
+                            deleteRecordsFromSheet(sheetsService, spreadsheetId, localRecordsToDelete, sheetRecordsbeforedelete)
+
+                            // If deleteRecordsFromSheet completes without throwing an exception, proceed with other logic
+                            // Add your subsequent logic here
+
+                        } catch (e: Exception) {
+                            // Handle any exceptions that occur during the deletion process
+                            println("Error deleting records from Google Sheet: ${e.message}")
+                            // Add any error handling or logging as needed
+                        }
                         val idsToDelete = localRecordsToDelete.map { it.id }
+                        try{
                         idsToDelete.forEach { id ->
                             dbHelper.deleteRecord(id)
+                        }}catch (e: Exception) {
+                            // Handle any exceptions that occur during the deletion process
+                            println("Error during deletion process in local db: ${e.message}")
+                            // Add any error handling or logging as needed
                         }
 
                         val localRecords = dbHelper.getPaymentRecords()
@@ -593,34 +609,34 @@ class SyncService : JobService() {
         recordsToDelete: List<TeaPaymentRecord>,
         sheetRecords: List<TeaPaymentRecord>
     ) {
-        for (recordToDelete in recordsToDelete) {
-            val rowIndex = sheetRecords.indexOfFirst { it.id == recordToDelete.id }
-            if (rowIndex != -1) {
-                val deleteRange = "Sheet1!A${rowIndex + 2}:F${rowIndex + 2}"
-                try {
-                    val requestBody = BatchUpdateSpreadsheetRequest().setRequests(
-                        listOf(
-                            Request().setDeleteDimension(
-                                DeleteDimensionRequest().setRange(
-                                    DimensionRange()
-                                        .setSheetId(0)
-                                        .setDimension("ROWS")
-                                        .setStartIndex(rowIndex + 1)
-                                        .setEndIndex(rowIndex + 2)
-                                )
-                            )
-                        )
-                    )
+        val idToRowMap = sheetRecords.mapIndexed { index, record -> record.id to index }.toMap()
+        val rowsToDelete = recordsToDelete.mapNotNull { record ->
+            idToRowMap[record.id]?.let { it + 2 }  // +2 because sheet rows are 1-indexed and we have a header row
+        }.sortedDescending()  // Sort in descending order to delete from bottom to top
 
-                    Log.d("SheetDeleter", "Deleting row ${rowIndex + 2} with ID: ${recordToDelete.id}")
+        val batchRequests = rowsToDelete.map { rowIndex ->
+            Request().setDeleteDimension(
+                DeleteDimensionRequest().setRange(
+                    DimensionRange()
+                        .setSheetId(0)
+                        .setDimension("ROWS")
+                        .setStartIndex(rowIndex - 1)
+                        .setEndIndex(rowIndex)
+                )
+            )
+        }
 
-                    sheetsService.spreadsheets().batchUpdate(spreadsheetId, requestBody).execute()
-
-                    Log.d("SheetDeleter", "Successfully deleted row ${rowIndex + 2}")
-                } catch (e: Exception) {
-                    Log.e("SheetDeleter", "Failed to delete row ${rowIndex + 2}", e)
-                }
+        if (batchRequests.isNotEmpty()) {
+            try {
+                val requestBody = BatchUpdateSpreadsheetRequest().setRequests(batchRequests)
+                sheetsService.spreadsheets().batchUpdate(spreadsheetId, requestBody).execute()
+                Log.d("SheetDeleter", "Successfully deleted ${batchRequests.size} rows")
+            } catch (e: Exception) {
+                Log.e("SheetDeleter", "Failed to delete rows", e)
+                throw e  // Re-throw the exception to be caught by the outer try-catch block
             }
+        } else {
+            Log.d("SheetDeleter", "No matching records found to delete")
         }
     }
 
