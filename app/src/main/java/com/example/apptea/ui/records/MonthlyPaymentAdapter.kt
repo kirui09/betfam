@@ -197,7 +197,7 @@ class MonthlyPaymentAdapter(
             } else {
                 imageButtonContainer.visibility = View.GONE
             }
-
+/*
             // Toggle expandedPosition when clicked
             imageButtonContainer.setOnClickListener {
                 val wasExpanded = expandedPosition == adapterPosition
@@ -223,7 +223,7 @@ class MonthlyPaymentAdapter(
                     imageButtonContainer.startAnimation(animation)
                 }
                 notifyDataSetChanged()
-            }
+            }*/
         }
 
 
