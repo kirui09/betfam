@@ -230,6 +230,15 @@ class MainActivity : AppCompatActivity() {
 
         if (!isUserSignedIn) {
             googleCloudSignUp.startAnimation(blinkingAnimation)
+            AlertDialog.Builder(this)
+                .setTitle("Login Required")
+                .setMessage("You need to log in to access all features of the application.")
+                .setPositiveButton("Log In") { _, _ -> signIn() }
+                .setNegativeButton("Cancel") { dialog, _ ->
+                    showRiskWarningDialog()
+                    dialog.dismiss() // Dismiss the initial dialog
+                }
+                .show()
         }
 
         googleCloudSignUp.setOnClickListener {
@@ -263,7 +272,28 @@ class MainActivity : AppCompatActivity() {
 
 
     }
-
+    private fun showRiskWarningDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Warning")
+            .setMessage("If you do not log in, you may not be able to back up your data. Do you understand the risk?")
+            .setPositiveButton("Yes, I understand") { dialog, _ ->
+                // User acknowledges the risk
+                dialog.dismiss()
+            }
+            .setNegativeButton("No") { dialog, _ ->
+                // Optionally: Do something else or just dismiss
+                AlertDialog.Builder(this)
+                    .setTitle("Login Required")
+                    .setMessage("You need to log in to access all features of the application.")
+                    .setPositiveButton("Log In") { _, _ -> signIn() }
+                    .setNegativeButton("Cancel") { dialog, _ ->
+                        showRiskWarningDialog()
+                        dialog.dismiss() // Dismiss the initial dialog
+                    }
+                    .show()
+            }
+            .show()
+    }
     fun openTeaRecordsDrawer() {
         val navController = findNavController(R.id.nav_host_fragment_content_main)
 
