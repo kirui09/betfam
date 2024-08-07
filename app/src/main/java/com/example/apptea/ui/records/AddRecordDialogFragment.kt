@@ -297,7 +297,7 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
             tempRecords.add(record)
             recordSavedListener?.onRecordAdded()
 
-            employeeSpinner?.setSelection(0) // Set the employee spinner to the first item ("Select Employee")
+          //  employeeSpinner?.setSelection(0) // Set the employee spinner to the first item ("Select Employee")
             kilosEditText?.setText("")
 
             Toast.makeText(requireContext(), "$employee has been saved temporarily. Enter Records For Next Employee..", Toast.LENGTH_LONG).show()
