@@ -314,6 +314,8 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
 
         val tempRecordsToSave = mutableListOf<Record>()
         tempRecordsToSave.addAll(tempRecords)
+        // Calculate total kilos
+        val totalKilos = tempRecordsToSave.sumOf { it.kilos.toDouble() }
 
         if (date.isNotEmpty() && company.isNotEmpty() && employee.isNotEmpty() && kilosString.isNotEmpty()) {
             val kilos = kilosString.toDouble()
@@ -327,6 +329,7 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
             builder.setTitle("Confirm Records")
 
             val messageBuilder = StringBuilder()
+            messageBuilder.append("Total: ${String.format("%.2f", totalKilos)} kg\n\n")
             for (record in tempRecordsToSave) {
                 messageBuilder.append("${record.company} - ${record.employee}: ${record.kilos} kg\n")
             }
