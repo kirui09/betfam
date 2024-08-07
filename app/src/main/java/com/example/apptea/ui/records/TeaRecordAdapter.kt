@@ -124,13 +124,14 @@ class TeaRecordsAdapter(
             val tableLayout = binding.myTableLayout
             tableLayout.removeAllViews() // Clear existing views
 
-            val employeeRecords = recordsForDay.groupBy { it.employees }
+            val employeeRecords = recordsForDay.groupBy { it.employees to it.company }
 
-            employeeRecords.forEach { (employee, records) ->
+            employeeRecords.forEach { (key, records) ->
+                val (employee, company) = key
                 val row = TableRow(tableLayout.context)
 
                 val employeesTextView = TextView(tableLayout.context)
-                employeesTextView.text = employee
+                employeesTextView.text = "$employee - $company"
                 employeesTextView.setTypeface(null, Typeface.BOLD)
                 employeesTextView.setPadding(5, 5, 5, 5)
                 employeesTextView.gravity = Gravity.CENTER_VERTICAL
