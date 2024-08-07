@@ -81,9 +81,9 @@ class AddRecordDialogFragment : DialogFragment(), AddCompanyDialogFragment.AddCo
         val spinnerEmployeeName = view.findViewById<Spinner>(R.id.spinnerEmployeeName)
         val editTextKilos = view.findViewById<EditText>(R.id.editTextEmployeeKilos)
 
-        editTextKilos.filters = arrayOf<InputFilter>(DecimalDigitsInputFilter(4))
+      /*  editTextKilos.filters = arrayOf<InputFilter>(DecimalDigitsInputFilter(4))
         editTextKilos.inputType =
-            InputType.TYPE_NUMBER_FLAG_DECIMAL or InputType.TYPE_NUMBER_FLAG_SIGNED
+            InputType.TYPE_NUMBER_FLAG_DECIMAL or InputType.TYPE_NUMBER_FLAG_SIGNED*/
 
         val buttonSaveRecord = view.findViewById<Button>(R.id.buttonSaveRecord)
         val buttonSaveAllRecords = view.findViewById<Button>(R.id.buttonSaveAllRecords)

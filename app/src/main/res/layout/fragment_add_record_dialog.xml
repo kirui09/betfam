@@ -92,7 +92,7 @@
             android:id="@+id/editTextEmployeeKilos"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="number"
+            android:inputType="numberDecimal"
             android:layout_marginTop="8dp"
             android:padding="18dp"
             android:hint="Kilos" />
