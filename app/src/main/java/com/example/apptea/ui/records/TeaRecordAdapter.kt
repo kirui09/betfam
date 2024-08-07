@@ -108,7 +108,8 @@ class TeaRecordsAdapter(
         fun bind(day: String) {
             binding.dateOfInputTextView.text = day
             val recordsForDay = recordsByDay[day]
-            binding.seeLessButton.visibility = if (expandedPosition == absoluteAdapterPosition) View.VISIBLE else View.GONE
+            binding.seeLessButton.visibility =
+                if (expandedPosition == absoluteAdapterPosition) View.VISIBLE else View.GONE
             binding.seeLessButton.setOnClickListener {
                 expandedPosition = RecyclerView.NO_POSITION
                 notifyDataSetChanged()
@@ -120,95 +121,119 @@ class TeaRecordsAdapter(
         }
 
         private fun populateTable(recordsForDay: List<TeaPaymentRecord>) {
-            val sortedRecords = recordsForDay.sortedByDescending { it.date }
             val tableLayout = binding.myTableLayout
-            val recordsByDate = sortedRecords.groupBy { it.date }
+            tableLayout.removeAllViews() // Clear existing views
 
-            recordsByDate.forEach { (date, records) ->
-               /* val headerRow = TableRow(tableLayout.context)
-                val headerDateTextView = TextView(tableLayout.context)
-                val formattedDate = formatDate(date)
-                headerDateTextView.text = formattedDate
-                headerDateTextView.setTypeface(null, Typeface.BOLD)
-                headerDateTextView.setPadding(5, 5, 5, 5)
-                headerRow.addView(headerDateTextView)
-                tableLayout.addView(headerRow)*/
+            val employeeRecords = recordsForDay.groupBy { it.employees }
+
+            employeeRecords.forEach { (employee, records) ->
+                val row = TableRow(tableLayout.context)
+
+                val employeesTextView = TextView(tableLayout.context)
+                employeesTextView.text = employee
+                employeesTextView.setTypeface(null, Typeface.BOLD)
+                employeesTextView.setPadding(5, 5, 5, 5)
+                employeesTextView.gravity = Gravity.CENTER_VERTICAL
+                row.addView(employeesTextView)
+
+                val totalKilos = records.sumOf { it.kilos.toDouble() }
+                val kilosTextView = TextView(tableLayout.context)
+                kilosTextView.text = String.format("%.2f Kgs", totalKilos)
+                kilosTextView.setTypeface(null, Typeface.BOLD)
+                kilosTextView.setPadding(5, 5, 5, 5)
+                kilosTextView.gravity = Gravity.CENTER_VERTICAL
+                row.addView(kilosTextView)
+
+                val expandButton = ImageButton(tableLayout.context)
+              //  expandButton.setImageResource(R.drawable.ic_baseline_keyboard_arrow_down_24)
+                expandButton.setBackgroundColor(Color.TRANSPARENT)
+                val expandParams = TableRow.LayoutParams(
+                    TableRow.LayoutParams.WRAP_CONTENT,
+                    TableRow.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    gravity = Gravity.CENTER_VERTICAL
+                }
+                row.addView(expandButton, expandParams)
+
+                tableLayout.addView(row)
+
+                // Create a details table for the employee's records
+                val detailsTable = TableLayout(tableLayout.context)
+                detailsTable.layoutParams = TableLayout.LayoutParams(
+                    TableLayout.LayoutParams.MATCH_PARENT,
+                    TableLayout.LayoutParams.WRAP_CONTENT
+                )
+                detailsTable.setBackgroundColor(Color.parseColor("#B0BEC5")) // Light Blue
+                detailsTable.visibility = View.GONE
 
                 records.forEach { record ->
-                    val row = TableRow(tableLayout.context)
-
-                    val employeesTextView = TextView(tableLayout.context)
-                    employeesTextView.text = record.employees
-                    employeesTextView.setTypeface(null, Typeface.BOLD)
-                    employeesTextView.setPadding(5, 5, 5, 5)
-                    employeesTextView.gravity = Gravity.CENTER_VERTICAL
-                    row.addView(employeesTextView)
+                    val detailRow = TableRow(tableLayout.context)
 
                     val companyTextView = TextView(tableLayout.context)
                     companyTextView.text = record.company
-                    companyTextView.setTypeface(null, Typeface.BOLD)
-                    companyTextView.setPadding(5, 5, 5, 5)
-                    companyTextView.gravity = Gravity.CENTER_VERTICAL
-                    row.addView(companyTextView)
+                    companyTextView.setPadding(15, 5, 5, 5)
+                    detailRow.addView(companyTextView)
 
-                    val kilosTextView = TextView(tableLayout.context)
-                    kilosTextView.text = "${record.kilos} Kgs"
-                    kilosTextView.setTypeface(null, Typeface.BOLD)
-                    kilosTextView.setPadding(5, 5, 5, 5)
-                    kilosTextView.gravity = Gravity.CENTER_VERTICAL
-                    row.addView(kilosTextView)
+                    val recordKilosTextView = TextView(tableLayout.context)
+                    recordKilosTextView.text = "${record.kilos} Kgs"
+                    recordKilosTextView.setPadding(5, 5, 5, 5)
+                    detailRow.addView(recordKilosTextView)
 
-
-                    // Add edit button
+                    // Add edit and delete buttons
                     val editButton = ImageButton(tableLayout.context)
                     editButton.setImageResource(R.drawable.ic_baseline_edit_24)
                     editButton.setBackgroundColor(Color.TRANSPARENT)
                     editButton.setOnClickListener {
                         editButtonClickListener.onEditButtonClick(record)
                     }
-                    val editParams = TableRow.LayoutParams(
-                        TableRow.LayoutParams.WRAP_CONTENT,
-                        TableRow.LayoutParams.WRAP_CONTENT
-                    ).apply {
-                        gravity = Gravity.CENTER_VERTICAL
-                    }
-                    row.addView(editButton, editParams)
+                    detailRow.addView(editButton)
 
-                    // Add delete button
                     val deleteButton = ImageButton(tableLayout.context)
                     deleteButton.setImageResource(R.drawable.ic_baseline_delete_24)
                     deleteButton.setBackgroundColor(Color.TRANSPARENT)
                     deleteButton.setOnClickListener {
                         deleteButtonClickListener.onDeleteButtonClick(record)
                     }
-                    val deleteParams = TableRow.LayoutParams(
-                        TableRow.LayoutParams.WRAP_CONTENT,
-                        TableRow.LayoutParams.WRAP_CONTENT
-                    ).apply {
-                        gravity = Gravity.CENTER_VERTICAL
-                    }
-                    row.addView(deleteButton, deleteParams)
+                    detailRow.addView(deleteButton)
 
-                    // Add horizontal divider line
-                    val divider = View(tableLayout.context)
-                    divider.setBackgroundColor(Color.GRAY)
-                    val dividerParams = TableRow.LayoutParams(
+                    detailsTable.addView(detailRow)
+
+                    // Add a separator line
+                    val separator = View(tableLayout.context)
+                    separator.setBackgroundColor(Color.GRAY)
+                    val separatorParams = TableRow.LayoutParams(
                         TableRow.LayoutParams.MATCH_PARENT,
-                        1 // Height of the divider line
+                        1 // Height of the separator line
                     )
-                    row.addView(divider, dividerParams)
+                    detailsTable.addView(separator, separatorParams)
+                }
 
-                    tableLayout.addView(row)
+                tableLayout.addView(detailsTable)
+
+                employeesTextView.setOnClickListener {
+                    if (detailsTable.visibility == View.VISIBLE) {
+                     //   expandButton.setImageResource(R.drawable.ic_baseline_keyboard_arrow_down_24)
+                        detailsTable.visibility = View.GONE
+                    } else {
+                      //  expandButton.setImageResource(R.drawable.ic_baseline_keyboard_arrow_up_24)
+                        detailsTable.visibility = View.VISIBLE
+                    }
+                }
+                kilosTextView.setOnClickListener {
+                    if (detailsTable.visibility == View.VISIBLE) {
+                        //   expandButton.setImageResource(R.drawable.ic_baseline_keyboard_arrow_down_24)
+                        detailsTable.visibility = View.GONE
+                    } else {
+                        //  expandButton.setImageResource(R.drawable.ic_baseline_keyboard_arrow_up_24)
+                        detailsTable.visibility = View.VISIBLE
+                    }
                 }
             }
 
+            // Add total row
             val totalKilos = recordsForDay.sumOf { it.kilos.toDouble() }
-            val totalPayAmount = recordsForDay.sumByDouble { it.kilos * 8.0 }
 
             val totalsRow = TableRow(tableLayout.context)
-            totalsRow.addView(TextView(tableLayout.context))
-
-            totalsRow.addView(TextView(tableLayout.context))
             val totalsLabelTextView = TextView(tableLayout.context)
             totalsLabelTextView.text = "Totals:"
             totalsLabelTextView.setTypeface(null, Typeface.BOLD)
